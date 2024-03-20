@@ -1,11 +1,7 @@
 package profile
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"net/url"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -60,62 +56,16 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return
 	}
 
-	body, err := fetchRawUser(args[0], !outputJson)
-	if err != nil {
-		return err
-	}
-
-	if body == nil {
-		return fmt.Errorf("user not found")
-	}
-
-	if outputJson {
-		fmt.Println(string(body))
-		return nil
-	}
-
 	var user web.User
-	err = json.Unmarshal(body, &user)
-	if err != nil {
+	err = spinner.DoErr("Loading user...", func() (err error) {
+		user, err = api.GetUserByName(userName)
 		return err
+	})
+	if err != nil {
+		return
 	}
 
 	util.RenderUserInfo(user)
 
 	return nil
-}
-
-func fetchRawUser(name string, spin bool) (data []byte, err error) {
-	if spin {
-		spinner.Message("Fetching profile...")
-		spinner.Start()
-		defer spinner.Stop()
-	}
-
-	q := url.Values{}
-	q.Add("name", name)
-	u := url.URL{
-		Scheme:   "https",
-		Host:     root.Host,
-		Path:     "/api/public/users",
-		RawQuery: q.Encode(),
-	}
-
-	res, err := http.Get(u.String())
-	if err != nil {
-		return
-	}
-
-	switch res.StatusCode {
-	case http.StatusOK:
-		data, err = io.ReadAll(res.Body)
-	case http.StatusNotFound:
-		return
-	case http.StatusServiceUnavailable:
-		err = fmt.Errorf("maintenance")
-	default:
-		err = fmt.Errorf("server responded %s", res.Status)
-	}
-
-	return
 }
