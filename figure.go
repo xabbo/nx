@@ -105,7 +105,7 @@ func (pt FigurePartType) IsBody() bool {
 }
 
 // Gets whether the part type belongs to the left arm.
-func (pt FigurePartType) IsLeft() bool {
+func (pt FigurePartType) IsLeftArm() bool {
 	switch pt {
 	case LeftHand, LeftSleeve, LeftCoat, LeftHandItem:
 		return true
@@ -115,7 +115,7 @@ func (pt FigurePartType) IsLeft() bool {
 }
 
 // Gets whether the part type belongs to the right arm.
-func (pt FigurePartType) IsRight() bool {
+func (pt FigurePartType) IsRightArm() bool {
 	switch pt {
 	case RightHand, RightSleeve, RightCoat, RightHandItem:
 		return true
@@ -127,9 +127,9 @@ func (pt FigurePartType) IsRight() bool {
 // Flips the part type between left/right arms, if it is an arm part.
 func (pt FigurePartType) Flip() FigurePartType {
 	switch {
-	case pt.IsLeft():
+	case pt.IsLeftArm():
 		return FigurePartType("r" + string(pt[1]))
-	case pt.IsRight():
+	case pt.IsRightArm():
 		return FigurePartType("l" + string(pt[1]))
 	default:
 		return pt
