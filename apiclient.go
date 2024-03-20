@@ -230,6 +230,8 @@ func (c *ApiClient) GetUserByName(name string) (user web.User, err error) {
 			}
 			if exists {
 				err = ErrUserBanned
+			} else {
+				err = ErrUserNotFound
 			}
 		}
 	}
