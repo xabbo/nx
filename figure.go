@@ -99,6 +99,11 @@ func (pt FigurePartType) IsHead() bool {
 	}
 }
 
+// Gets whether the part type belongs to the body.
+func (pt FigurePartType) IsBody() bool {
+	return !pt.IsHead()
+}
+
 // Gets whether the part type belongs to the left arm.
 func (pt FigurePartType) IsLeft() bool {
 	switch pt {
