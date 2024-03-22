@@ -117,7 +117,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 	} else {
 		var user web.User
 		err = spinner.DoErr("Loading user...", func() (err error) {
-			user, err = api.GetUser(userName)
+			user, err = api.GetUserByName(userName)
 			if err != nil {
 				return
 			}
