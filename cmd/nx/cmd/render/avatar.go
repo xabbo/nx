@@ -150,7 +150,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	mgr := nx.NewGamedataManager(root.Host)
-	renderer := render.NewFigureRenderer(mgr)
+	renderer := render.NewAvatarRenderer(mgr)
 
 	var figure nx.Figure
 	err = figure.Parse(figureString)

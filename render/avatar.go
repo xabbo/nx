@@ -133,7 +133,7 @@ type AvatarRenderer struct {
 	mgr *nx.GamedataManager
 }
 
-func NewFigureRenderer(mgr *nx.GamedataManager) *AvatarRenderer {
+func NewAvatarRenderer(mgr *nx.GamedataManager) *AvatarRenderer {
 	return &AvatarRenderer{mgr}
 }
 
@@ -273,7 +273,7 @@ func flipDir(dir int) int {
 	return (6 - dir) % 8
 }
 
-// Renders a figure to a list of sprites.
+// Renders an avatar to a list of sprites.
 func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error) {
 	parts, err := r.Parts(avatar.Figure)
 	if err != nil {
