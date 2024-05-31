@@ -2,6 +2,7 @@ package render
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"image"
 	"strconv"
@@ -34,16 +35,19 @@ type Asset struct {
 func parsePoint(s string) (pt image.Point, err error) {
 	split := strings.Split(s, ",")
 	if len(split) != 2 {
-		err = fmt.Errorf("invalid point")
+		err = fmt.Errorf("invalid point: %q", s)
+		return
 	}
 	var x, y int
 	x, err = strconv.Atoi(split[0])
 	if err != nil {
-		err = fmt.Errorf("invalid point")
+		err = fmt.Errorf("invalid point: %q", s)
+		return
 	}
 	y, err = strconv.Atoi(split[1])
 	if err != nil {
-		err = fmt.Errorf("invalid point")
+		err = fmt.Errorf("invalid point: %q", s)
+		return
 	}
 	pt = image.Pt(x, y)
 	return
@@ -88,5 +92,6 @@ func (m *Manifest) Unmarshal(data []byte) (err error) {
 
 func (a *Assets) Unmarshal(data []byte) (err error) {
 	// Used in furni data
+	err = errors.New("not implemented")
 	return
 }
