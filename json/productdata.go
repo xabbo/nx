@@ -35,11 +35,11 @@ func (info *ProductInfo) UnmarshalJSON(d []byte) (err error) {
 	*info = ProductInfo(x.productInfo)
 	switch v := x.Code.(type) {
 	case string:
-		(*info).Code = v
+		info.Code = v
 	case float64:
 		// ofc they have one random product code with a number
 		// when every other one is a string.
-		(*info).Code = strconv.FormatFloat(v, 'f', -1, 64)
+		info.Code = strconv.FormatFloat(v, 'f', -1, 64)
 	default:
 		return fmt.Errorf("unknown type %T for ProductInfo.Code", x.Code)
 	}
