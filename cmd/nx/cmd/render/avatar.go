@@ -221,7 +221,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 		frameSize = frameSize.Union(sprite.Asset.Image.Bounds().Sub(sprite.Offset))
 	}
 
-	f, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	f, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return
 	}
@@ -743,7 +743,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 // 		return n
 // 	})
 //
-// 	// fsvg, err := os.openfile(outputname+".svg", os.o_rdwr|os.o_create|os.o_trunc, 0755)
+// 	// fsvg, err := os.openfile(outputname+".svg", os.o_rdwr|os.o_create|os.o_trunc, 0644)
 // 	// if err != nil {
 // 	// 	return
 // 	// }
@@ -851,7 +851,7 @@ func writeSvg(f io.StringWriter, sprites []render.Sprite) {
 // 	}
 // 	// fsvg.writestring("</g></svg>")
 //
-// 	f, err := os.openfile(outputname+".png", os.o_rdwr|os.o_create|os.o_trunc, 0755)
+// 	f, err := os.openfile(outputname+".png", os.o_rdwr|os.o_create|os.o_trunc, 0644)
 // 	if err != nil {
 // 		return
 // 	}
@@ -879,7 +879,7 @@ func writeSvg(f io.StringWriter, sprites []render.Sprite) {
 // 	}
 //
 // 	filepath := filepath.join(cachedir, name+".swf")
-// 	f, err := os.openfile(filepath, os.o_rdwr|os.o_create, 0755)
+// 	f, err := os.openfile(filepath, os.o_rdwr|os.o_create, 0644)
 // 	if err != nil {
 // 		return
 // 	}

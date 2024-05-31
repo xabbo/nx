@@ -346,7 +346,7 @@ func (mgr *GamedataManager) fetchOrGetCached(filePath string, url string, refetc
 		return
 	}
 
-	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0755)
+	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return
 	}

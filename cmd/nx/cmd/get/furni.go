@@ -66,7 +66,7 @@ func downloadFurni(fi *nx.FurniInfo) (err error) {
 	}
 	filePath := identifier + ".swf"
 
-	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0755)
+	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0644)
 	if err != nil {
 		if errors.Is(err, os.ErrExist) {
 			spinner.Stop()
