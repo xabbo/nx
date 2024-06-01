@@ -13,7 +13,9 @@ type AvatarActionInfo struct {
 }
 
 func (actions *AvatarActions) UnmarshalBytes(data []byte) (err error) {
-	var xactions x.ActionContainer
+	var xactions struct {
+		Actions []x.Action
+	}
 	err = xml.Unmarshal(data, &xactions)
 	if err != nil {
 		return
