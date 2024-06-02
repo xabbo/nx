@@ -3,8 +3,8 @@ package render
 import (
 	"github.com/spf13/cobra"
 
-	root "cli/cmd"
-	"cli/cmd/render/furni"
+	root "github.com/xabbo/nx/cli/nx/cmd"
+	"github.com/xabbo/nx/cli/nx/cmd/render/furni"
 )
 
 var Cmd = &cobra.Command{

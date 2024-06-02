@@ -3,7 +3,7 @@ package util
 import (
 	gd "github.com/xabbo/nx/gamedata"
 
-	"cli/spinner"
+	"github.com/xabbo/nx/cli/nx/spinner"
 )
 
 func LoadGamedata(mgr *gd.GamedataManager, message string, types ...gd.GamedataType) error {

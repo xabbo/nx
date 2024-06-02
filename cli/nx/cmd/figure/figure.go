@@ -3,7 +3,7 @@ package figure
 import (
 	"github.com/spf13/cobra"
 
-	root "cli/cmd"
+	root "github.com/xabbo/nx/cli/nx/cmd"
 )
 
 var figureCmd = &cobra.Command{

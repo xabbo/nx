@@ -12,9 +12,9 @@ import (
 	"github.com/xabbo/nx"
 	gd "github.com/xabbo/nx/gamedata"
 
-	root "cli/cmd"
-	"cli/spinner"
-	"cli/util"
+	root "github.com/xabbo/nx/cli/nx/cmd"
+	"github.com/xabbo/nx/cli/nx/spinner"
+	"github.com/xabbo/nx/cli/nx/util"
 )
 
 var infoCmd = &cobra.Command{

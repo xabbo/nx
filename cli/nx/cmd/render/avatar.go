@@ -21,9 +21,9 @@ import (
 	"github.com/xabbo/nx/render"
 	"github.com/xabbo/nx/web"
 
-	root "cli/cmd"
-	"cli/spinner"
-	"cli/util"
+	root "github.com/xabbo/nx/cli/nx/cmd"
+	"github.com/xabbo/nx/cli/nx/spinner"
+	"github.com/xabbo/nx/cli/nx/util"
 )
 
 var renderAvatarCmd = &cobra.Command{

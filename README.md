@@ -6,7 +6,7 @@ A command-line toolkit and Go library for Habbo Hotel.
 
 To install the command-line toolkit
 ```sh
-go install github.com/xabbo/nx/cmd/nx@latest
+go install github.com/xabbo/nx/cli/nx@latest
 ```
 
 ## Usage

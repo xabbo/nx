@@ -6,9 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	root "cli/cmd"
-	"cli/spinner"
-	"cli/util"
+	root "github.com/xabbo/nx/cli/nx/cmd"
+	"github.com/xabbo/nx/cli/nx/spinner"
+	"github.com/xabbo/nx/cli/nx/util"
 
 	"github.com/xabbo/nx"
 	"github.com/xabbo/nx/web"
