@@ -4,11 +4,11 @@ import (
 	"image"
 	"image/color"
 
-	"github.com/b7c/nx"
+	"github.com/b7c/nx/res"
 )
 
 type Sprite struct {
-	Asset  nx.Asset
+	Asset  res.Asset
 	Name   string
 	FlipH  bool
 	FlipV  bool
@@ -22,8 +22,13 @@ func (s *Sprite) Size() image.Point {
 	return s.Asset.Image.Bounds().Size()
 }
 
-type Frame struct {
+type Layer struct {
+	Names   string
 	Sprites []Sprite
+}
+
+type Frame struct {
+	Layers []Layer
 }
 
 type Animation struct {

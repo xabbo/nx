@@ -8,6 +8,8 @@ import (
 	"strconv"
 
 	"github.com/b7c/nx"
+	"github.com/b7c/nx/gamedata"
+	"github.com/b7c/nx/res"
 )
 
 /*
@@ -130,17 +132,17 @@ var layerOrderSide = []layerGroup{
 }
 
 type AvatarRenderer struct {
-	mgr *nx.GamedataManager
+	mgr *gamedata.GamedataManager
 }
 
-func NewAvatarRenderer(mgr *nx.GamedataManager) *AvatarRenderer {
+func NewAvatarRenderer(mgr *gamedata.GamedataManager) *AvatarRenderer {
 	return &AvatarRenderer{mgr}
 }
 
 type AvatarPart struct {
 	LibraryName string
 	AssetSpec   FigureAssetSpec
-	Asset       nx.Asset
+	Asset       res.Asset
 	SetType     nx.FigurePartType
 	SetId       int
 	Type        nx.FigurePartType
@@ -200,7 +202,7 @@ func (r *AvatarRenderer) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 				Hidden:  hiddenLayers[partInfo.Type],
 			}
 
-			if lib, ok := r.mgr.FigureMap.Parts[nx.FigureMapPart{Type: partInfo.Type, Id: partInfo.Id}]; ok {
+			if lib, ok := r.mgr.FigureMap.Parts[gamedata.FigureMapPart{Type: partInfo.Type, Id: partInfo.Id}]; ok {
 				renderPart.LibraryName = lib.Name
 				assumedLibrary = lib.Name
 			} else {
@@ -246,7 +248,7 @@ func (r *AvatarRenderer) RequiredLibs(fig nx.Figure) (libs []string, err error) 
 		}
 
 		for _, part := range set.Parts {
-			mapPart := nx.FigureMapPart{
+			mapPart := gamedata.FigureMapPart{
 				Type: part.Type,
 				Id:   part.Id,
 			}
@@ -328,7 +330,7 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 
 	type partExtra struct {
 		Spec   FigureAssetSpec
-		Asset  nx.Asset
+		Asset  res.Asset
 		Order  int
 		Offset image.Point
 		FlipH  bool
@@ -370,7 +372,7 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 			continue
 		}
 
-		var asset nx.Asset
+		var asset res.Asset
 		asset, err = lib.Asset(spec.String())
 		if err != nil {
 			return
@@ -421,7 +423,7 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 	return
 }
 
-func (r *AvatarRenderer) ResolveAsset(lib nx.AssetLibrary, avatar nx.Avatar, part AvatarPart) *FigureAssetSpec {
+func (r *AvatarRenderer) ResolveAsset(lib res.AssetLibrary, avatar nx.Avatar, part AvatarPart) *FigureAssetSpec {
 	direction := avatar.Direction
 	if part.Type.IsHead() {
 		direction = avatar.HeadDirection

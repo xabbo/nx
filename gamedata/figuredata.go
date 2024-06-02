@@ -1,14 +1,16 @@
-package nx
+package gamedata
 
 import (
 	"encoding/xml"
+
+	"github.com/b7c/nx"
 	x "github.com/b7c/nx/xml"
 )
 
 type FigureData struct {
 	Palettes    map[int]FigureColorPalette
-	SetPalettes map[FigurePartType]int
-	Sets        map[FigurePartType]FigurePartSetMap
+	SetPalettes map[nx.FigurePartType]int
+	Sets        map[nx.FigurePartType]FigurePartSetMap
 }
 
 type FigureColorPalette map[int]FigurePartColorInfo
@@ -25,18 +27,18 @@ type FigurePartSetInfo struct {
 	Selectable    bool
 	Preselectable bool
 	Parts         []FigurePartInfo
-	HiddenLayers  []FigurePartType
+	HiddenLayers  []nx.FigurePartType
 }
 
 type FigurePartInfo struct {
 	Id         int
-	Type       FigurePartType
+	Type       nx.FigurePartType
 	Colorable  bool
 	Index      int
 	ColorIndex int
 }
 
-func (fd *FigureData) PaletteFor(partType FigurePartType) FigureColorPalette {
+func (fd *FigureData) PaletteFor(partType nx.FigurePartType) FigureColorPalette {
 	return fd.Palettes[fd.SetPalettes[partType]]
 }
 
@@ -49,8 +51,8 @@ func (fd *FigureData) UnmarshalBytes(data []byte) (err error) {
 
 	*fd = FigureData{}
 	fd.Palettes = map[int]FigureColorPalette{}
-	fd.SetPalettes = map[FigurePartType]int{}
-	fd.Sets = map[FigurePartType]FigurePartSetMap{}
+	fd.SetPalettes = map[nx.FigurePartType]int{}
+	fd.Sets = map[nx.FigurePartType]FigurePartSetMap{}
 
 	for _, p := range xfd.Palettes {
 		palette := FigureColorPalette{}
@@ -61,7 +63,7 @@ func (fd *FigureData) UnmarshalBytes(data []byte) (err error) {
 	}
 
 	for _, xSetType := range xfd.Sets {
-		partSetType := FigurePartType(xSetType.Type)
+		partSetType := nx.FigurePartType(xSetType.Type)
 
 		setMap := FigurePartSetMap{}
 		for _, xSet := range xSetType.Sets {
@@ -69,7 +71,7 @@ func (fd *FigureData) UnmarshalBytes(data []byte) (err error) {
 			for _, xPart := range xSet.Parts {
 				part := FigurePartInfo{
 					Id:         xPart.Id,
-					Type:       FigurePartType(xPart.Type),
+					Type:       nx.FigurePartType(xPart.Type),
 					Colorable:  xPart.Colorable,
 					Index:      xPart.Index,
 					ColorIndex: xPart.ColorIndex,
@@ -78,7 +80,7 @@ func (fd *FigureData) UnmarshalBytes(data []byte) (err error) {
 			}
 			for _, xLayer := range xSet.HiddenLayers {
 				partSet.HiddenLayers = append(partSet.HiddenLayers,
-					FigurePartType(xLayer.PartType))
+					nx.FigurePartType(xLayer.PartType))
 			}
 			setMap[xSet.Id] = partSet
 		}

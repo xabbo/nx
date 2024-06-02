@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/b7c/nx"
+	gd "github.com/b7c/nx/gamedata"
 
 	root "cli/cmd"
 	"cli/util"
@@ -30,8 +30,8 @@ func init() {
 }
 
 func runVars(cmd *cobra.Command, args []string) (err error) {
-	mgr := nx.NewGamedataManager(root.Host)
-	err = util.LoadGamedata(mgr, "Loading external variables...", nx.GamedataVariables)
+	mgr := gd.NewGamedataManager(root.Host)
+	err = util.LoadGamedata(mgr, "Loading external variables...", gd.GamedataVariables)
 	if err != nil {
 		return
 	}

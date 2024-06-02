@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/b7c/nx"
+	gd "github.com/b7c/nx/gamedata"
 
 	root "cli/cmd"
 	"cli/spinner"
@@ -82,15 +83,15 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	mgr := nx.NewGamedataManager(root.Host)
+	mgr := gd.NewGamedataManager(root.Host)
 	err = util.LoadGamedata(mgr, "Loading game data...",
-		nx.GamedataFigure, nx.GamedataFigureMap, nx.GamedataFurni, nx.GamedataTexts, nx.GamedataVariables)
+		gd.GamedataFigure, gd.GamedataFigureMap, gd.GamedataFurni, gd.GamedataTexts, gd.GamedataVariables)
 	if err != nil {
 		return err
 	}
 
 	partCountMap := make(map[int]int)
-	clothingMap := make(map[int]nx.FurniInfo)
+	clothingMap := make(map[int]gd.FurniInfo)
 	for _, f := range mgr.Furni {
 		if f.SpecialType == nx.FurniTypeClothing {
 			parts := strings.Split(f.CustomParams, ",")
@@ -132,7 +133,7 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 		if showParts {
 			l.Indent()
 			for _, piece := range set.Parts {
-				mapPart := nx.FigureMapPart{Type: piece.Type, Id: piece.Id}
+				mapPart := gd.FigureMapPart{Type: piece.Type, Id: piece.Id}
 				if lib, ok := mgr.FigureMap.Parts[mapPart]; ok {
 					l.AppendItem(fmt.Sprintf("%s-%d [%s]", piece.Type, piece.Id, lib.Name))
 				} else {

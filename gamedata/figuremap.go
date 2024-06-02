@@ -1,9 +1,10 @@
-package nx
+package gamedata
 
 import (
 	"encoding/xml"
 	"strconv"
 
+	"github.com/b7c/nx"
 	x "github.com/b7c/nx/xml"
 )
 
@@ -19,7 +20,7 @@ type FigureMapLib struct {
 }
 
 type FigureMapPart struct {
-	Type FigurePartType
+	Type nx.FigurePartType
 	Id   int
 }
 
@@ -47,7 +48,7 @@ func (fm *FigureMap) UnmarshalBytes(data []byte) (err error) {
 			// -- as of 3rd January, 2024
 			if id, err := strconv.Atoi(xpart.Id); err == nil {
 				part := FigureMapPart{
-					Type: FigurePartType(xpart.Type),
+					Type: nx.FigurePartType(xpart.Type),
 					Id:   id,
 				}
 				lib.Parts = append(lib.Parts, part)

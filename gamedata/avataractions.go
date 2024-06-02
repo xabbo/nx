@@ -1,4 +1,4 @@
-package nx
+package gamedata
 
 import (
 	"encoding/xml"

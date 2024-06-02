@@ -1,19 +1,36 @@
-package nx
+package gamedata
 
 import (
 	"encoding/json"
 
+	"github.com/b7c/nx"
 	j "github.com/b7c/nx/json"
 )
 
 type FurniData map[string]FurniInfo
 
+/*
+type FurniData struct {
+	identifier map[string]*FurniInfo
+	typeKind map[ItemTypeKind]*FurniInfo
+}
+
+func (fd *FurniData) Identifier(identifier string) *FurniInfo{
+	return fd.identifier[identifier]
+}
+
+func (fd *FurniData) Kind(kind ItemTypeKind) *FurniInfo {
+	return fd.typeKind[kind]
+}
+*/
+
 type FurniInfo struct {
-	// The kind of the furni, i.e. its numeric identifier.
-	// This identifier differs between hotels.
+	// A numeric identifier for the furni.
+	// A floor and wall item may share the same kind.
+	// This identifier also differs between hotels.
 	Kind int
 	// The type of the furni, whether it is a floor or wall item.
-	Type ItemType
+	Type nx.ItemType
 	// The identifier of the furni, also known as its class name.
 	// This uniquely identifies furni and is the same across hotels.
 	Identifier      string
@@ -32,7 +49,7 @@ type FurniInfo struct {
 	BC              bool
 	ExcludedDynamic bool
 	CustomParams    string
-	SpecialType     FurniType
+	SpecialType     nx.FurniType
 	CanStandOn      bool
 	CanSitOn        bool
 	CanLayOn        bool
@@ -47,16 +64,16 @@ func (fd *FurniData) UnmarshalBytes(data []byte) (err error) {
 
 	*fd = FurniData{}
 	for _, jfi := range jfd.FloorItems.Infos {
-		(*fd)[jfi.Identifier] = fromJsonFurniInfo(ItemFloor, jfi)
+		(*fd)[jfi.Identifier] = fromJsonFurniInfo(nx.ItemFloor, jfi)
 	}
 	for _, jfi := range jfd.WallItems.Infos {
-		(*fd)[jfi.Identifier] = fromJsonFurniInfo(ItemWall, jfi)
+		(*fd)[jfi.Identifier] = fromJsonFurniInfo(nx.ItemWall, jfi)
 	}
 
 	return
 }
 
-func fromJsonFurniInfo(furniType ItemType, jfi j.FurniInfo) FurniInfo {
+func fromJsonFurniInfo(furniType nx.ItemType, jfi j.FurniInfo) FurniInfo {
 	return FurniInfo{
 		Type:            furniType,
 		Kind:            jfi.Id,
@@ -76,7 +93,7 @@ func fromJsonFurniInfo(furniType ItemType, jfi j.FurniInfo) FurniInfo {
 		BC:              jfi.BC,
 		ExcludedDynamic: jfi.ExcludedDynamic,
 		CustomParams:    jfi.CustomParams,
-		SpecialType:     FurniType(jfi.SpecialType),
+		SpecialType:     nx.FurniType(jfi.SpecialType),
 		CanStandOn:      jfi.CanStandOn,
 		CanSitOn:        jfi.CanSitOn,
 		CanLayOn:        jfi.CanLayOn,

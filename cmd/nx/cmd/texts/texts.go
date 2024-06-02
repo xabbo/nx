@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/b7c/nx"
+	gd "github.com/b7c/nx/gamedata"
 
 	root "cli/cmd"
 	"cli/util"
@@ -30,7 +30,7 @@ func init() {
 }
 
 func runTexts(cmd *cobra.Command, args []string) (err error) {
-	mgr := nx.NewGamedataManager(root.Host)
+	mgr := gd.NewGamedataManager(root.Host)
 	err = util.LoadTexts(mgr)
 	if err != nil {
 		return

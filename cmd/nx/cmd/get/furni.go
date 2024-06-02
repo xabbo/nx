@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/b7c/nx"
+	gd "github.com/b7c/nx/gamedata"
 
 	root "cli/cmd"
 	"cli/spinner"
@@ -34,7 +34,7 @@ func runGetFurni(cmd *cobra.Command, args []string) (err error) {
 	}
 	cmd.SilenceUsage = true
 
-	mgr := nx.NewGamedataManager(root.Host)
+	mgr := gd.NewGamedataManager(root.Host)
 	err = util.LoadFurni(mgr)
 	if err != nil {
 		return
@@ -56,7 +56,7 @@ func runGetFurni(cmd *cobra.Command, args []string) (err error) {
 	return nil
 }
 
-func downloadFurni(fi *nx.FurniInfo) (err error) {
+func downloadFurni(fi *gd.FurniInfo) (err error) {
 	defer spinner.Stop()
 
 	identifier := fi.Identifier

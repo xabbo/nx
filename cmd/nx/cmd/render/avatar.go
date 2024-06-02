@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/b7c/nx"
+	gd "github.com/b7c/nx/gamedata"
 	"github.com/b7c/nx/render"
 	"github.com/b7c/nx/web"
 
@@ -59,7 +60,7 @@ func init() {
 	renderAvatarCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output")
 	renderAvatarCmd.Flags().StringVarP(&outFormat, "format", "f", "png", "Output format")
 
-	renderCmd.AddCommand(renderAvatarCmd)
+	Cmd.AddCommand(renderAvatarCmd)
 }
 
 func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
@@ -149,7 +150,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 		fileName += "." + outFormat
 	}
 
-	mgr := nx.NewGamedataManager(root.Host)
+	mgr := gd.NewGamedataManager(root.Host)
 	renderer := render.NewAvatarRenderer(mgr)
 
 	var figure nx.Figure
@@ -159,8 +160,8 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	err = util.LoadGamedata(mgr, "Loading game data...",
-		nx.GamedataFigure, nx.GamedataFigureMap,
-		nx.GamedataVariables, nx.GamedataAvatar)
+		gd.GamedataFigure, gd.GamedataFigureMap,
+		gd.GamedataVariables, gd.GamedataAvatar)
 	if err != nil {
 		return
 	}

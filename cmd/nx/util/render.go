@@ -11,7 +11,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
 
-	"github.com/b7c/nx"
+	gd "github.com/b7c/nx/gamedata"
 	"github.com/b7c/nx/web"
 )
 
@@ -88,7 +88,7 @@ func RenderProperties(props []Prop) {
 	}
 }
 
-func RenderFurniInfo(f *nx.FurniInfo) {
+func RenderFurniInfo(f *gd.FurniInfo) {
 	props := []Prop{
 		{"Name", f.Name},
 		{"Description", f.Description},

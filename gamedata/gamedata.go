@@ -1,4 +1,4 @@
-package nx
+package gamedata
 
 import (
 	"bytes"
@@ -15,8 +15,10 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	j "github.com/b7c/nx/json"
 	"github.com/b7c/swfx"
+
+	j "github.com/b7c/nx/json"
+	"github.com/b7c/nx/res"
 )
 
 type GamedataType string
@@ -60,7 +62,7 @@ type GamedataManager struct {
 	Variables     ExternalVariables
 	FigureMap     FigureMap
 	AvatarActions AvatarActions
-	Assets        AssetManager
+	Assets        res.AssetManager
 
 	currentHashes *j.GamedataHashes
 	lastFetched   map[GamedataType]time.Time
@@ -135,9 +137,7 @@ func NewGamedataManager(host string) *GamedataManager {
 		Host:     host,
 		Hashes:   make(map[GamedataType]string),
 		CacheDir: cacheDir,
-		Assets: &assetManager{
-			libs: map[string]AssetLibrary{},
-		},
+		Assets:   res.NewManager(),
 	}
 }
 
@@ -297,7 +297,7 @@ func (mgr *GamedataManager) LoadFigureParts(libraries ...string) (err error) {
 			return
 		}
 
-		err = mgr.Assets.Load(swfFigureLibraryLoader{swf})
+		err = mgr.Assets.Load(res.NewSwfFigureLibraryLoader(swf))
 		if err != nil {
 			return
 		}

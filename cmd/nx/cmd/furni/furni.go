@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/b7c/nx"
+	gd "github.com/b7c/nx/gamedata"
 
 	root "cli/cmd"
 	"cli/util"
@@ -35,13 +35,13 @@ func runFurni(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("no options specified")
 	}
 
-	mgr := nx.NewGamedataManager(root.Host)
+	mgr := gd.NewGamedataManager(root.Host)
 	err = util.LoadFurni(mgr)
 	if err != nil {
 		return
 	}
 
-	furnis := make([]nx.FurniInfo, len(mgr.Furni))
+	furnis := make([]gd.FurniInfo, len(mgr.Furni))
 	for _, furni := range mgr.Furni {
 		furnis = append(furnis, furni)
 	}
@@ -79,23 +79,23 @@ func distinctBy[T any](items []T, get func(T) string) []string {
 	return distinct
 }
 
-func getName(fi nx.FurniInfo) string {
+func getName(fi gd.FurniInfo) string {
 	return fi.Name
 }
 
-func getIdentifier(fi nx.FurniInfo) string {
+func getIdentifier(fi gd.FurniInfo) string {
 	return fi.Identifier
 }
 
-func getLine(fi nx.FurniInfo) string {
+func getLine(fi gd.FurniInfo) string {
 	return fi.Line
 }
 
-func getCategory(fi nx.FurniInfo) string {
+func getCategory(fi gd.FurniInfo) string {
 	return fi.Category
 }
 
-func getEnvironment(fi nx.FurniInfo) string {
+func getEnvironment(fi gd.FurniInfo) string {
 	return fi.Environment
 }
 

@@ -1,25 +1,25 @@
 package util
 
 import (
-	"github.com/b7c/nx"
+	gd "github.com/b7c/nx/gamedata"
 
 	"cli/spinner"
 )
 
-func LoadGamedata(mgr *nx.GamedataManager, message string, types ...nx.GamedataType) error {
+func LoadGamedata(mgr *gd.GamedataManager, message string, types ...gd.GamedataType) error {
 	return spinner.DoErr(message, func() error {
 		return mgr.Load(types...)
 	})
 }
 
-func LoadTexts(mgr *nx.GamedataManager) error {
-	return LoadGamedata(mgr, "Loading external texts...", nx.GamedataTexts)
+func LoadTexts(mgr *gd.GamedataManager) error {
+	return LoadGamedata(mgr, "Loading external texts...", gd.GamedataTexts)
 }
 
-func LoadFurni(mgr *nx.GamedataManager) error {
-	return LoadGamedata(mgr, "Loading furni data...", nx.GamedataFurni)
+func LoadFurni(mgr *gd.GamedataManager) error {
+	return LoadGamedata(mgr, "Loading furni data...", gd.GamedataFurni)
 }
 
-func LoadFigure(mgr *nx.GamedataManager) error {
-	return LoadGamedata(mgr, "Loading figure data...", nx.GamedataFigure)
+func LoadFigure(mgr *gd.GamedataManager) error {
+	return LoadGamedata(mgr, "Loading figure data...", gd.GamedataFigure)
 }

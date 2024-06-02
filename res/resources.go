@@ -1,4 +1,4 @@
-package nx
+package res
 
 import (
 	"bytes"
@@ -65,8 +65,21 @@ type Asset struct {
 	Image  image.Image // The asset's image.
 }
 
+func (asset *Asset) SourceImage() image.Image {
+	for asset.Source != nil {
+		asset = asset.Source
+	}
+	return asset.Image
+}
+
 type assetManager struct {
 	libs map[string]AssetLibrary
+}
+
+func NewManager() AssetManager {
+	return &assetManager{
+		libs: map[string]AssetLibrary{},
+	}
 }
 
 func (mgr *assetManager) Library(name string) AssetLibrary {
@@ -256,6 +269,6 @@ func (a *Assets) Unmarshal(data []byte) (err error) {
 }
 
 // Returns a loader for the specified SWF figure part library.
-func SwfFigureLibraryLoader(swf *swfx.Swf) AssetLibraryLoader {
+func NewSwfFigureLibraryLoader(swf *swfx.Swf) AssetLibraryLoader {
 	return &swfFigureLibraryLoader{swf}
 }
