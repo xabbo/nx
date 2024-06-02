@@ -490,6 +490,6 @@ func (r *AvatarRenderer) Dependencies(fig nx.Figure) (err error) {
 	return nil
 }
 
-func (r *AvatarRenderer) CompileAssets(fig nx.Figure) []Asset {
+func (r *AvatarRenderer) CompileAssets(fig nx.Figure) []res.Asset {
 	return nil
 }

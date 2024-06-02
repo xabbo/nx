@@ -3,7 +3,7 @@ package xml
 // manifest.xml
 
 type Manifest struct {
-	Libraries []Library `xml:"library"`
+	Library Library `xml:"library"`
 }
 
 type Library struct {

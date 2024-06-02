@@ -62,7 +62,7 @@ type GamedataManager struct {
 	Variables     ExternalVariables
 	FigureMap     FigureMap
 	AvatarActions AvatarActions
-	Assets        res.AssetManager
+	Assets        res.LibraryManager
 
 	currentHashes *j.GamedataHashes
 	lastFetched   map[GamedataType]time.Time

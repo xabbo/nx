@@ -1,9 +1,11 @@
 package render
 
-import "github.com/b7c/nx"
+import (
+	"github.com/b7c/nx/gamedata"
+)
 
 type FurniRenderer struct {
-	mgr *nx.GamedataManager
+	mgr *gamedata.GamedataManager
 }
 
 type Furni struct {
@@ -12,7 +14,7 @@ type Furni struct {
 	State      int
 }
 
-func NewFurniRenderer(mgr *nx.GamedataManager) *FurniRenderer {
+func NewFurniRenderer(mgr *gamedata.GamedataManager) *FurniRenderer {
 	return &FurniRenderer{mgr}
 }
 
