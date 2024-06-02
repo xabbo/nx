@@ -17,8 +17,8 @@ import (
 
 	"github.com/b7c/swfx"
 
-	j "github.com/b7c/nx/json"
-	"github.com/b7c/nx/res"
+	j "github.com/xabbo/nx/json"
+	"github.com/xabbo/nx/res"
 )
 
 type GamedataType string

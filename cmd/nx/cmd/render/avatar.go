@@ -16,10 +16,10 @@ import (
 	"github.com/phrozen/blend"
 	"github.com/spf13/cobra"
 
-	"github.com/b7c/nx"
-	gd "github.com/b7c/nx/gamedata"
-	"github.com/b7c/nx/render"
-	"github.com/b7c/nx/web"
+	"github.com/xabbo/nx"
+	gd "github.com/xabbo/nx/gamedata"
+	"github.com/xabbo/nx/render"
+	"github.com/xabbo/nx/web"
 
 	root "cli/cmd"
 	"cli/spinner"

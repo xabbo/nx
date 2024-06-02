@@ -3,8 +3,8 @@ package gamedata
 import (
 	"encoding/json"
 
-	"github.com/b7c/nx"
-	j "github.com/b7c/nx/json"
+	"github.com/xabbo/nx"
+	j "github.com/xabbo/nx/json"
 )
 
 type FurniData map[string]FurniInfo

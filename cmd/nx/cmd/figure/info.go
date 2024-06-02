@@ -9,8 +9,8 @@ import (
 	"github.com/jedib0t/go-pretty/v6/list"
 	"github.com/spf13/cobra"
 
-	"github.com/b7c/nx"
-	gd "github.com/b7c/nx/gamedata"
+	"github.com/xabbo/nx"
+	gd "github.com/xabbo/nx/gamedata"
 
 	root "cli/cmd"
 	"cli/spinner"

@@ -1,4 +1,4 @@
-module github.com/b7c/nx/cli/nx
+module github.com/xabbo/nx/cli/nx
 
 go 1.21.1
 

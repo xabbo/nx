@@ -3,7 +3,7 @@ package gamedata
 import (
 	"encoding/xml"
 
-	x "github.com/b7c/nx/xml"
+	x "github.com/xabbo/nx/xml"
 )
 
 type AvatarActions map[string]AvatarActionInfo

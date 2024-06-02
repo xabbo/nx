@@ -1,7 +1,7 @@
 package util
 
 import (
-	gd "github.com/b7c/nx/gamedata"
+	gd "github.com/xabbo/nx/gamedata"
 
 	"cli/spinner"
 )

@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	gd "github.com/b7c/nx/gamedata"
+	gd "github.com/xabbo/nx/gamedata"
 
 	root "cli/cmd"
 	"cli/util"

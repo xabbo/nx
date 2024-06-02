@@ -11,7 +11,7 @@ import (
 	"golang.org/x/exp/maps"
 	"golang.org/x/net/html/charset"
 
-	x "github.com/b7c/nx/xml"
+	x "github.com/xabbo/nx/xml"
 )
 
 // An index describing the furni visualization and logic types.

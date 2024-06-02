@@ -10,8 +10,8 @@ import (
 	"cli/spinner"
 	"cli/util"
 
-	"github.com/b7c/nx"
-	"github.com/b7c/nx/web"
+	"github.com/xabbo/nx"
+	"github.com/xabbo/nx/web"
 )
 
 var (

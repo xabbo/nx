@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"runtime/debug"
 
-	"github.com/b7c/nx/web"
+	"github.com/xabbo/nx/web"
 )
 
 var (
