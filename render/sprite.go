@@ -4,7 +4,7 @@ import (
 	"image"
 	"image/color"
 
-	"github.com/xabbo/nx/res"
+	"xabbo.b7c.io/nx/res"
 )
 
 type Sprite struct {

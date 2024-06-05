@@ -4,8 +4,8 @@ import (
 	"encoding/xml"
 	"strconv"
 
-	"github.com/xabbo/nx"
-	x "github.com/xabbo/nx/xml"
+	"xabbo.b7c.io/nx"
+	x "xabbo.b7c.io/nx/xml"
 )
 
 type FigureMap struct {

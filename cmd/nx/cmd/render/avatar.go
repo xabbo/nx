@@ -16,14 +16,14 @@ import (
 	"github.com/phrozen/blend"
 	"github.com/spf13/cobra"
 
-	"github.com/xabbo/nx"
-	gd "github.com/xabbo/nx/gamedata"
-	"github.com/xabbo/nx/render"
-	"github.com/xabbo/nx/web"
+	"xabbo.b7c.io/nx"
+	gd "xabbo.b7c.io/nx/gamedata"
+	"xabbo.b7c.io/nx/render"
+	"xabbo.b7c.io/nx/web"
 
-	root "github.com/xabbo/nx/cli/nx/cmd"
-	"github.com/xabbo/nx/cli/nx/spinner"
-	"github.com/xabbo/nx/cli/nx/util"
+	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	"xabbo.b7c.io/nx/cmd/nx/spinner"
+	"xabbo.b7c.io/nx/cmd/nx/util"
 )
 
 var renderAvatarCmd = &cobra.Command{

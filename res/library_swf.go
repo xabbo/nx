@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/b7c/swfx"
+	"b7c.io/swfx"
 	"golang.org/x/exp/maps"
 )
 

@@ -15,10 +15,10 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/b7c/swfx"
+	"b7c.io/swfx"
 
-	j "github.com/xabbo/nx/json"
-	"github.com/xabbo/nx/res"
+	j "xabbo.b7c.io/nx/json"
+	"xabbo.b7c.io/nx/res"
 )
 
 type GamedataType string

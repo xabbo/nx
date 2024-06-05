@@ -1,7 +1,7 @@
 package render
 
 import (
-	"github.com/xabbo/nx/gamedata"
+	"xabbo.b7c.io/nx/gamedata"
 )
 
 type FurniRenderer struct {

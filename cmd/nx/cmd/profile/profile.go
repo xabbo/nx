@@ -6,12 +6,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	root "github.com/xabbo/nx/cli/nx/cmd"
-	"github.com/xabbo/nx/cli/nx/spinner"
-	"github.com/xabbo/nx/cli/nx/util"
+	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	"xabbo.b7c.io/nx/cmd/nx/spinner"
+	"xabbo.b7c.io/nx/cmd/nx/util"
 
-	"github.com/xabbo/nx"
-	"github.com/xabbo/nx/web"
+	"xabbo.b7c.io/nx"
+	"xabbo.b7c.io/nx/web"
 )
 
 var (

@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/xabbo/nx"
-	"github.com/xabbo/nx/gamedata"
-	"github.com/xabbo/nx/res"
+	"xabbo.b7c.io/nx"
+	"xabbo.b7c.io/nx/gamedata"
+	"xabbo.b7c.io/nx/res"
 )
 
 /*

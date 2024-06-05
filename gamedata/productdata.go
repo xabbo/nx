@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	j "github.com/xabbo/nx/json"
+	j "xabbo.b7c.io/nx/json"
 )
 
 type ProductData map[string]ProductInfo

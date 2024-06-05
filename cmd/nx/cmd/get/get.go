@@ -3,7 +3,7 @@ package get
 import (
 	"github.com/spf13/cobra"
 
-	root "github.com/xabbo/nx/cli/nx/cmd"
+	root "xabbo.b7c.io/nx/cmd/nx/cmd"
 )
 
 var getCmd = &cobra.Command{

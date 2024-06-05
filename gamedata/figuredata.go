@@ -3,8 +3,8 @@ package gamedata
 import (
 	"encoding/xml"
 
-	"github.com/xabbo/nx"
-	x "github.com/xabbo/nx/xml"
+	"xabbo.b7c.io/nx"
+	x "xabbo.b7c.io/nx/xml"
 )
 
 type FigureData struct {

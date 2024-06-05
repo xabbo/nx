@@ -9,12 +9,12 @@ import (
 	"github.com/jedib0t/go-pretty/v6/list"
 	"github.com/spf13/cobra"
 
-	"github.com/xabbo/nx"
-	gd "github.com/xabbo/nx/gamedata"
+	"xabbo.b7c.io/nx"
+	gd "xabbo.b7c.io/nx/gamedata"
 
-	root "github.com/xabbo/nx/cli/nx/cmd"
-	"github.com/xabbo/nx/cli/nx/spinner"
-	"github.com/xabbo/nx/cli/nx/util"
+	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	"xabbo.b7c.io/nx/cmd/nx/spinner"
+	"xabbo.b7c.io/nx/cmd/nx/util"
 )
 
 var infoCmd = &cobra.Command{
