@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"slices"
+	"strconv"
 	"time"
 
 	"golang.org/x/sync/errgroup"
@@ -261,7 +262,48 @@ func (mgr *GamedataManager) Load(types ...GamedataType) (err error) {
 }
 
 func (mgr *GamedataManager) LoadFurni(libraries ...string) (err error) {
-	err = fmt.Errorf("not implemented")
+	if !mgr.VariablesLoaded() {
+		err = fmt.Errorf("variables not loaded")
+		return
+	}
+	if !mgr.FurniLoaded() {
+		err = fmt.Errorf("furni data not loaded")
+		return
+	}
+
+	downloadUrl, ok := mgr.Variables["dynamic.download.url"]
+	if !ok {
+		err = fmt.Errorf("failed to find dynamic download url")
+		return
+	}
+
+	furniCacheDir := filepath.Join(mgr.CacheDir, "swf", "furni")
+	for _, libName := range libraries {
+		fi, ok := mgr.Furni[libName]
+		if !ok {
+			err = fmt.Errorf("failed to find furni info for %q", libName)
+			return
+		}
+		fpath := filepath.Join(furniCacheDir, libName+".swf")
+		url := downloadUrl+strconv.Itoa(fi.Revision)+"/"+libName+".swf"
+		var data []byte
+		data, err = mgr.fetchOrGetCached(fpath, url, 0)
+		if err != nil {
+			return
+		}
+
+		var swf *swfx.Swf
+		swf, err = swfx.ReadSwf(bytes.NewReader(data))
+		if err != nil {
+			return
+		}
+
+		err = mgr.Assets.Load(res.NewFurniLibraryLoader(libName, swf))
+		if err != nil {
+			return
+		}
+	}
+
 	return
 }
 

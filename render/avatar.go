@@ -330,7 +330,7 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 
 	type partExtra struct {
 		Spec   FigureAssetSpec
-		Asset  res.Asset
+		Asset  *res.Asset
 		Order  int
 		Offset image.Point
 		FlipH  bool
@@ -372,7 +372,7 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 			continue
 		}
 
-		var asset res.Asset
+		var asset *res.Asset
 		asset, err = lib.Asset(spec.String())
 		if err != nil {
 			return

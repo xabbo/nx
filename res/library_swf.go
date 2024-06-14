@@ -63,7 +63,7 @@ func (lib *swfFigurePartLibrary) Name() string {
 	return lib.name
 }
 
-func (lib *swfFigurePartLibrary) Asset(name string) (asset Asset, err error) {
+func (lib *swfFigurePartLibrary) Asset(name string) (asset *Asset, err error) {
 	var ok bool
 
 	asset, ok = lib.assets[name]

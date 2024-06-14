@@ -28,7 +28,7 @@ type Dimensions struct {
 }
 
 type Direction struct {
-	Id int `xml:"id"`
+	Id int `xml:"id,attr"`
 }
 
 type ParticleSystem struct {
