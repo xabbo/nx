@@ -30,13 +30,13 @@ func init() {
 }
 
 func runVars(cmd *cobra.Command, args []string) (err error) {
-	mgr := gd.NewGamedataManager(root.Host)
-	err = util.LoadGamedata(mgr, "Loading external variables...", gd.GamedataVariables)
+	mgr := gd.NewManager(root.Host)
+	err = util.LoadGameData(mgr, "Loading external variables...", gd.GameDataVariables)
 	if err != nil {
 		return
 	}
 
-	for k, v := range mgr.Variables {
+	for k, v := range mgr.Variables() {
 		if !filterVar(k, v) {
 			fmt.Printf("%s=%s\n", k, v)
 		}

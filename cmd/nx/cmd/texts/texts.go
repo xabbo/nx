@@ -30,13 +30,13 @@ func init() {
 }
 
 func runTexts(cmd *cobra.Command, args []string) (err error) {
-	mgr := gd.NewGamedataManager(root.Host)
+	mgr := gd.NewManager(root.Host)
 	err = util.LoadTexts(mgr)
 	if err != nil {
 		return
 	}
 
-	for k, v := range mgr.Texts {
+	for k, v := range mgr.Texts() {
 		if !filterText(k, v) {
 			fmt.Printf("%s=%s\n", k, v)
 		}

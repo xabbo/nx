@@ -32,7 +32,7 @@ func init() {
 func runInfo(cmd *cobra.Command, args []string) (err error) {
 	cmd.SilenceUsage = true
 
-	mgr := gd.NewGamedataManager(root.Host)
+	mgr := gd.NewManager(root.Host)
 	err = util.LoadFurni(mgr)
 	if err != nil {
 		return
@@ -42,18 +42,18 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 
 	if len(args) > 0 {
 		identifier := args[0]
-		if furniInfo, ok := mgr.Furni[identifier]; ok {
+		if furniInfo, ok := mgr.Furni()[identifier]; ok {
 			fi = &furniInfo
 		}
 	} else if kind > 0 {
-		for _, f := range mgr.Furni {
+		for _, f := range mgr.Furni() {
 			if f.Kind == kind {
 				fi = &f
 				break
 			}
 		}
 	} else if identifier != "" {
-		for _, f := range mgr.Furni {
+		for _, f := range mgr.Furni() {
 			if f.Identifier == identifier {
 				fi = &f
 				break

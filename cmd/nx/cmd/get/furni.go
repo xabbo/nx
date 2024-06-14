@@ -34,7 +34,7 @@ func runGetFurni(cmd *cobra.Command, args []string) (err error) {
 	}
 	cmd.SilenceUsage = true
 
-	mgr := gd.NewGamedataManager(root.Host)
+	mgr := gd.NewManager(root.Host)
 	err = util.LoadFurni(mgr)
 	if err != nil {
 		return
@@ -43,7 +43,7 @@ func runGetFurni(cmd *cobra.Command, args []string) (err error) {
 	defer spinner.Stop()
 
 	for _, identifier := range args {
-		if furni, ok := mgr.Furni[identifier]; ok {
+		if furni, ok := mgr.Furni()[identifier]; ok {
 			err := downloadFurni(&furni)
 			if err != nil {
 				return fmt.Errorf("failed to get %d/%s: %s", furni.Revision, furni.Identifier, err)

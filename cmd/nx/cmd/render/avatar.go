@@ -150,7 +150,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 		fileName += "." + outFormat
 	}
 
-	mgr := gd.NewGamedataManager(root.Host)
+	mgr := gd.NewManager(root.Host)
 	renderer := render.NewAvatarRenderer(mgr)
 
 	var figure nx.Figure
@@ -159,9 +159,9 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 		return
 	}
 
-	err = util.LoadGamedata(mgr, "Loading game data...",
-		gd.GamedataFigure, gd.GamedataFigureMap,
-		gd.GamedataVariables, gd.GamedataAvatar)
+	err = util.LoadGameData(mgr, "Loading game data...",
+		gd.GameDataFigure, gd.GameDataFigureMap,
+		gd.GameDataVariables, gd.GameDataAvatar)
 	if err != nil {
 		return
 	}

@@ -4,7 +4,7 @@ type LibraryManager interface {
 	Library(name string) AssetLibrary
 	Libraries() []string
 	LibraryExists(name string) bool
-	Load(LibraryLoader) error
+	LoadLibrary(LibraryLoader) error
 }
 
 type LibraryLoader interface {

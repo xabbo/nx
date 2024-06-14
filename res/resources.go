@@ -32,7 +32,7 @@ func (mgr *assetManager) LibraryExists(name string) bool {
 	return exists
 }
 
-func (mgr *assetManager) Load(loader LibraryLoader) (err error) {
+func (mgr *assetManager) LoadLibrary(loader LibraryLoader) (err error) {
 	library, err := loader.Load()
 	if err == nil {
 		if _, exists := mgr.libs[library.Name()]; exists {

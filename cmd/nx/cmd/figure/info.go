@@ -83,16 +83,16 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	mgr := gd.NewGamedataManager(root.Host)
-	err = util.LoadGamedata(mgr, "Loading game data...",
-		gd.GamedataFigure, gd.GamedataFigureMap, gd.GamedataFurni, gd.GamedataTexts, gd.GamedataVariables)
+	mgr := gd.NewManager(root.Host)
+	err = util.LoadGameData(mgr, "Loading game data...",
+		gd.GameDataFigure, gd.GameDataFigureMap, gd.GameDataFurni, gd.GameDataTexts, gd.GameDataVariables)
 	if err != nil {
 		return err
 	}
 
 	partCountMap := make(map[int]int)
 	clothingMap := make(map[int]gd.FurniInfo)
-	for _, f := range mgr.Furni {
+	for _, f := range mgr.Furni() {
 		if f.SpecialType == nx.FurniTypeClothing {
 			parts := strings.Split(f.CustomParams, ",")
 			for _, s := range parts {
@@ -109,10 +109,10 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	for _, part := range figure.Parts {
-		setGroup := mgr.Figure.Sets[part.Type]
+		setGroup := mgr.Figure().Sets[part.Type]
 		set := setGroup[part.Id]
 
-		if typeName, ok := mgr.Texts["avatareditor.category."+string(part.Type)]; ok {
+		if typeName, ok := mgr.Texts()["avatareditor.category."+string(part.Type)]; ok {
 			l.AppendItem(fmt.Sprintf("%s (%s)", typeName, part.Type))
 		} else {
 			l.AppendItem(fmt.Sprintf("%s", part.Type))
@@ -134,7 +134,7 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 			l.Indent()
 			for _, piece := range set.Parts {
 				mapPart := gd.FigureMapPart{Type: piece.Type, Id: piece.Id}
-				if lib, ok := mgr.FigureMap.Parts[mapPart]; ok {
+				if lib, ok := mgr.FigureMap().Parts[mapPart]; ok {
 					l.AppendItem(fmt.Sprintf("%s-%d [%s]", piece.Type, piece.Id, lib.Name))
 				} else {
 					l.AppendItem(fmt.Sprintf("%s-%d", piece.Type, piece.Id))
@@ -144,7 +144,7 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 		}
 
 		if showColors {
-			palette := mgr.Figure.PaletteFor(part.Type)
+			palette := mgr.Figure().PaletteFor(part.Type)
 			for _, colorId := range part.Colors {
 				if color, ok := palette[colorId]; ok {
 					colorValue, err := strconv.ParseInt(color.Value, 16, 64)

@@ -43,13 +43,13 @@ func runSearch(cmd *cobra.Command, args []string) (err error) {
 
 	cmd.SilenceUsage = true
 
-	mgr := gd.NewGamedataManager(root.Host)
+	mgr := gd.NewManager(root.Host)
 	err = util.LoadFurni(mgr)
 	if err != nil {
 		return
 	}
 
-	for _, f := range mgr.Furni {
+	for _, f := range mgr.Furni() {
 		if !filterFurni(f) {
 			fmt.Printf("%s [%s]\n", f.Name, f.Identifier)
 		}

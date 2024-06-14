@@ -6,37 +6,16 @@ import (
 	"slices"
 
 	"golang.org/x/exp/maps"
-	"xabbo.b7c.io/nx/gamedata"
+
 	"xabbo.b7c.io/nx/res"
 )
-
-/*
-
-API goals
-
-Furni Rendering Pipeline
-	Furni{Identifier, Direction, State}
-
-gdm := gd.NewGamedataManager()
-rn := render.NewFurniRenderer()
-
-layerGrp := rn.Render(Furni{
-	Identifier: "duck",
-	Direction: 2,
-	State: 0,
-})
-
-img := layerGrp.ToPng()
-img.Save("duck.png")
-
-*/
 
 type FurniRenderer interface {
 	Render(furni Furni) Animation
 }
 
 type furniRenderer struct {
-	mgr *gamedata.GamedataManager
+	mgr res.LibraryManager
 }
 
 type Furni struct {
@@ -46,12 +25,12 @@ type Furni struct {
 	State      int
 }
 
-func NewFurniRenderer(mgr *gamedata.GamedataManager) *furniRenderer {
+func NewFurniRenderer(mgr res.LibraryManager) *furniRenderer {
 	return &furniRenderer{mgr}
 }
 
 func (r *furniRenderer) Render(furni Furni) (anim Animation, err error) {
-	assetLib := r.mgr.Assets.Library(furni.Identifier)
+	assetLib := r.mgr.Library(furni.Identifier)
 	if assetLib == nil {
 		err = errors.New("no library found")
 		return

@@ -132,10 +132,10 @@ var layerOrderSide = []layerGroup{
 }
 
 type AvatarRenderer struct {
-	mgr *gamedata.GamedataManager
+	mgr gamedata.Manager
 }
 
-func NewAvatarRenderer(mgr *gamedata.GamedataManager) *AvatarRenderer {
+func NewAvatarRenderer(mgr gamedata.Manager) *AvatarRenderer {
 	return &AvatarRenderer{mgr}
 }
 
@@ -153,26 +153,26 @@ type AvatarPart struct {
 
 // Converts the specified figure into individual figure parts.
 func (r *AvatarRenderer) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
-	if !r.mgr.FigureLoaded() {
+	if r.mgr.Figure() == nil {
 		err = fmt.Errorf("figure data not loaded")
 		return
 	}
-	if !r.mgr.FigureMapLoaded() {
+	if r.mgr.FigureMap() == nil {
 		err = fmt.Errorf("figure map not loaded")
 		return
 	}
 
 	hiddenLayers := map[nx.FigurePartType]bool{}
 	for _, partSet := range fig.Parts {
-		setInfo := r.mgr.Figure.Sets[partSet.Type][partSet.Id]
+		setInfo := r.mgr.Figure().Sets[partSet.Type][partSet.Id]
 		for _, layer := range setInfo.HiddenLayers {
 			hiddenLayers[layer] = true
 		}
 	}
 
 	for _, partSet := range fig.Parts {
-		setInfo := r.mgr.Figure.Sets[partSet.Type][partSet.Id]
-		palette := r.mgr.Figure.PaletteFor(partSet.Type)
+		setInfo := r.mgr.Figure().Sets[partSet.Type][partSet.Id]
+		palette := r.mgr.Figure().PaletteFor(partSet.Type)
 
 		assumedLibrary := ""
 		for _, partInfo := range setInfo.Parts {
@@ -202,7 +202,7 @@ func (r *AvatarRenderer) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 				Hidden:  hiddenLayers[partInfo.Type],
 			}
 
-			if lib, ok := r.mgr.FigureMap.Parts[gamedata.FigureMapPart{Type: partInfo.Type, Id: partInfo.Id}]; ok {
+			if lib, ok := r.mgr.FigureMap().Parts[gamedata.FigureMapPart{Type: partInfo.Type, Id: partInfo.Id}]; ok {
 				renderPart.LibraryName = lib.Name
 				assumedLibrary = lib.Name
 			} else {
@@ -224,11 +224,11 @@ func (r *AvatarRenderer) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 
 // Finds the required figure part libraries given the specified Figure.
 func (r *AvatarRenderer) RequiredLibs(fig nx.Figure) (libs []string, err error) {
-	if !r.mgr.FigureLoaded() {
+	if r.mgr.Figure() == nil {
 		err = fmt.Errorf("figure data not loaded")
 		return
 	}
-	if !r.mgr.FigureMapLoaded() {
+	if r.mgr.FigureMap() == nil {
 		err = fmt.Errorf("figure map not loaded")
 		return
 	}
@@ -236,7 +236,7 @@ func (r *AvatarRenderer) RequiredLibs(fig nx.Figure) (libs []string, err error) 
 	known := map[string]struct{}{}
 
 	for _, part := range fig.Parts {
-		setGroup, ok := r.mgr.Figure.Sets[part.Type]
+		setGroup, ok := r.mgr.Figure().Sets[part.Type]
 		if !ok {
 			err = fmt.Errorf("no figure part sets found for part type %q", part.Type)
 			return
@@ -252,7 +252,7 @@ func (r *AvatarRenderer) RequiredLibs(fig nx.Figure) (libs []string, err error) 
 				Type: part.Type,
 				Id:   part.Id,
 			}
-			partLib, ok := r.mgr.FigureMap.Parts[mapPart]
+			partLib, ok := r.mgr.FigureMap().Parts[mapPart]
 			if !ok {
 				err = fmt.Errorf("part library not found for %s:%d", part.Type, part.Id)
 				return
@@ -352,11 +352,11 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 			continue
 		}
 
-		if !r.mgr.Assets.LibraryExists(part.LibraryName) {
+		if !r.mgr.LibraryExists(part.LibraryName) {
 			err = fmt.Errorf("required part library not loaded: %q", part.LibraryName)
 			return
 		}
-		lib := r.mgr.Assets.Library(part.LibraryName)
+		lib := r.mgr.Library(part.LibraryName)
 
 		partDir := avatar.Direction
 		isHead := part.Type.IsHead()

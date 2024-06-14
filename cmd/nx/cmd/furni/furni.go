@@ -35,14 +35,14 @@ func runFurni(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("no options specified")
 	}
 
-	mgr := gd.NewGamedataManager(root.Host)
+	mgr := gd.NewManager(root.Host)
 	err = util.LoadFurni(mgr)
 	if err != nil {
 		return
 	}
 
-	furnis := make([]gd.FurniInfo, len(mgr.Furni))
-	for _, furni := range mgr.Furni {
+	furnis := make([]gd.FurniInfo, len(mgr.Furni()))
+	for _, furni := range mgr.Furni() {
 		furnis = append(furnis, furni)
 	}
 

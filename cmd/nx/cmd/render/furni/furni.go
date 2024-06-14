@@ -36,10 +36,10 @@ func init() {
 
 func run(cmd *cobra.Command, args []string) (err error) {
 
-	mgr := gd.NewGamedataManager(root.Host)
+	mgr := gd.NewManager(root.Host)
 
 	err = spinner.DoErr("Loading game data...", func() (err error) {
-		return mgr.Load(gd.GamedataVariables, gd.GamedataFurni)
+		return mgr.Load(gd.GameDataVariables, gd.GameDataFurni)
 	})
 
 	err = spinner.DoErr("Loading furni library...", func() (err error) {
