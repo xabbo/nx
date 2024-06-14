@@ -7,29 +7,38 @@ import (
 	x "xabbo.b7c.io/nx/xml"
 )
 
+// FigureData defines the figure part sets and color palettes used for Habbo avatars.
 type FigureData struct {
-	Palettes    map[int]FigureColorPalette
+	// Palettes maps figure color palettes by ID.
+	// Each figure part set uses a certain color palette.
+	Palettes map[int]FigureColorPalette
+	// SetPalettes maps figure part types to color palette IDs.
 	SetPalettes map[nx.FigurePartType]int
 	Sets        map[nx.FigurePartType]FigurePartSetMap
 }
 
+// A FigureColorPalette maps FigurePartColorInfo by ID.
 type FigureColorPalette map[int]FigurePartColorInfo
 
+// A FigurePartSetMap maps FigurePartsetInfo by ID.
 type FigurePartSetMap map[int]FigurePartSetInfo
 
+// A FigurePartColorInfo defines information used to color figure parts.
 type FigurePartColorInfo = x.FigureColor
 
+// A FigurePartSetInfo contains information about a collection of figure parts.
 type FigurePartSetInfo struct {
 	Id            int
 	Gender        string
 	Club          int
-	Colorable     bool
-	Selectable    bool
+	Colorable     bool // Whether this part set is colorable.
+	Selectable    bool // Whether this part set can be selected.
 	Preselectable bool
-	Parts         []FigurePartInfo
-	HiddenLayers  []nx.FigurePartType
+	Parts         []FigurePartInfo    // The parts contained in this part set.
+	HiddenLayers  []nx.FigurePartType // Defines layers to be hidden when this part set is worn.
 }
 
+// A FigurePartInfo contains information about a figure part.
 type FigurePartInfo struct {
 	Id         int
 	Type       nx.FigurePartType
@@ -38,10 +47,12 @@ type FigurePartInfo struct {
 	ColorIndex int
 }
 
+// PaletteFor finds the color palette for the specified figure part type.
 func (fd *FigureData) PaletteFor(partType nx.FigurePartType) FigureColorPalette {
 	return fd.Palettes[fd.SetPalettes[partType]]
 }
 
+// Unmarshals an XML document as raw bytes into a FigureData.
 func (fd *FigureData) UnmarshalBytes(data []byte) (err error) {
 	var xfd *x.FigureData
 	err = xml.Unmarshal(data, &xfd)

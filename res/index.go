@@ -4,7 +4,7 @@ import (
 	x "xabbo.b7c.io/nx/xml"
 )
 
-// An index describing the furni visualization and logic types.
+// An Index describes the furni visualization and logic types.
 type Index struct {
 	Type          string
 	Visualization string
@@ -18,9 +18,9 @@ func (index *Index) UnmarshalBytes(b []byte) (err error) {
 		return
 	}
 	*index = Index{
-		Type: xIndex.Type,
+		Type:          xIndex.Type,
 		Visualization: xIndex.Visualization,
-		Logic: xIndex.Logic,
+		Logic:         xIndex.Logic,
 	}
 	return
 }

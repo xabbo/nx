@@ -59,6 +59,9 @@ type bytesUnmarshaler interface {
 	UnmarshalBytes(data []byte) error
 }
 
+// Creates a new web-based game data manager.
+// The provided manager fetches assets from the web and caches assets to disk.
+// The cache directory is located under `xabbo/nx` within the user's cache directory.
 func NewManager(host string) Manager {
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
@@ -74,7 +77,6 @@ func NewManager(host string) Manager {
 		assets:   res.NewManager(),
 	}
 }
-
 
 func (mgr *webGameDataManager) Figure() *FigureData {
 	return mgr.figure
@@ -279,7 +281,7 @@ func (mgr *webGameDataManager) LoadFurni(libraries ...string) (err error) {
 			return
 		}
 		fpath := filepath.Join(furniCacheDir, libName+".swf")
-		url := downloadUrl+strconv.Itoa(fi.Revision)+"/"+libName+".swf"
+		url := downloadUrl + strconv.Itoa(fi.Revision) + "/" + libName + ".swf"
 		var data []byte
 		data, err = mgr.fetchOrGetCached(fpath, url, 0)
 		if err != nil {

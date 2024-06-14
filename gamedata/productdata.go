@@ -7,14 +7,17 @@ import (
 	j "xabbo.b7c.io/nx/json"
 )
 
+// ProductData maps product info by product code.
 type ProductData map[string]ProductInfo
 
+// ProductInfo defines a product code, name and description.
 type ProductInfo struct {
 	Code        string
 	Name        string
 	Description string
 }
 
+// Unmarshals a JSON document as raw bytes into a ProductData.
 func (pd *ProductData) UnmarshalBytes(data []byte) (err error) {
 	var jpd j.ProductDataContainer
 	err = json.Unmarshal(data, &jpd)

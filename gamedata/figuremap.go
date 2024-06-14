@@ -8,22 +8,26 @@ import (
 	x "xabbo.b7c.io/nx/xml"
 )
 
+// A FigureMap defines mappings between figure part libraries and figure part identifiers.
 type FigureMap struct {
 	Libs  map[string]FigureMapLib        // Maps library name -> library.
 	Parts map[FigureMapPart]FigureMapLib // Maps figure part -> library.
 }
 
+// A FigureMapLib defines a figure part library name, revision and the figure parts contained within the library.
 type FigureMapLib struct {
 	Name     string
 	Revision int
 	Parts    []FigureMapPart
 }
 
+// A FigureMapPart defines a figure part type and an identifier.
 type FigureMapPart struct {
 	Type nx.FigurePartType
 	Id   int
 }
 
+// Unmarshals an XML document as raw bytes into a FigureMap.
 func (fm *FigureMap) UnmarshalBytes(data []byte) (err error) {
 	var xfm x.FigureMap
 	err = xml.Unmarshal(data, &xfm)
