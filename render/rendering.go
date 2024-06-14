@@ -19,7 +19,7 @@ func (frame Frame) ToImage() image.Image {
 				fmt.Fprintf(os.Stderr, "no src img\n")
 				continue
 			}
-			bounds := srcImg.Bounds()// sprite.Bounds()
+			bounds := srcImg.Bounds() // sprite.Bounds()
 			offset := sprite.Offset
 			if sprite.FlipH {
 				// bounds = bounds.Add(image.Point{0, 0})
@@ -33,4 +33,3 @@ func (frame Frame) ToImage() image.Image {
 
 	return canvas
 }
-

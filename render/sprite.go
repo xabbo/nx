@@ -44,7 +44,7 @@ func (s *Sprite) Size() image.Point {
 }
 
 type Layer struct {
-	Id int
+	Id       int
 	Name     string
 	Children []Layer
 	Sprites  []Sprite
@@ -71,7 +71,7 @@ func (f Frame) Bounds() (bounds image.Rectangle) {
 
 type Animation struct {
 	Sequence []int
-	Frames map[int]Frame
+	Frames   map[int]Frame
 }
 
 func (animation Animation) Bounds() (bounds image.Rectangle) {

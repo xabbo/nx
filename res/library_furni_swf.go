@@ -10,17 +10,17 @@ import (
 
 type swfFurniLibraryLoader struct {
 	name string
-	swf *swfx.Swf
+	swf  *swfx.Swf
 }
 
 type swfFurniLibrary struct {
-	swf *swfx.Swf
-	name   string
-	index  *Index
-	manifest *Manifest
-	logic *Logic
+	swf            *swfx.Swf
+	name           string
+	index          *Index
+	manifest       *Manifest
+	logic          *Logic
 	visualizations map[int]Visualization
-	assets map[string]*Asset
+	assets         map[string]*Asset
 }
 
 func NewFurniLibraryLoader(name string, swf *swfx.Swf) LibraryLoader {
@@ -86,13 +86,13 @@ func (loader *swfFurniLibraryLoader) Load() (assetLib AssetLibrary, err error) {
 	}
 
 	lib := &swfFurniLibrary{
-		swf: swf,
-		name: loader.name,
-		index: &index,
-		manifest: &manifest,
-		logic: &logic,
+		swf:            swf,
+		name:           loader.name,
+		index:          &index,
+		manifest:       &manifest,
+		logic:          &logic,
 		visualizations: visData.Visualizations,
-		assets: assetsMap,
+		assets:         assetsMap,
 	}
 
 	for assetName := range assetsMap {

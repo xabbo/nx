@@ -119,4 +119,3 @@ func (r *furniRenderer) renderFrame(lib res.FurniLibrary, furni Furni, frameNo i
 	})
 	return
 }
-

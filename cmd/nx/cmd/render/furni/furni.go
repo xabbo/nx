@@ -13,10 +13,10 @@ import (
 )
 
 var opts struct {
-	swfPath string
-	states  bool
+	swfPath    string
+	states     bool
 	identifier string
-	dir int
+	dir        int
 }
 
 var Cmd = &cobra.Command{
@@ -52,8 +52,8 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	renderer := render.NewFurniRenderer(mgr)
 	anim, err := renderer.Render(render.Furni{
 		Identifier: opts.identifier,
-		Size: 64,
-		Direction: opts.dir,
+		Size:       64,
+		Direction:  opts.dir,
 	})
 	if err != nil {
 		return

@@ -32,7 +32,7 @@ func (a *Assets) UnmarshalBytes(b []byte) (err error) {
 	}
 	sourceMap := make(map[string]string)
 	*a = make(map[string]*Asset, len(xAssets.Assets))
-	for _, xAsset :=  range xAssets.Assets {
+	for _, xAsset := range xAssets.Assets {
 		var asset Asset
 		asset.fromXml(xAsset)
 		(*a)[asset.Name] = &asset
@@ -50,5 +50,5 @@ func (a *Asset) fromXml(xAsset x.Asset) {
 	a.Name = xAsset.Name
 	a.FlipH = xAsset.FlipH
 	a.FlipV = xAsset.FlipV
-	a.Offset = image.Point{xAsset.X, xAsset.Y} 
+	a.Offset = image.Point{xAsset.X, xAsset.Y}
 }
