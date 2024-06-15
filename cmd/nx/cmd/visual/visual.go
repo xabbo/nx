@@ -100,8 +100,10 @@ func printVisualization(l list.Writer, vis res.Visualization) {
 	// layers
 	l.AppendItem(fmt.Sprintf("Layers: %d", vis.LayerCount))
 	l.Indent()
-	for _, layer := range vis.Layers {
-		l.AppendItem(fmt.Sprintf("Layer %d", layer.Id))
+	layerIds := maps.Keys(vis.Layers)
+	slices.Sort(layerIds)
+	for _, layerId := range layerIds {
+		l.AppendItem(fmt.Sprintf("Layer %d", layerId))
 	}
 	l.UnIndent()
 
