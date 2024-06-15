@@ -138,19 +138,26 @@ func (anim *Animation) fromXml(v *x.Animation) {
 }
 
 type AnimationLayer struct {
-	Id          int
-	LoopCount   int
-	FrameRepeat int
-	Frames      []int // A list of animation frame IDs.
+	Id             int
+	LoopCount      int
+	FrameRepeat    int
+	FrameSequences []FrameSequence // A list of frame sequences.
 }
+
+// FrameSequence represents a list of frame IDs for an animation.
+type FrameSequence []int
 
 func (animLayer *AnimationLayer) fromXml(v *x.AnimationLayer) {
 	animLayer.Id = v.Id
 	animLayer.LoopCount = v.LoopCount
 	animLayer.FrameRepeat = v.FrameRepeat
-	animLayer.Frames = make([]int, len(v.Frames))
-	for i := range v.Frames {
-		animLayer.Frames = append(animLayer.Frames, v.Frames[i].Id)
+	animLayer.FrameSequences = make([]FrameSequence, 0, len(v.FrameSequences))
+	for _, xSequence := range v.FrameSequences {
+		sequence := make(FrameSequence, 0, len(xSequence.Frames))
+		for _, xFrame := range xSequence.Frames {
+			sequence = append(sequence, xFrame.Id)
+		}
+		animLayer.FrameSequences = append(animLayer.FrameSequences, sequence)
 	}
 }
 

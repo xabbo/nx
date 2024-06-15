@@ -82,10 +82,15 @@ type Animation struct {
 }
 
 type AnimationLayer struct {
-	Id          int              `xml:"id,attr"`
-	LoopCount   int              `xml:"loopCount"`
-	FrameRepeat int              `xml:"frameRepeat"`
-	Frames      []AnimationFrame `xml:"frameSequence>frame"`
+	Id             int             `xml:"id,attr"`
+	LoopCount      int             `xml:"loopCount"`
+	FrameRepeat    int             `xml:"frameRepeat"`
+	Random         bool            `xml:"random"`
+	FrameSequences []FrameSequence `xml:"frameSequence"`
+}
+
+type FrameSequence struct {
+	Frames []AnimationFrame `xml:"frame"`
 }
 
 type AnimationFrame struct {
