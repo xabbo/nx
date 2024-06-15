@@ -32,7 +32,7 @@ var renderAvatarCmd = &cobra.Command{
 	RunE: runRenderAvatar,
 }
 
-var (
+var opts struct {
 	dir        int
 	headDir    int
 	action     string
@@ -44,21 +44,21 @@ var (
 	noColor    bool
 	verbose    bool
 	outFormat  string
-)
+}
 
 var validFormats = []string{"png", "svg"}
 
 func init() {
-	renderAvatarCmd.Flags().IntVarP(&dir, "dir", "d", 2, "The direction of the avatar (0-7)")
-	renderAvatarCmd.Flags().IntVarP(&headDir, "head-dir", "H", 2, "The direction of the avatar's head (0-7)")
-	renderAvatarCmd.Flags().StringVarP(&action, "action", "a", "std", "The action of the avatar")
-	renderAvatarCmd.Flags().StringVarP(&expression, "expression", "e", "", "The expression of the avatar")
-	renderAvatarCmd.Flags().StringVarP(&userName, "user", "u", "", "The name of the user to fetch a figure for")
-	renderAvatarCmd.Flags().BoolVar(&headOnly, "head-only", false, "Render head only")
-	renderAvatarCmd.Flags().StringVarP(&outputName, "output", "o", "", "The name of the output file")
-	renderAvatarCmd.Flags().BoolVar(&noColor, "no-color", false, "Do not color figure parts")
-	renderAvatarCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output")
-	renderAvatarCmd.Flags().StringVarP(&outFormat, "format", "f", "png", "Output format")
+	renderAvatarCmd.Flags().IntVarP(&opts.dir, "dir", "d", 2, "The direction of the avatar (0-7)")
+	renderAvatarCmd.Flags().IntVarP(&opts.headDir, "head-dir", "H", 2, "The direction of the avatar's head (0-7)")
+	renderAvatarCmd.Flags().StringVarP(&opts.action, "action", "a", "std", "The action of the avatar")
+	renderAvatarCmd.Flags().StringVarP(&opts.expression, "expression", "e", "", "The expression of the avatar")
+	renderAvatarCmd.Flags().StringVarP(&opts.userName, "user", "u", "", "The name of the user to fetch a figure for")
+	renderAvatarCmd.Flags().BoolVar(&opts.headOnly, "head-only", false, "Render head only")
+	renderAvatarCmd.Flags().StringVarP(&opts.outputName, "output", "o", "", "The name of the output file")
+	renderAvatarCmd.Flags().BoolVar(&opts.noColor, "no-color", false, "Do not color figure parts")
+	renderAvatarCmd.Flags().BoolVarP(&opts.verbose, "verbose", "v", false, "Verbose output")
+	renderAvatarCmd.Flags().StringVarP(&opts.outFormat, "format", "f", "png", "Output format")
 
 	Cmd.AddCommand(renderAvatarCmd)
 }
@@ -66,13 +66,13 @@ func init() {
 func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 	// Match body direction if head direction not set
 	if !cmd.Flags().Lookup("head-dir").Changed {
-		headDir = dir
+		opts.headDir = opts.dir
 	}
 
 	api := nx.NewApiClient(root.Host)
 
 	figureSpecified := len(args) > 0
-	userSpecified := userName != ""
+	userSpecified := opts.userName != ""
 
 	if !figureSpecified && !userSpecified {
 		return fmt.Errorf("no figure or user specified")
@@ -82,43 +82,43 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("only one of either figure or user may be specified")
 	}
 
-	if !slices.Contains(validFormats, outFormat) {
+	if !slices.Contains(validFormats, opts.outFormat) {
 		return fmt.Errorf("invalid output format %q, must be %s",
-			outFormat, util.CommaList(validFormats, "or"))
+			opts.outFormat, util.CommaList(validFormats, "or"))
 	}
 
 	cmd.SilenceUsage = true
 
-	if !slices.Contains(nx.AvatarActions, nx.AvatarState(action)) {
+	if !slices.Contains(nx.AvatarActions, nx.AvatarState(opts.action)) {
 		return fmt.Errorf("invalid action %q, must be one of %s",
-			action, util.CommaList(nx.AvatarActions, "or"))
+			opts.action, util.CommaList(nx.AvatarActions, "or"))
 	}
 
-	if expression != "" && !slices.Contains(nx.AvatarExpressions, nx.AvatarState(expression)) {
+	if opts.expression != "" && !slices.Contains(nx.AvatarExpressions, nx.AvatarState(opts.expression)) {
 		return fmt.Errorf("invalid expression %q, must be one of %s",
-			expression, util.CommaList(nx.AvatarExpressions, "or"))
+			opts.expression, util.CommaList(nx.AvatarExpressions, "or"))
 	}
 
 	vars := map[string]any{}
-	vars["dir"] = dir
-	vars["hdir"] = headDir
-	vars["act"] = action
-	if expression == "" {
+	vars["dir"] = opts.dir
+	vars["hdir"] = opts.headDir
+	vars["act"] = opts.action
+	if opts.expression == "" {
 		vars["expr"] = "ntr" // Neutral
 	} else {
-		vars["expr"] = expression
+		vars["expr"] = opts.expression
 	}
 
 	var figureString string
 	if len(args) > 0 {
 		figureString = args[0]
-		if outputName == "" {
-			outputName = figureString
+		if opts.outputName == "" {
+			opts.outputName = figureString
 		}
 	} else {
 		var user web.User
 		err = spinner.DoErr("Loading user...", func() (err error) {
-			user, err = api.GetUserByName(userName)
+			user, err = api.GetUserByName(opts.userName)
 			if err != nil {
 				return
 			}
@@ -130,24 +130,24 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 		}
 		fmt.Println(figureString)
 
-		if outputName == "" {
-			outputName = "$name-$act-$expr-$dir-$hdir"
+		if opts.outputName == "" {
+			opts.outputName = "$name-$act-$expr-$dir-$hdir"
 		}
 		vars["name"] = user.Name
 	}
 
 	vars["figure"] = figureString
 
-	outputName = os.Expand(outputName, func(s string) (ret string) {
+	opts.outputName = os.Expand(opts.outputName, func(s string) (ret string) {
 		if value, ok := vars[s]; ok {
 			ret = fmt.Sprint(value)
 		}
 		return
 	})
-	fileName := outputName
-	switch outFormat {
+	fileName := opts.outputName
+	switch opts.outFormat {
 	case "png", "svg":
-		fileName += "." + outFormat
+		fileName += "." + opts.outFormat
 	}
 
 	mgr := gd.NewManager(root.Host)
@@ -193,7 +193,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 			if err != nil {
 				return err
 			}
-			if verbose {
+			if opts.verbose {
 				spinner.Printf("Loaded %s\n", lib)
 			}
 		}
@@ -205,11 +205,11 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 
 	avatar := nx.Avatar{
 		Figure:        figure,
-		Direction:     dir,
-		HeadDirection: headDir,
-		Action:        nx.AvatarState(action),
-		Expression:    nx.AvatarState(expression),
-		HeadOnly:      headOnly,
+		Direction:     opts.dir,
+		HeadDirection: opts.headDir,
+		Action:        nx.AvatarState(opts.action),
+		Expression:    nx.AvatarState(opts.expression),
+		HeadOnly:      opts.headOnly,
 	}
 
 	sprites, err := renderer.Sprites(avatar)
@@ -228,22 +228,22 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 	}
 	defer f.Close()
 
-	if verbose {
+	if opts.verbose {
 		fmt.Printf("Frame size: %v\n", frameSize.Size())
 	}
 
-	switch outFormat {
+	switch opts.outFormat {
 	case "png":
 		img := image.NewRGBA(frameSize)
 		for _, sprite := range sprites {
 			src := sprite.Asset.Image
-			if sprite.Color != color.White && !noColor {
+			if sprite.Color != color.White && !opts.noColor {
 				src = blend.BlendNewImage(src, image.NewUniform(sprite.Color), blend.Multiply)
 			}
 			if sprite.FlipH {
 				src = imaging.FlipH(src)
 			}
-			if verbose {
+			if opts.verbose {
 				fmt.Printf("Drawing %s at %v\n", sprite.Asset.Name, sprite.Offset.Mul(-1))
 			}
 			draw.Draw(img,

@@ -12,17 +12,17 @@ import (
 	"xabbo.b7c.io/nx/render"
 )
 
+var Cmd = &cobra.Command{
+	Use:  "furni [flags] identifier",
+	Args: cobra.MaximumNArgs(1),
+	RunE: run,
+}
+
 var opts struct {
 	swfPath    string
 	states     bool
 	identifier string
 	dir        int
-}
-
-var Cmd = &cobra.Command{
-	Use:  "furni [flags] identifier",
-	Args: cobra.MaximumNArgs(1),
-	RunE: run,
 }
 
 func init() {

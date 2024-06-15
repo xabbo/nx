@@ -17,21 +17,21 @@ var furniCmd = &cobra.Command{
 	RunE: runFurni,
 }
 
-var (
+var opts struct {
 	listSwitch util.MutexValue
-)
+}
 
 func init() {
 	f := furniCmd.Flags()
-	listSwitch.Switch(f, "lines", "List furni lines")
-	listSwitch.Switch(f, "categories", "List furni categories")
-	listSwitch.Switch(f, "environments", "List furni environments")
+	opts.listSwitch.Switch(f, "lines", "List furni lines")
+	opts.listSwitch.Switch(f, "categories", "List furni categories")
+	opts.listSwitch.Switch(f, "environments", "List furni environments")
 
 	root.Cmd.AddCommand(furniCmd)
 }
 
 func runFurni(cmd *cobra.Command, args []string) (err error) {
-	if listSwitch.Selected() == "" {
+	if opts.listSwitch.Selected() == "" {
 		return fmt.Errorf("no options specified")
 	}
 
@@ -46,7 +46,7 @@ func runFurni(cmd *cobra.Command, args []string) (err error) {
 		furnis = append(furnis, furni)
 	}
 
-	switch listSwitch.Selected() {
+	switch opts.listSwitch.Selected() {
 	case "lines":
 		listDistinctBy(furnis, getLine)
 	case "categories":

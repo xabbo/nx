@@ -14,10 +14,6 @@ import (
 	"xabbo.b7c.io/nx/web"
 )
 
-var (
-	outputJson bool
-)
-
 var profileCmd = &cobra.Command{
 	Use:     "profile [name|unique-id]",
 	Aliases: []string{"user"},
@@ -25,10 +21,14 @@ var profileCmd = &cobra.Command{
 	RunE:    run,
 }
 
+var opts struct {
+	outputJson bool
+}
+
 func init() {
 	root.Cmd.AddCommand(profileCmd)
 
-	profileCmd.Flags().BoolVar(&outputJson, "json", false, "Output raw JSON data")
+	profileCmd.Flags().BoolVar(&opts.outputJson, "json", false, "Output raw JSON data")
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
@@ -42,7 +42,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	userName := args[0]
 
-	if outputJson {
+	if opts.outputJson {
 		var data []byte
 		err = spinner.DoErr("Loading user...", func() (err error) {
 			data, err = api.GetRawUser(userName)

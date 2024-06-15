@@ -22,35 +22,35 @@ var infoCmd = &cobra.Command{
 	RunE: runInfo,
 }
 
-var (
+var opts struct {
 	userName        string
 	showParts       bool
 	showIdentifiers bool
 	showColors      bool
 	showAll         bool
-)
+}
 
 func init() {
 	figureCmd.AddCommand(infoCmd)
 
-	infoCmd.Flags().StringVarP(&userName, "user", "u", "", "User to load figure for")
-	infoCmd.Flags().BoolVarP(&showIdentifiers, "identifiers", "i", false, "Show clothing furni identifiers")
-	infoCmd.Flags().BoolVarP(&showParts, "parts", "p", false, "Show individual figure parts")
-	infoCmd.Flags().BoolVarP(&showColors, "colors", "c", false, "Show figure part colors")
-	infoCmd.Flags().BoolVar(&showAll, "all", false, "Show all information")
+	infoCmd.Flags().StringVarP(&opts.userName, "user", "u", "", "User to load figure for")
+	infoCmd.Flags().BoolVarP(&opts.showIdentifiers, "identifiers", "i", false, "Show clothing furni identifiers")
+	infoCmd.Flags().BoolVarP(&opts.showParts, "parts", "p", false, "Show individual figure parts")
+	infoCmd.Flags().BoolVarP(&opts.showColors, "colors", "c", false, "Show figure part colors")
+	infoCmd.Flags().BoolVar(&opts.showAll, "all", false, "Show all information")
 }
 
 func runInfo(cmd *cobra.Command, args []string) (err error) {
-	if len(args) < 1 && userName == "" {
+	if len(args) < 1 && opts.userName == "" {
 		return fmt.Errorf("no figure or user specified")
 	}
 
 	cmd.SilenceUsage = true
 
-	if showAll {
-		showIdentifiers = true
-		showParts = true
-		showColors = true
+	if opts.showAll {
+		opts.showIdentifiers = true
+		opts.showParts = true
+		opts.showColors = true
 	}
 
 	l := list.NewWriter()
@@ -64,7 +64,7 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 	} else {
 		err = spinner.DoErr("Loading user...", func() error {
 			api := nx.NewApiClient(root.Host)
-			user, err := api.GetUserByName(userName)
+			user, err := api.GetUserByName(opts.userName)
 			if err != nil {
 				return err
 			}
@@ -121,7 +121,7 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 		l.Indent()
 
 		if fi, ok := clothingMap[part.Id]; ok {
-			if showIdentifiers {
+			if opts.showIdentifiers {
 				l.AppendItem(fmt.Sprintf("%4d: %s [%s]", part.Id, fi.Name, fi.Identifier))
 			} else {
 				l.AppendItem(fmt.Sprintf("%4d: %s", part.Id, fi.Name))
@@ -130,7 +130,7 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 			l.AppendItem(fmt.Sprintf("%4d", part.Id))
 		}
 
-		if showParts {
+		if opts.showParts {
 			l.Indent()
 			for _, piece := range set.Parts {
 				mapPart := gd.FigureMapPart{Type: piece.Type, Id: piece.Id}
@@ -143,7 +143,7 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 			l.UnIndent()
 		}
 
-		if showColors {
+		if opts.showColors {
 			palette := mgr.Figure().PaletteFor(part.Type)
 			for _, colorId := range part.Colors {
 				if color, ok := palette[colorId]; ok {

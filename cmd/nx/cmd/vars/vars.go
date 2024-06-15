@@ -17,16 +17,16 @@ var varsCommand = &cobra.Command{
 	RunE:  runVars,
 }
 
-var (
+var opts struct {
 	searchKey   util.Wildcard
 	searchValue util.Wildcard
-)
+}
 
 func init() {
 	root.Cmd.AddCommand(varsCommand)
 
-	varsCommand.Flags().VarP(&searchKey, "key", "k", "Key search text")
-	varsCommand.Flags().VarP(&searchValue, "value", "v", "Value search text")
+	varsCommand.Flags().VarP(&opts.searchKey, "key", "k", "Key search text")
+	varsCommand.Flags().VarP(&opts.searchValue, "value", "v", "Value search text")
 }
 
 func runVars(cmd *cobra.Command, args []string) (err error) {
@@ -46,5 +46,5 @@ func runVars(cmd *cobra.Command, args []string) (err error) {
 }
 
 func filterVar(k, v string) bool {
-	return searchKey.Filter(k) || searchValue.Filter(v)
+	return opts.searchKey.Filter(k) || opts.searchValue.Filter(v)
 }
