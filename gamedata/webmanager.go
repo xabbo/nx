@@ -227,10 +227,12 @@ func (mgr *webGameDataManager) Load(types ...Type) (err error) {
 			return
 		}
 
-		err = mgr.figureMap.UnmarshalBytes(data)
+		var figureMap FigureMap
+		err = figureMap.UnmarshalBytes(data)
 		if err != nil {
 			return
 		}
+		mgr.figureMap = &figureMap
 	}
 
 	if len(types) == 0 || slices.Contains(types, GameDataAvatar) {
@@ -248,10 +250,12 @@ func (mgr *webGameDataManager) Load(types ...Type) (err error) {
 			return
 		}
 
-		err = mgr.avatarActions.UnmarshalBytes(data)
+		var avatarActions AvatarActions
+		err = avatarActions.UnmarshalBytes(data)
 		if err != nil {
 			return
 		}
+		mgr.avatarActions = avatarActions
 	}
 
 	return
