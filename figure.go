@@ -6,13 +6,13 @@ import (
 	"strings"
 )
 
-// A Figure defines the visual properties of a figure.
+// A Figure represents a gender and a set of figure items.
 type Figure struct {
 	Gender Gender
-	Parts  []FigurePart
+	Items  []FigureItem
 }
 
-// An Avatar defines the visual properties of a Figure in a room.
+// An Avatar defines the state of a Figure in a room.
 type Avatar struct {
 	Figure
 	Direction     int
@@ -25,10 +25,23 @@ type Avatar struct {
 	HeadOnly      bool
 }
 
+// A FigureItem defines a figure part set type and identifier with colors.
+type FigureItem struct {
+	Type   FigurePartType // The type of figure part set.
+	Id     int // The identifier of the figure part set.
+	Colors []int // A list of color identifiers.
+}
+
+// A FigurePart defines a figure part type and identifier.
+type FigurePart struct {
+	Type   FigurePartType // The type of the figure part.
+	Id     int // The identifier of the figure part.
+}
+
 // String formats the figure to its string representation.
 func (f *Figure) String() string {
 	sb := strings.Builder{}
-	for i, part := range f.Parts {
+	for i, part := range f.Items {
 		if i > 0 {
 			sb.WriteRune('.')
 		}
@@ -37,28 +50,26 @@ func (f *Figure) String() string {
 	return sb.String()
 }
 
-// A FigurePart represents a colored part set.
-type FigurePart struct {
-	Type   FigurePartType
-	Id     int
-	Colors []int
-}
-
-func (p *FigurePart) writeBuilder(sb *strings.Builder) {
-	sb.WriteString(string(p.Type))
+func (item *FigureItem) writeBuilder(sb *strings.Builder) {
+	sb.WriteString(string(item.Type))
 	sb.WriteRune('-')
-	sb.WriteString(strconv.Itoa(p.Id))
-	for i := range p.Colors {
+	sb.WriteString(strconv.Itoa(item.Id))
+	for _, c := range item.Colors {
 		sb.WriteRune('-')
-		sb.WriteString(strconv.Itoa(p.Colors[i]))
+		sb.WriteString(strconv.Itoa(c))
 	}
 }
 
-// String formats the figure part to its string representation.
-func (p *FigurePart) String() string {
-	sb := strings.Builder{}
-	p.writeBuilder(&sb)
+// String formats the figure item to its string representation.
+func (item *FigureItem) String() string {
+	var sb strings.Builder
+	item.writeBuilder(&sb)
 	return sb.String()
+}
+
+// String formats the figure part to its string representation.
+func (part *FigurePart) String() string {
+	return string(part.Type) + "-" + strconv.Itoa(part.Id)
 }
 
 type FigurePartType string
@@ -218,9 +229,9 @@ func (state AvatarState) IsExpression() bool {
 // Parse parses a figure string into a Figure.
 func (f *Figure) Parse(figure string) (err error) {
 	split := strings.Split(figure, ".")
-	parts := make([]FigurePart, 0, len(split))
+	parts := make([]FigureItem, 0, len(split))
 	for _, partStr := range split {
-		part := FigurePart{}
+		part := FigureItem{}
 		partSplit := strings.Split(partStr, "-")
 		if len(partSplit) < 1 || partSplit[0] == "" {
 			return fmt.Errorf("empty figure part in figure string")
@@ -246,6 +257,6 @@ func (f *Figure) Parse(figure string) (err error) {
 		}
 		parts = append(parts, part)
 	}
-	*f = Figure{Parts: parts, Gender: Unisex}
+	*f = Figure{Items: parts, Gender: Unisex}
 	return
 }

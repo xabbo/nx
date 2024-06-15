@@ -163,14 +163,14 @@ func (r *AvatarRenderer) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 	}
 
 	hiddenLayers := map[nx.FigurePartType]bool{}
-	for _, partSet := range fig.Parts {
+	for _, partSet := range fig.Items {
 		setInfo := r.mgr.Figure().Sets[partSet.Type][partSet.Id]
 		for _, layer := range setInfo.HiddenLayers {
 			hiddenLayers[layer] = true
 		}
 	}
 
-	for _, partSet := range fig.Parts {
+	for _, partSet := range fig.Items {
 		setInfo := r.mgr.Figure().Sets[partSet.Type][partSet.Id]
 		palette := r.mgr.Figure().PaletteFor(partSet.Type)
 
@@ -202,7 +202,7 @@ func (r *AvatarRenderer) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 				Hidden:  hiddenLayers[partInfo.Type],
 			}
 
-			if lib, ok := r.mgr.FigureMap().Parts[gamedata.FigureMapPart{Type: partInfo.Type, Id: partInfo.Id}]; ok {
+			if lib, ok := r.mgr.FigureMap().Parts[nx.FigurePart{Type: partInfo.Type, Id: partInfo.Id}]; ok {
 				renderPart.LibraryName = lib.Name
 				assumedLibrary = lib.Name
 			} else {
@@ -235,7 +235,7 @@ func (r *AvatarRenderer) RequiredLibs(fig nx.Figure) (libs []string, err error) 
 
 	known := map[string]struct{}{}
 
-	for _, part := range fig.Parts {
+	for _, part := range fig.Items {
 		setGroup, ok := r.mgr.Figure().Sets[part.Type]
 		if !ok {
 			err = fmt.Errorf("no figure part sets found for part type %q", part.Type)
@@ -248,7 +248,7 @@ func (r *AvatarRenderer) RequiredLibs(fig nx.Figure) (libs []string, err error) 
 		}
 
 		for _, part := range set.Parts {
-			mapPart := gamedata.FigureMapPart{
+			mapPart := nx.FigurePart{
 				Type: part.Type,
 				Id:   part.Id,
 			}

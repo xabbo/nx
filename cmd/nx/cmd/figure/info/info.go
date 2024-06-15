@@ -110,7 +110,7 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	for _, part := range figure.Parts {
+	for _, part := range figure.Items {
 		setGroup := mgr.Figure().Sets[part.Type]
 		set := setGroup[part.Id]
 
@@ -135,7 +135,7 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 		if opts.showParts {
 			l.Indent()
 			for _, piece := range set.Parts {
-				mapPart := gd.FigureMapPart{Type: piece.Type, Id: piece.Id}
+				mapPart := nx.FigurePart{Type: piece.Type, Id: piece.Id}
 				if lib, ok := mgr.FigureMap().Parts[mapPart]; ok {
 					l.AppendItem(fmt.Sprintf("%s-%d [%s]", piece.Type, piece.Id, lib.Name))
 				} else {
