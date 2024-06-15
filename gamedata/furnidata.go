@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"xabbo.b7c.io/nx"
-	j "xabbo.b7c.io/nx/json"
+	j "xabbo.b7c.io/nx/raw/json"
 )
 
 // FurniData maps furniture info by identifier.

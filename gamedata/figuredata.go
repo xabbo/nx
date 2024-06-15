@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 
 	"xabbo.b7c.io/nx"
-	x "xabbo.b7c.io/nx/xml"
+	x "xabbo.b7c.io/nx/raw/xml"
 )
 
 // FigureData defines the figure part sets and color palettes used for Habbo avatars.

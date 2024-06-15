@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	j "xabbo.b7c.io/nx/json"
+	j "xabbo.b7c.io/nx/raw/json"
 )
 
 // ProductData maps product info by product code.

@@ -3,7 +3,7 @@ package res
 import (
 	"image"
 
-	x "xabbo.b7c.io/nx/xml"
+	x "xabbo.b7c.io/nx/raw/xml"
 )
 
 type Assets map[string]*Asset

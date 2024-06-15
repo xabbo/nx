@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"xabbo.b7c.io/nx"
-	x "xabbo.b7c.io/nx/xml"
+	x "xabbo.b7c.io/nx/raw/xml"
 )
 
 // A FigureMap defines mappings between figure part libraries and figure part identifiers.
