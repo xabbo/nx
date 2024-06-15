@@ -9,7 +9,7 @@ func CommaList[T any](things []T, final string) string {
 	sb := strings.Builder{}
 	for i, thing := range things {
 		if i > 0 {
-			if i == len(things)-1 {
+			if i == len(things)-1 && final != "" {
 				sb.WriteRune(' ')
 				sb.WriteString(final)
 				sb.WriteRune(' ')
