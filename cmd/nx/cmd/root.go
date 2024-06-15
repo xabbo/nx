@@ -42,7 +42,7 @@ var opts struct {
 
 var (
 	Hotel string
-	Host  string
+	Host string
 )
 
 func init() {
@@ -55,8 +55,11 @@ func init() {
 		}
 	}
 
-	Cmd.PersistentFlags().StringVar(&Hotel, "hotel", defaultHotel, "The hotel to fetch information from")
-	Cmd.Flags().BoolVar(&opts.showHotels, "hotels", false, "Show a list of supported hotels")
+	pf := Cmd.PersistentFlags()
+	pf.StringVar(&Hotel, "hotel", defaultHotel, "The hotel to fetch information from")
+
+	f := Cmd.Flags()
+	f.BoolVar(&opts.showHotels, "hotels", false, "Show a list of supported hotels")
 }
 
 func preRun(cmd *cobra.Command, args []string) error {

@@ -1,4 +1,4 @@
-package render
+package avatar
 
 import (
 	"bytes"
@@ -21,12 +21,13 @@ import (
 	"xabbo.b7c.io/nx/render"
 	"xabbo.b7c.io/nx/web"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_parent "xabbo.b7c.io/nx/cmd/nx/cmd/render"
 	"xabbo.b7c.io/nx/cmd/nx/spinner"
 	"xabbo.b7c.io/nx/cmd/nx/util"
 )
 
-var renderAvatarCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:  "avatar [figure]",
 	Args: cobra.RangeArgs(0, 1),
 	RunE: runRenderAvatar,
@@ -49,18 +50,19 @@ var opts struct {
 var validFormats = []string{"png", "svg"}
 
 func init() {
-	renderAvatarCmd.Flags().IntVarP(&opts.dir, "dir", "d", 2, "The direction of the avatar (0-7)")
-	renderAvatarCmd.Flags().IntVarP(&opts.headDir, "head-dir", "H", 2, "The direction of the avatar's head (0-7)")
-	renderAvatarCmd.Flags().StringVarP(&opts.action, "action", "a", "std", "The action of the avatar")
-	renderAvatarCmd.Flags().StringVarP(&opts.expression, "expression", "e", "", "The expression of the avatar")
-	renderAvatarCmd.Flags().StringVarP(&opts.userName, "user", "u", "", "The name of the user to fetch a figure for")
-	renderAvatarCmd.Flags().BoolVar(&opts.headOnly, "head-only", false, "Render head only")
-	renderAvatarCmd.Flags().StringVarP(&opts.outputName, "output", "o", "", "The name of the output file")
-	renderAvatarCmd.Flags().BoolVar(&opts.noColor, "no-color", false, "Do not color figure parts")
-	renderAvatarCmd.Flags().BoolVarP(&opts.verbose, "verbose", "v", false, "Verbose output")
-	renderAvatarCmd.Flags().StringVarP(&opts.outFormat, "format", "f", "png", "Output format")
+	f := Cmd.Flags()
+	f.IntVarP(&opts.dir, "dir", "d", 2, "The direction of the avatar (0-7)")
+	f.IntVarP(&opts.headDir, "head-dir", "H", 2, "The direction of the avatar's head (0-7)")
+	f.StringVarP(&opts.action, "action", "a", "std", "The action of the avatar")
+	f.StringVarP(&opts.expression, "expression", "e", "", "The expression of the avatar")
+	f.StringVarP(&opts.userName, "user", "u", "", "The name of the user to fetch a figure for")
+	f.BoolVar(&opts.headOnly, "head-only", false, "Render head only")
+	f.StringVarP(&opts.outputName, "output", "o", "", "The name of the output file")
+	f.BoolVar(&opts.noColor, "no-color", false, "Do not color figure parts")
+	f.BoolVarP(&opts.verbose, "verbose", "v", false, "Verbose output")
+	f.StringVarP(&opts.outFormat, "format", "f", "png", "Output format")
 
-	Cmd.AddCommand(renderAvatarCmd)
+	_parent.Cmd.AddCommand(Cmd)
 }
 
 func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
@@ -69,7 +71,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 		opts.headDir = opts.dir
 	}
 
-	api := nx.NewApiClient(root.Host)
+	api := nx.NewApiClient(_root.Host)
 
 	figureSpecified := len(args) > 0
 	userSpecified := opts.userName != ""
@@ -150,7 +152,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 		fileName += "." + opts.outFormat
 	}
 
-	mgr := gd.NewManager(root.Host)
+	mgr := gd.NewManager(_root.Host)
 	renderer := render.NewAvatarRenderer(mgr)
 
 	var figure nx.Figure

@@ -8,11 +8,11 @@ import (
 
 	gd "xabbo.b7c.io/nx/gamedata"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
 	"xabbo.b7c.io/nx/cmd/nx/util"
 )
 
-var furniCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:  "furni",
 	RunE: runFurni,
 }
@@ -22,12 +22,12 @@ var opts struct {
 }
 
 func init() {
-	f := furniCmd.Flags()
+	f := Cmd.Flags()
 	opts.listSwitch.Switch(f, "lines", "List furni lines")
 	opts.listSwitch.Switch(f, "categories", "List furni categories")
 	opts.listSwitch.Switch(f, "environments", "List furni environments")
 
-	root.Cmd.AddCommand(furniCmd)
+	_root.Cmd.AddCommand(Cmd)
 }
 
 func runFurni(cmd *cobra.Command, args []string) (err error) {
@@ -35,7 +35,7 @@ func runFurni(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("no options specified")
 	}
 
-	mgr := gd.NewManager(root.Host)
+	mgr := gd.NewManager(_root.Host)
 	err = util.LoadFurni(mgr)
 	if err != nil {
 		return

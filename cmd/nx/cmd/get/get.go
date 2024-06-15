@@ -3,14 +3,14 @@ package get
 import (
 	"github.com/spf13/cobra"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
 )
 
-var getCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "get",
 	Short: "Gets various resources",
 }
 
 func init() {
-	root.Cmd.AddCommand(getCmd)
+	_root.Cmd.AddCommand(Cmd)
 }

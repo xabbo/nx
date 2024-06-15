@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
 	"xabbo.b7c.io/nx/cmd/nx/spinner"
 	"xabbo.b7c.io/nx/cmd/nx/util"
 
@@ -14,7 +14,7 @@ import (
 	"xabbo.b7c.io/nx/web"
 )
 
-var profileCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:     "profile [name|unique-id]",
 	Aliases: []string{"user"},
 	Short:   "Gets a user's profile information",
@@ -26,9 +26,10 @@ var opts struct {
 }
 
 func init() {
-	root.Cmd.AddCommand(profileCmd)
+	f := Cmd.Flags()
+	f.BoolVar(&opts.outputJson, "json", false, "Output raw JSON data")
 
-	profileCmd.Flags().BoolVar(&opts.outputJson, "json", false, "Output raw JSON data")
+	_root.Cmd.AddCommand(Cmd)
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
@@ -38,7 +39,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 	cmd.SilenceUsage = true
 
-	api := nx.NewApiClient(root.Host)
+	api := nx.NewApiClient(_root.Host)
 
 	userName := args[0]
 

@@ -6,10 +6,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
-	"xabbo.b7c.io/nx/cmd/nx/spinner"
 	gd "xabbo.b7c.io/nx/gamedata"
 	"xabbo.b7c.io/nx/render"
+
+	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_parent "xabbo.b7c.io/nx/cmd/nx/cmd/render"
+	"xabbo.b7c.io/nx/cmd/nx/spinner"
 )
 
 var Cmd = &cobra.Command{
@@ -32,11 +34,13 @@ func init() {
 	f.BoolVar(&opts.states, "states", false, "Print number of states.")
 	f.StringVarP(&opts.identifier, "identifier", "i", "", "The furni identifier to load.")
 	f.IntVarP(&opts.dir, "dir", "d", 0, "The direction to render.")
+
+	_parent.Cmd.AddCommand(Cmd)
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
 
-	mgr := gd.NewManager(root.Host)
+	mgr := gd.NewManager(_root.Host)
 
 	err = spinner.DoErr("Loading game data...", func() (err error) {
 		return mgr.Load(gd.GameDataVariables, gd.GameDataFurni)

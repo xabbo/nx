@@ -6,10 +6,10 @@ import (
 	root "xabbo.b7c.io/nx/cmd/nx/cmd"
 )
 
-var figureCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use: "figure",
 }
 
 func init() {
-	root.Cmd.AddCommand(figureCmd)
+	root.Cmd.AddCommand(Cmd)
 }

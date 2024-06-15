@@ -7,11 +7,11 @@ import (
 
 	gd "xabbo.b7c.io/nx/gamedata"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
 	"xabbo.b7c.io/nx/cmd/nx/util"
 )
 
-var varsCommand = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "vars",
 	Short: "List and search external variables",
 	RunE:  runVars,
@@ -23,14 +23,15 @@ var opts struct {
 }
 
 func init() {
-	root.Cmd.AddCommand(varsCommand)
+	f := Cmd.Flags()
+	f.VarP(&opts.searchKey, "key", "k", "Key search text")
+	f.VarP(&opts.searchValue, "value", "v", "Value search text")
 
-	varsCommand.Flags().VarP(&opts.searchKey, "key", "k", "Key search text")
-	varsCommand.Flags().VarP(&opts.searchValue, "value", "v", "Value search text")
+	_root.Cmd.AddCommand(Cmd)
 }
 
 func runVars(cmd *cobra.Command, args []string) (err error) {
-	mgr := gd.NewManager(root.Host)
+	mgr := gd.NewManager(_root.Host)
 	err = util.LoadGameData(mgr, "Loading external variables...", gd.GameDataVariables)
 	if err != nil {
 		return

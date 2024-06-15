@@ -1,4 +1,4 @@
-package figure
+package info
 
 import (
 	"fmt"
@@ -12,12 +12,13 @@ import (
 	"xabbo.b7c.io/nx"
 	gd "xabbo.b7c.io/nx/gamedata"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_parent "xabbo.b7c.io/nx/cmd/nx/cmd/figure"
 	"xabbo.b7c.io/nx/cmd/nx/spinner"
 	"xabbo.b7c.io/nx/cmd/nx/util"
 )
 
-var infoCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:  "info",
 	RunE: runInfo,
 }
@@ -31,13 +32,14 @@ var opts struct {
 }
 
 func init() {
-	figureCmd.AddCommand(infoCmd)
+	f := Cmd.Flags()
+	f.StringVarP(&opts.userName, "user", "u", "", "User to load figure for")
+	f.BoolVarP(&opts.showIdentifiers, "identifiers", "i", false, "Show clothing furni identifiers")
+	f.BoolVarP(&opts.showParts, "parts", "p", false, "Show individual figure parts")
+	f.BoolVarP(&opts.showColors, "colors", "c", false, "Show figure part colors")
+	f.BoolVar(&opts.showAll, "all", false, "Show all information")
 
-	infoCmd.Flags().StringVarP(&opts.userName, "user", "u", "", "User to load figure for")
-	infoCmd.Flags().BoolVarP(&opts.showIdentifiers, "identifiers", "i", false, "Show clothing furni identifiers")
-	infoCmd.Flags().BoolVarP(&opts.showParts, "parts", "p", false, "Show individual figure parts")
-	infoCmd.Flags().BoolVarP(&opts.showColors, "colors", "c", false, "Show figure part colors")
-	infoCmd.Flags().BoolVar(&opts.showAll, "all", false, "Show all information")
+	_parent.Cmd.AddCommand(Cmd)
 }
 
 func runInfo(cmd *cobra.Command, args []string) (err error) {
@@ -63,7 +65,7 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 		figureString = args[0]
 	} else {
 		err = spinner.DoErr("Loading user...", func() error {
-			api := nx.NewApiClient(root.Host)
+			api := nx.NewApiClient(_root.Host)
 			user, err := api.GetUserByName(opts.userName)
 			if err != nil {
 				return err
@@ -83,7 +85,7 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	mgr := gd.NewManager(root.Host)
+	mgr := gd.NewManager(_root.Host)
 	err = util.LoadGameData(mgr, "Loading game data...",
 		gd.GameDataFigure, gd.GameDataFigureMap, gd.GameDataFurni, gd.GameDataTexts, gd.GameDataVariables)
 	if err != nil {
