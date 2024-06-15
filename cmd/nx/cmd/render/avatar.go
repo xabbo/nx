@@ -89,14 +89,14 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 
 	cmd.SilenceUsage = true
 
-	if !slices.Contains(nx.AllActions, nx.AvatarState(action)) {
+	if !slices.Contains(nx.AvatarActions, nx.AvatarState(action)) {
 		return fmt.Errorf("invalid action %q, must be one of %s",
-			action, util.CommaList(nx.AllActions, "or"))
+			action, util.CommaList(nx.AvatarActions, "or"))
 	}
 
-	if expression != "" && !slices.Contains(nx.AllExpressions, nx.AvatarState(expression)) {
+	if expression != "" && !slices.Contains(nx.AvatarExpressions, nx.AvatarState(expression)) {
 		return fmt.Errorf("invalid expression %q, must be one of %s",
-			expression, util.CommaList(nx.AllExpressions, "or"))
+			expression, util.CommaList(nx.AvatarExpressions, "or"))
 	}
 
 	vars := map[string]any{}

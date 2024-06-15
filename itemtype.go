@@ -1,15 +1,23 @@
 package nx
 
+// ItemType represents the type of an item.
+// May be floor, wall, badge, effect or bot.
 type ItemType rune
 
 const (
-	ItemFloor  ItemType = 's'
-	ItemWall   ItemType = 'i'
-	ItemBadge  ItemType = 'b'
+	// Represents a floor item type.
+	ItemFloor ItemType = 's'
+	// Represents a wall item type.
+	ItemWall ItemType = 'i'
+	// Represents a badge item type.
+	ItemBadge ItemType = 'b'
+	// Represents an effect item type.
 	ItemEffect ItemType = 'e'
-	ItemBot    ItemType = 'r'
+	// Represents a bot item type.
+	ItemBot ItemType = 'r'
 )
 
+// String returns the name of the item type.
 func (t ItemType) String() string {
 	switch t {
 	case ItemFloor:

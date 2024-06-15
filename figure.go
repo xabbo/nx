@@ -6,13 +6,13 @@ import (
 	"strings"
 )
 
-// Defines the visual representation of a figure.
+// A Figure defines the visual properties of a figure.
 type Figure struct {
 	Gender Gender
 	Parts  []FigurePart
 }
 
-// Defines the visual representation of an avatar in a room.
+// An Avatar defines the visual properties of a Figure in a room.
 type Avatar struct {
 	Figure
 	Direction     int
@@ -25,6 +25,7 @@ type Avatar struct {
 	HeadOnly      bool
 }
 
+// String formats the figure to its string representation.
 func (f *Figure) String() string {
 	sb := strings.Builder{}
 	for i, part := range f.Parts {
@@ -36,7 +37,7 @@ func (f *Figure) String() string {
 	return sb.String()
 }
 
-// Represents a part set identifier & color in a Habbo figure.
+// A FigurePart represents a colored part set.
 type FigurePart struct {
 	Type   FigurePartType
 	Id     int
@@ -53,6 +54,7 @@ func (p *FigurePart) writeBuilder(sb *strings.Builder) {
 	}
 }
 
+// String formats the figure part to its string representation.
 func (p *FigurePart) String() string {
 	sb := strings.Builder{}
 	p.writeBuilder(&sb)
@@ -89,7 +91,7 @@ const (
 	RightHandItem FigurePartType = "ri"  // Right hand item.
 )
 
-// Gets whether the part type belongs to the head.
+// IsHead reports whether the part type belongs to the head.
 func (pt FigurePartType) IsHead() bool {
 	switch pt {
 	case Hair, HairBelow, Head, Hat, HeadAcc, EyeAcc, FaceAcc, Eyes, Face:
@@ -99,12 +101,12 @@ func (pt FigurePartType) IsHead() bool {
 	}
 }
 
-// Gets whether the part type belongs to the body.
+// IsBody reports whether the part type belongs to the body.
 func (pt FigurePartType) IsBody() bool {
 	return !pt.IsHead()
 }
 
-// Gets whether the part type belongs to the left arm.
+// IsLeftArm reports whether the part type belongs to the left arm.
 func (pt FigurePartType) IsLeftArm() bool {
 	switch pt {
 	case LeftHand, LeftSleeve, LeftCoat, LeftHandItem:
@@ -114,7 +116,7 @@ func (pt FigurePartType) IsLeftArm() bool {
 	}
 }
 
-// Gets whether the part type belongs to the right arm.
+// IsRightArm reports whether the part type belongs to the right arm.
 func (pt FigurePartType) IsRightArm() bool {
 	switch pt {
 	case RightHand, RightSleeve, RightCoat, RightHandItem:
@@ -124,7 +126,8 @@ func (pt FigurePartType) IsRightArm() bool {
 	}
 }
 
-// Flips the part type between left/right arms, if it is an arm part.
+// Flip flips the part type between left and right arms, if it is an arm part.
+// If not, the part type is returned unchanged.
 func (pt FigurePartType) Flip() FigurePartType {
 	switch {
 	case pt.IsLeftArm():
@@ -136,8 +139,8 @@ func (pt FigurePartType) Flip() FigurePartType {
 	}
 }
 
-// Gets if the figure part type is valid in a figure string.
-func (layer FigurePartType) Wearable() (wearable bool) {
+// IsWearable reports whether the figure part type is valid in a figure string.
+func (layer FigurePartType) IsWearable() (wearable bool) {
 	switch layer {
 	case Head, Hair, Hat, HeadAcc, EyeAcc, FaceAcc, Chest, ChestPrint, Coat, ChestAcc, Legs, Shoes, Waist:
 		wearable = true
@@ -145,6 +148,7 @@ func (layer FigurePartType) Wearable() (wearable bool) {
 	return
 }
 
+// AvatarState defines an action or expression of an avatar.
 type AvatarState string
 
 const (
@@ -160,11 +164,13 @@ const (
 	ActSit      AvatarState = "sit"     // Sitting.
 )
 
-var AllActions = []AvatarState{
+// AvatarActions contains all of the avatar states that are actions.
+var AvatarActions = []AvatarState{
 	ActStand, ActWalk, ActWave, ActLay, ActBlowKiss,
 	ActCarry, ActDrink, ActRespect, ActSign, ActSit,
 }
 
+// IsAction reports whether the avatar state is an action.
 func (state AvatarState) IsAction() bool {
 	switch state {
 	case ActStand, ActWalk, ActWave, ActLay, ActBlowKiss, ActCarry, ActDrink, ActRespect, ActSign, ActSit:
@@ -175,7 +181,7 @@ func (state AvatarState) IsAction() bool {
 }
 
 const (
-	// Used to specify a neutral / no expression.
+	// ExprNeutral is used to specify a neutral or no expression.
 	// It is not an official expression, and is not included in AllExpressions.
 	ExprNeutral      AvatarState = "ntr"
 	ExprSpeak        AvatarState = "spk" // Speaking.
@@ -192,12 +198,14 @@ const (
 	ExprSurprisedLay AvatarState = "lsr" // Surprised / laying.
 )
 
-var AllExpressions = []AvatarState{
+// AvatarExpressions contains all of the avatar states that are expressions.
+var AvatarExpressions = []AvatarState{
 	ExprSpeak, ExprSleep, ExprSad, ExprSmile,
 	ExprAngry, ExprSurprised, ExprSpeakLay, ExprSleepLay,
 	ExprSadLay, ExprSmileLay, ExprAngryLay, ExprSurprisedLay,
 }
 
+// IsExpression reports whether the avatar state is an expression.
 func (state AvatarState) IsExpression() bool {
 	switch state {
 	case ExprNeutral, ExprSpeak, ExprSleep, ExprSad, ExprSmile, ExprAngry, ExprSurprised, ExprSpeakLay, ExprSleepLay, ExprSadLay, ExprSmileLay, ExprAngryLay, ExprSurprisedLay:
@@ -207,6 +215,7 @@ func (state AvatarState) IsExpression() bool {
 	}
 }
 
+// Parse parses a figure string into a Figure.
 func (f *Figure) Parse(figure string) (err error) {
 	split := strings.Split(figure, ".")
 	parts := make([]FigurePart, 0, len(split))
@@ -217,7 +226,7 @@ func (f *Figure) Parse(figure string) (err error) {
 			return fmt.Errorf("empty figure part in figure string")
 		}
 		part.Type = FigurePartType(partSplit[0])
-		if !part.Type.Wearable() {
+		if !part.Type.IsWearable() {
 			return fmt.Errorf("non-wearable figure part type %q", part.Type)
 		}
 		if len(partSplit) < 2 {

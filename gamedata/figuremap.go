@@ -49,7 +49,6 @@ func (fm *FigureMap) UnmarshalBytes(data []byte) (err error) {
 		fm.Libs[lib.Name] = lib
 		for _, xpart := range xlib.Parts {
 			// A few parts in the hh_human_fx lib have non-numeric IDs, for now, we are ignoring them.
-			// -- as of 3rd January, 2024
 			if id, err := strconv.Atoi(xpart.Id); err == nil {
 				part := FigureMapPart{
 					Type: nx.FigurePartType(xpart.Type),
@@ -58,7 +57,6 @@ func (fm *FigureMap) UnmarshalBytes(data []byte) (err error) {
 				lib.Parts = append(lib.Parts, part)
 				// There is only one instance of duplicate part identifiers between
 				// acc_eye_cyeyepiece / acc_eye_U_cyeyepiece, we just ignore it here.
-				// -- as of 3rd January, 2024
 				if _, exist := fm.Parts[part]; !exist {
 					fm.Parts[part] = lib
 				}

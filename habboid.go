@@ -7,16 +7,17 @@ import (
 	"strings"
 )
 
-// Represents a unique Habbo resource identifier.
+// A HabboId is unique Habbo resource identifier.
 type HabboId struct {
 	// The type of the identifier.
 	Kind HabboIdKind
-	// The related hotel identifier.
+	// The hotel identifier.
 	Hotel string
 	// A 128-bit unique identifier.
 	Uid [16]byte
 }
 
+// HabboIdKind represents the kind of resource identified, i.e. user, group or room.
 type HabboIdKind int
 
 const (

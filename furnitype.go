@@ -1,6 +1,6 @@
 package nx
 
-// Represents a furni's special type.
+// FurniType represents the special type of a furni.
 type FurniType int
 
 const (
