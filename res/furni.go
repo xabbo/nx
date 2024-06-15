@@ -1,7 +1,7 @@
 package res
 
 import (
-	"fmt"
+	"strconv"
 
 	x "xabbo.b7c.io/nx/raw/xml"
 )
@@ -15,13 +15,11 @@ type FurniAssetSpec struct {
 }
 
 func (spec *FurniAssetSpec) String() string {
-	return fmt.Sprintf("%s_%d_%s_%d_%d",
-		spec.Name,
-		spec.Size,
-		string('a'+rune(spec.Layer)),
-		spec.Direction,
-		spec.Frame,
-	)
+	return spec.Name + "_" +
+		strconv.Itoa(spec.Size) + "_" +
+		string('a'+rune(spec.Layer)) + "_" +
+		strconv.Itoa(spec.Direction) + "_" +
+		strconv.Itoa(spec.Frame)
 }
 
 // visualization

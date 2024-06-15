@@ -481,9 +481,13 @@ type FigureAssetSpec struct {
 	Frame int
 }
 
-func (n FigureAssetSpec) String() string {
-	return fmt.Sprintf("h_%s_%s_%d_%d_%d",
-		n.State, n.Type, n.Id, n.Dir, n.Frame)
+func (spec FigureAssetSpec) String() string {
+	return "h_" +
+		string(spec.State) + "_" +
+		string(spec.Type) + "_" +
+		strconv.Itoa(spec.Id) + "_" +
+		strconv.Itoa(spec.Dir) + "_" +
+		strconv.Itoa(spec.Frame)
 }
 
 func (r *AvatarRenderer) Dependencies(fig nx.Figure) (err error) {
