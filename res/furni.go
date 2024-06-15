@@ -59,7 +59,7 @@ type Visualization struct {
 	Directions map[int]struct{} // A map of directions.
 	Layers     map[int]Layer    // Layers mapped by ID.
 	Colors     map[int]Color    // Colors mapped by ID.
-	Animations map[int]Animation
+	Animations map[int]*Animation
 	// TODO postures, gestures
 }
 
@@ -87,11 +87,19 @@ func (vis *Visualization) fromXml(v *x.Visualization) {
 		vis.Colors[color.Id] = color
 	}
 
-	vis.Animations = make(map[int]Animation, len(v.Animations))
+	vis.Animations = make(map[int]*Animation, len(v.Animations))
+	transitions := map[int]int{}
 	for i := range v.Animations {
+		xAnim := &v.Animations[i]
 		var anim Animation
-		anim.fromXml(&v.Animations[i])
-		vis.Animations[anim.Id] = anim
+		anim.fromXml(xAnim)
+		vis.Animations[anim.Id] = &anim
+		if xAnim.TransitionTo != nil {
+			transitions[xAnim.Id] = *xAnim.TransitionTo
+		}
+	}
+	for from, to := range transitions {
+		vis.Animations[from].TransitionTo = vis.Animations[to]
 	}
 }
 
@@ -138,6 +146,7 @@ func (colorLayer *ColorLayer) fromXml(v *x.ColorLayer) {
 
 type Animation struct {
 	Id     int
+	TransitionTo *Animation
 	Layers map[int]AnimationLayer
 }
 

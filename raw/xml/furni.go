@@ -77,8 +77,9 @@ type ColorLayer struct {
 }
 
 type Animation struct {
-	Id     int              `xml:"id,attr"`
-	Layers []AnimationLayer `xml:"animationLayer"`
+	Id           int              `xml:"id,attr"`
+	TransitionTo *int             `xml:"transitionTo,attr"`
+	Layers       []AnimationLayer `xml:"animationLayer"`
 }
 
 type AnimationLayer struct {

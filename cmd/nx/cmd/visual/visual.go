@@ -128,8 +128,13 @@ func printVisualization(l list.Writer, vis res.Visualization) {
 	l.UnIndent()
 }
 
-func printAnimation(l list.Writer, anim res.Animation) {
-	l.AppendItem(fmt.Sprintf("Animation %d", anim.Id))
+func printAnimation(l list.Writer, anim *res.Animation) {
+	if anim.TransitionTo != nil {
+		l.AppendItem(fmt.Sprintf("Animation %d (transition -> %d)", anim.Id,
+			anim.TransitionTo.Id))
+	} else {
+		l.AppendItem(fmt.Sprintf("Animation %d", anim.Id))
+	}
 	l.Indent()
 	l.AppendItem(fmt.Sprintf("Layers: %d", len(anim.Layers)))
 	l.Indent()
