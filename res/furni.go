@@ -155,6 +155,7 @@ type AnimationLayer struct {
 	Id             int
 	LoopCount      int
 	FrameRepeat    int
+	Random         bool
 	FrameSequences []FrameSequence // A list of frame sequences.
 }
 
@@ -165,6 +166,7 @@ func (animLayer *AnimationLayer) fromXml(v *x.AnimationLayer) {
 	animLayer.Id = v.Id
 	animLayer.LoopCount = v.LoopCount
 	animLayer.FrameRepeat = v.FrameRepeat
+	animLayer.Random = v.Random
 	animLayer.FrameSequences = make([]FrameSequence, 0, len(v.FrameSequences))
 	for _, xSequence := range v.FrameSequences {
 		sequence := make(FrameSequence, 0, len(xSequence.Frames))

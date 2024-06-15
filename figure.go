@@ -28,14 +28,14 @@ type Avatar struct {
 // A FigureItem defines a figure part set type and identifier with colors.
 type FigureItem struct {
 	Type   FigurePartType // The type of figure part set.
-	Id     int // The identifier of the figure part set.
-	Colors []int // A list of color identifiers.
+	Id     int            // The identifier of the figure part set.
+	Colors []int          // A list of color identifiers.
 }
 
 // A FigurePart defines a figure part type and identifier.
 type FigurePart struct {
-	Type   FigurePartType // The type of the figure part.
-	Id     int // The identifier of the figure part.
+	Type FigurePartType // The type of the figure part.
+	Id   int            // The identifier of the figure part.
 }
 
 // String formats the figure to its string representation.

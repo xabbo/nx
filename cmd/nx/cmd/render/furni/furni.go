@@ -45,9 +45,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	err = spinner.DoErr("Loading game data...", func() (err error) {
 		return mgr.Load(gd.GameDataVariables, gd.GameDataFurni)
 	})
-    if err != nil {
-        return
-    }
+	if err != nil {
+		return
+	}
 
 	err = spinner.DoErr("Loading furni library...", func() (err error) {
 		return mgr.LoadFurni(opts.identifier)

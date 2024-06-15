@@ -42,7 +42,7 @@ var opts struct {
 
 var (
 	Hotel string
-	Host string
+	Host  string
 )
 
 func init() {

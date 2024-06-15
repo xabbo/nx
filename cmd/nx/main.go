@@ -15,6 +15,8 @@ import (
 
 	_ "xabbo.b7c.io/nx/cmd/nx/cmd/profile"
 
+	_ "xabbo.b7c.io/nx/cmd/nx/cmd/visual"
+
 	_ "xabbo.b7c.io/nx/cmd/nx/cmd/render"
 	_ "xabbo.b7c.io/nx/cmd/nx/cmd/render/avatar"
 	_ "xabbo.b7c.io/nx/cmd/nx/cmd/render/furni"
