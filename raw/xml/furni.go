@@ -52,7 +52,7 @@ type Visualization struct {
 	Angle      int         `xml:"angle,attr"`
 	Layers     []Layer     `xml:"layers>layer"`
 	Directions []Direction `xml:"directions>direction"`
-	Color      []Color     `xml:"colors>color"`
+	Colors     []Color     `xml:"colors>color"`
 	Animations []Animation `xml:"animations>animation"`
 	// Postures
 	// Gestures

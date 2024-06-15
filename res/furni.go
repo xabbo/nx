@@ -69,15 +69,31 @@ func (vis *Visualization) fromXml(v *x.Visualization) {
 	vis.Size = v.Size
 	vis.LayerCount = v.LayerCount
 	vis.Angle = v.Angle
+
 	vis.Directions = make(map[int]struct{}, len(v.Directions))
 	for _, dir := range v.Directions {
 		vis.Directions[dir.Id] = struct{}{}
 	}
+
 	vis.Layers = make(map[int]Layer, len(v.Layers))
 	for i := range v.Layers {
 		var layer Layer
 		layer.fromXml(&v.Layers[i])
 		vis.Layers[layer.Id] = layer
+	}
+
+	vis.Colors = make(map[int]Color, len(v.Colors))
+	for i := range v.Colors {
+		var color Color
+		color.fromXml(&v.Colors[i])
+		vis.Colors[color.Id] = color
+	}
+
+	vis.Animations = make(map[int]Animation, len(v.Animations))
+	for i := range v.Animations {
+		var anim Animation
+		anim.fromXml(&v.Animations[i])
+		vis.Animations[anim.Id] = anim
 	}
 }
 
