@@ -70,7 +70,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	visualizations := lib.Visualizations()
 	if opts.size == 0 {
-		for _, vis := range visualizations {
+		sizes := maps.Keys(visualizations)
+		slices.Sort(sizes)
+		for _, size := range sizes {
+			vis := visualizations[size]
 			l.AppendItem(fmt.Sprintf("Size: %d", vis.Size))
 			l.Indent()
 			printVisualization(l, vis)
@@ -110,12 +113,17 @@ func printVisualization(l list.Writer, vis *res.Visualization) {
 	// colors
 	l.AppendItem(fmt.Sprintf("Colors: %d", len(vis.Colors)))
 	l.Indent()
-	for _, color := range vis.Colors {
+	colorIds := maps.Keys(vis.Colors)
+	slices.Sort(colorIds)
+	for _, colorId := range colorIds {
+		color := vis.Colors[colorId]
 		l.AppendItem(fmt.Sprint(color.Id))
 		l.Indent()
-		for _, layer := range color.Layers {
-			l.AppendItem(fmt.Sprintf("Id: %d", layer.Id))
-			l.AppendItem(fmt.Sprintf("Color: %s", layer.Color))
+		layerIds := maps.Keys(color.Layers)
+		slices.Sort(layerIds)
+		for _, layerId := range layerIds {
+			layer := color.Layers[layerId]
+			l.AppendItem(fmt.Sprintf("%d: %s", layer.Id, layer.Color))
 		}
 		l.UnIndent()
 	}
@@ -124,8 +132,10 @@ func printVisualization(l list.Writer, vis *res.Visualization) {
 	// animations
 	l.AppendItem(fmt.Sprintf("Animations: %d", len(vis.Animations)))
 	l.Indent()
-	for _, anim := range vis.Animations {
-		printAnimation(l, anim)
+	animationIds := maps.Keys(vis.Animations)
+	slices.Sort(animationIds)
+	for _, animationId := range animationIds {
+		printAnimation(l, vis.Animations[animationId])
 	}
 	l.UnIndent()
 }
