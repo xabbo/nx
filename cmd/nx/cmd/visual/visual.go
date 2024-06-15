@@ -27,11 +27,13 @@ var Cmd = &cobra.Command{
 
 var opts struct {
 	size int
+	frames bool
 }
 
 func init() {
 	f := Cmd.Flags()
 	f.IntVarP(&opts.size, "size", "s", 0, "The visualization size to print. Prints all sizes if not specified.")
+	f.BoolVar(&opts.frames, "frames", false, "Print all frame indices in frame sequences.")
 
 	_root.Cmd.AddCommand(Cmd)
 }
@@ -121,26 +123,43 @@ func printVisualization(l list.Writer, vis res.Visualization) {
 	l.AppendItem(fmt.Sprintf("Animations: %d", len(vis.Animations)))
 	l.Indent()
 	for _, anim := range vis.Animations {
-		l.AppendItem(fmt.Sprintf("Animation %d", anim.Id))
-		l.Indent()
-		l.AppendItem(fmt.Sprintf("Layers: %d", len(anim.Layers)))
-		l.Indent()
-		for _, layer := range anim.Layers {
-			l.AppendItem(fmt.Sprintf("Layer %d", layer.Id))
-			l.Indent()
-			l.AppendItem(fmt.Sprintf("Loop count: %d", layer.LoopCount))
-			l.AppendItem(fmt.Sprintf("Frame repeat: %d", layer.FrameRepeat))
-			l.AppendItem(fmt.Sprintf("Random: %t", layer.Random))
-			l.AppendItem(fmt.Sprintf("Sequences: %d", len(layer.FrameSequences)))
-			l.Indent()
-			for i, seq := range layer.FrameSequences {
-				l.AppendItem(fmt.Sprintf("%d: %d frames", i, len(seq)))
-			}
-			l.UnIndent()
-			l.UnIndent()
-		}
-		l.UnIndent()
-		l.UnIndent()
+		printAnimation(l, anim)
 	}
 	l.UnIndent()
+}
+
+func printAnimation(l list.Writer, anim res.Animation) {
+	l.AppendItem(fmt.Sprintf("Animation %d", anim.Id))
+	l.Indent()
+	l.AppendItem(fmt.Sprintf("Layers: %d", len(anim.Layers)))
+	l.Indent()
+	for _, layer := range anim.Layers {
+		printAnimationLayer(l, layer)
+	}
+	l.UnIndent()
+	l.UnIndent()
+}
+
+func printAnimationLayer(l list.Writer, layer res.AnimationLayer) {
+	l.AppendItem(fmt.Sprintf("Layer %d", layer.Id))
+	l.Indent()
+	l.AppendItem(fmt.Sprintf("Loop count: %d", layer.LoopCount))
+	l.AppendItem(fmt.Sprintf("Frame repeat: %d", layer.FrameRepeat))
+	l.AppendItem(fmt.Sprintf("Random: %t", layer.Random))
+	l.AppendItem(fmt.Sprintf("Sequences: %d", len(layer.FrameSequences)))
+	l.Indent()
+	for i, seq := range layer.FrameSequences {
+		printFrameSequence(l, i, seq)
+	}
+	l.UnIndent()
+	l.UnIndent()
+}
+
+func printFrameSequence(l list.Writer, i int, seq res.FrameSequence) {
+	count := util.Pluralize(len(seq), "frame", "s")
+	if opts.frames {
+		l.AppendItem(fmt.Sprintf("%d: %s [%s]", i, count, util.CommaList(seq, "")))
+	} else {
+		l.AppendItem(fmt.Sprintf("%d: %s", i, count))
+	}
 }

@@ -21,3 +21,10 @@ func CommaList[T any](things []T, final string) string {
 	}
 	return sb.String()
 }
+
+func Pluralize(n int, word string, plural string) string {
+	if n != 1 {
+		word += plural
+	}
+	return fmt.Sprintf("%d %s", n, word)
+}
