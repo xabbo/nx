@@ -19,7 +19,7 @@ type swfFurniLibrary struct {
 	index          *Index
 	manifest       *Manifest
 	logic          *Logic
-	visualizations map[int]Visualization
+	visualizations map[int]*Visualization
 	assets         map[string]*Asset
 }
 
@@ -133,7 +133,7 @@ func (lib *swfFurniLibrary) Logic() *Logic {
 	return lib.logic
 }
 
-func (lib *swfFurniLibrary) Visualizations() map[int]Visualization {
+func (lib *swfFurniLibrary) Visualizations() map[int]*Visualization {
 	return lib.visualizations
 }
 

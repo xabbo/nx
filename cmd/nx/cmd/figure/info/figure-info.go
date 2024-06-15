@@ -93,7 +93,7 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	partCountMap := make(map[int]int)
-	clothingMap := make(map[int]gd.FurniInfo)
+	clothingMap := make(map[int]*gd.FurniInfo)
 	for _, f := range mgr.Furni() {
 		if f.SpecialType == nx.FurniTypeClothing {
 			parts := strings.Split(f.CustomParams, ",")

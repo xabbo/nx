@@ -8,7 +8,7 @@ import (
 )
 
 // ProductData maps product info by product code.
-type ProductData map[string]ProductInfo
+type ProductData map[string]*ProductInfo
 
 // ProductInfo defines a product code, name and description.
 type ProductInfo struct {
@@ -30,7 +30,7 @@ func (pd *ProductData) UnmarshalBytes(data []byte) (err error) {
 		if _, exist := (*pd)[p.Code]; exist {
 			return fmt.Errorf("duplicate product code: %q", p.Code)
 		}
-		(*pd)[p.Code] = ProductInfo{
+		(*pd)[p.Code] = &ProductInfo{
 			Code:        p.Code,
 			Name:        p.Name,
 			Description: p.Description,

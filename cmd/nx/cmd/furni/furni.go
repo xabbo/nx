@@ -43,7 +43,7 @@ func runFurni(cmd *cobra.Command, args []string) (err error) {
 
 	furnis := make([]gd.FurniInfo, len(mgr.Furni()))
 	for _, furni := range mgr.Furni() {
-		furnis = append(furnis, furni)
+		furnis = append(furnis, *furni)
 	}
 
 	switch opts.listSwitch.Selected() {

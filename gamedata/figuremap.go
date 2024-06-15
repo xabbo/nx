@@ -10,8 +10,8 @@ import (
 
 // A FigureMap defines mappings between figure part libraries and figure part identifiers.
 type FigureMap struct {
-	Libs  map[string]FigureMapLib        // Maps library name -> library.
-	Parts map[nx.FigurePart]FigureMapLib // Maps figure part -> library.
+	Libs  map[string]*FigureMapLib        // Maps library name -> library.
+	Parts map[nx.FigurePart]*FigureMapLib // Maps figure part -> library.
 }
 
 // A FigureMapLib defines a figure part library name, revision and the figure parts contained within the library.
@@ -30,12 +30,12 @@ func (fm *FigureMap) UnmarshalBytes(data []byte) (err error) {
 	}
 
 	*fm = FigureMap{
-		Libs:  make(map[string]FigureMapLib),
-		Parts: make(map[nx.FigurePart]FigureMapLib),
+		Libs:  make(map[string]*FigureMapLib),
+		Parts: make(map[nx.FigurePart]*FigureMapLib),
 	}
 
 	for _, xlib := range xfm.Libraries {
-		lib := FigureMapLib{
+		lib := &FigureMapLib{
 			Name:     xlib.Id,
 			Revision: xlib.Revision,
 			Parts:    make([]nx.FigurePart, len(xlib.Parts)),

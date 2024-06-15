@@ -88,7 +88,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	return
 }
 
-func printVisualization(l list.Writer, vis res.Visualization) {
+func printVisualization(l list.Writer, vis *res.Visualization) {
 	// angle
 	l.AppendItem(fmt.Sprintf("Angle: %d", vis.Angle))
 
@@ -147,7 +147,7 @@ func printAnimation(l list.Writer, anim *res.Animation) {
 	l.UnIndent()
 }
 
-func printAnimationLayer(l list.Writer, layer res.AnimationLayer) {
+func printAnimationLayer(l list.Writer, layer *res.AnimationLayer) {
 	l.AppendItem(fmt.Sprintf("Layer %d", layer.Id))
 	l.Indent()
 	l.AppendItem(fmt.Sprintf("Loop count: %d", layer.LoopCount))

@@ -339,7 +339,7 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 		Type nx.FigurePartType
 		Id   int
 	}
-	partExtraData := map[partId]partExtra{}
+	partExtraData := map[partId]*partExtra{}
 
 	for i := range parts {
 		part := &parts[i]
@@ -388,7 +388,7 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 			offset.X += 3
 		}
 
-		partExtraData[partId{part.Type, part.Id}] = partExtra{
+		partExtraData[partId{part.Type, part.Id}] = &partExtra{
 			Asset:  asset,
 			Spec:   *spec,
 			Order:  layerOrder[part.Type],

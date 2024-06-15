@@ -26,7 +26,7 @@ func (spec *FurniAssetSpec) String() string {
 
 type VisualizationData struct {
 	Type           string                // The furni type for the visualization.
-	Visualizations map[int]Visualization // A map of visualizations by size.
+	Visualizations map[int]*Visualization // A map of visualizations by size.
 }
 
 func (visualizationData *VisualizationData) UnmarshalBytes(b []byte) (err error) {
@@ -43,12 +43,12 @@ func (visualizationData *VisualizationData) UnmarshalBytes(b []byte) (err error)
 func (visualizationData *VisualizationData) fromXml(v *x.VisualizationData) {
 	*visualizationData = VisualizationData{
 		Type:           v.Type,
-		Visualizations: make(map[int]Visualization, len(v.Graphics.Visualizations)),
+		Visualizations: make(map[int]*Visualization, len(v.Graphics.Visualizations)),
 	}
 	for _, xVisualization := range v.Graphics.Visualizations {
 		var visualization Visualization
 		visualization.fromXml(&xVisualization)
-		visualizationData.Visualizations[visualization.Size] = visualization
+		visualizationData.Visualizations[visualization.Size] = &visualization
 	}
 }
 
@@ -57,8 +57,8 @@ type Visualization struct {
 	LayerCount int
 	Angle      int
 	Directions map[int]struct{} // A map of directions.
-	Layers     map[int]Layer    // Layers mapped by ID.
-	Colors     map[int]Color    // Colors mapped by ID.
+	Layers     map[int]*Layer    // Layers mapped by ID.
+	Colors     map[int]*Color    // Colors mapped by ID.
 	Animations map[int]*Animation
 	// TODO postures, gestures
 }
@@ -73,18 +73,18 @@ func (vis *Visualization) fromXml(v *x.Visualization) {
 		vis.Directions[dir.Id] = struct{}{}
 	}
 
-	vis.Layers = make(map[int]Layer, len(v.Layers))
+	vis.Layers = make(map[int]*Layer, len(v.Layers))
 	for i := range v.Layers {
 		var layer Layer
 		layer.fromXml(&v.Layers[i])
-		vis.Layers[layer.Id] = layer
+		vis.Layers[layer.Id] = &layer
 	}
 
-	vis.Colors = make(map[int]Color, len(v.Colors))
+	vis.Colors = make(map[int]*Color, len(v.Colors))
 	for i := range v.Colors {
 		var color Color
 		color.fromXml(&v.Colors[i])
-		vis.Colors[color.Id] = color
+		vis.Colors[color.Id] = &color
 	}
 
 	vis.Animations = make(map[int]*Animation, len(v.Animations))
@@ -121,16 +121,16 @@ func (layer *Layer) fromXml(v *x.Layer) {
 
 type Color struct {
 	Id     int
-	Layers map[int]ColorLayer
+	Layers map[int]*ColorLayer
 }
 
 func (color *Color) fromXml(v *x.Color) {
 	color.Id = v.Id
-	color.Layers = make(map[int]ColorLayer, len(v.Layers))
+	color.Layers = make(map[int]*ColorLayer, len(v.Layers))
 	for i := range v.Layers {
 		var colorLayer ColorLayer
 		colorLayer.fromXml(&v.Layers[i])
-		color.Layers[colorLayer.Id] = colorLayer
+		color.Layers[colorLayer.Id] = &colorLayer
 	}
 }
 
@@ -147,16 +147,16 @@ func (colorLayer *ColorLayer) fromXml(v *x.ColorLayer) {
 type Animation struct {
 	Id     int
 	TransitionTo *Animation
-	Layers map[int]AnimationLayer
+	Layers map[int]*AnimationLayer
 }
 
 func (anim *Animation) fromXml(v *x.Animation) {
 	anim.Id = v.Id
-	anim.Layers = make(map[int]AnimationLayer, len(v.Layers))
+	anim.Layers = make(map[int]*AnimationLayer, len(v.Layers))
 	for i := range v.Layers {
 		var animLayer AnimationLayer
 		animLayer.fromXml(&v.Layers[i])
-		anim.Layers[animLayer.Id] = animLayer
+		anim.Layers[animLayer.Id] = &animLayer
 	}
 }
 
@@ -214,13 +214,13 @@ func (logic *Logic) fromXml(v *x.Logic) {
 type Model struct {
 	Dimensions      Dimensions
 	Directions      []int
-	ParticleSystems map[int]ParticleSystem // Particle systems mapped by size.
+	ParticleSystems map[int]*ParticleSystem // Particle systems mapped by size.
 }
 
 func (model *Model) fromXml(v *x.Model) *Model {
 	*model = Model{
 		Directions:      make([]int, 0, len(v.Directions)),
-		ParticleSystems: make(map[int]ParticleSystem, len(v.ParticleSystems)),
+		ParticleSystems: make(map[int]*ParticleSystem, len(v.ParticleSystems)),
 	}
 	model.Dimensions.fromXml(&v.Dimensions)
 	for _, xDir := range v.Directions {
@@ -229,7 +229,7 @@ func (model *Model) fromXml(v *x.Model) *Model {
 	for _, xParticleSystem := range v.ParticleSystems {
 		var particleSystem ParticleSystem
 		particleSystem.fromXml(&xParticleSystem)
-		model.ParticleSystems[particleSystem.Size] = particleSystem
+		model.ParticleSystems[particleSystem.Size] = &particleSystem
 	}
 	return model
 }

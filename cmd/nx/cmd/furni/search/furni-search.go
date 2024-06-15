@@ -60,7 +60,7 @@ func runSearch(cmd *cobra.Command, args []string) (err error) {
 	return
 }
 
-func filterFurni(f gd.FurniInfo) bool {
+func filterFurni(f *gd.FurniInfo) bool {
 	return opts.searchName.Filter(f.Name) ||
 		opts.searchIdentifier.Filter(f.Identifier) ||
 		opts.searchCategory.Filter(f.Category) ||

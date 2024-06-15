@@ -27,5 +27,5 @@ type FurniLibrary interface {
 	Index() *Index
 	Manifest() *Manifest
 	Logic() *Logic
-	Visualizations() map[int]Visualization
+	Visualizations() map[int]*Visualization
 }

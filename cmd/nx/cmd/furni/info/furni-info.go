@@ -45,19 +45,19 @@ func runInfo(cmd *cobra.Command, args []string) (err error) {
 	if len(args) > 0 {
 		identifier := args[0]
 		if furniInfo, ok := mgr.Furni()[identifier]; ok {
-			fi = &furniInfo
+			fi = furniInfo
 		}
 	} else if kind > 0 {
 		for _, f := range mgr.Furni() {
 			if f.Kind == kind {
-				fi = &f
+				fi = f
 				break
 			}
 		}
 	} else if identifier != "" {
 		for _, f := range mgr.Furni() {
 			if f.Identifier == identifier {
-				fi = &f
+				fi = f
 				break
 			}
 		}

@@ -45,7 +45,7 @@ func runGetFurni(cmd *cobra.Command, args []string) (err error) {
 
 	for _, identifier := range args {
 		if furni, ok := mgr.Furni()[identifier]; ok {
-			err := downloadFurni(&furni)
+			err := downloadFurni(furni)
 			if err != nil {
 				return fmt.Errorf("failed to get %d/%s: %s", furni.Revision, furni.Identifier, err)
 			}
