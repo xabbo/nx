@@ -3,7 +3,7 @@ package figure
 import (
 	"github.com/spf13/cobra"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
 )
 
 var Cmd = &cobra.Command{
@@ -11,5 +11,5 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	root.Cmd.AddCommand(Cmd)
+	_root.Cmd.AddCommand(Cmd)
 }
