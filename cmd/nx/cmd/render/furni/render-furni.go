@@ -25,6 +25,7 @@ var opts struct {
 	states     bool
 	identifier string
 	dir        int
+	size       int
 }
 
 func init() {
@@ -34,6 +35,7 @@ func init() {
 	f.BoolVar(&opts.states, "states", false, "Print number of states.")
 	f.StringVarP(&opts.identifier, "identifier", "i", "", "The furni identifier to load.")
 	f.IntVarP(&opts.dir, "dir", "d", 0, "The direction to render.")
+	f.IntVarP(&opts.size, "size", "s", 64, "The visualization size to use.")
 
 	_parent.Cmd.AddCommand(Cmd)
 }
@@ -59,7 +61,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	renderer := render.NewFurniRenderer(mgr)
 	anim, err := renderer.Render(render.Furni{
 		Identifier: opts.identifier,
-		Size:       64,
+		Size:       opts.size,
 		Direction:  opts.dir,
 	})
 	if err != nil {
