@@ -8,24 +8,13 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-type swfFigureLibraryLoader struct {
-	swf *swfx.Swf
-}
-
 type swfFigurePartLibrary struct {
 	name   string
 	swf    *swfx.Swf
 	assets Assets
 }
 
-// Returns a loader for the specified SWF figure part library.
-func NewSwfFigureLibraryLoader(swf *swfx.Swf) LibraryLoader {
-	return &swfFigureLibraryLoader{swf}
-}
-
-func (loader swfFigureLibraryLoader) Load() (lib AssetLibrary, err error) {
-	swf := loader.swf
-
+func LoadFigureLibrarySwf(swf *swfx.Swf) (lib AssetLibrary, err error) {
 	var manifestTag swfx.CharacterTag
 	for symbol, id := range swf.Symbols {
 		if strings.HasSuffix(symbol, "_manifest") {

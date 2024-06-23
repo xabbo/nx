@@ -4,11 +4,7 @@ type LibraryManager interface {
 	Library(name string) AssetLibrary
 	Libraries() []string
 	LibraryExists(name string) bool
-	LoadLibrary(LibraryLoader) error
-}
-
-type LibraryLoader interface {
-	Load() (AssetLibrary, error)
+	AddLibrary(AssetLibrary) bool
 }
 
 type AssetLibrary interface {

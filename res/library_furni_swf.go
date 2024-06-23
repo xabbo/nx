@@ -3,15 +3,11 @@ package res
 import (
 	"fmt"
 	"image"
+	"strings"
 
 	"b7c.io/swfx"
 	"golang.org/x/exp/maps"
 )
-
-type swfFurniLibraryLoader struct {
-	name string
-	swf  *swfx.Swf
-}
 
 type swfFurniLibrary struct {
 	swf            *swfx.Swf
@@ -23,16 +19,29 @@ type swfFurniLibrary struct {
 	assets         map[string]*Asset
 }
 
-func NewFurniLibraryLoader(name string, swf *swfx.Swf) LibraryLoader {
-	return &swfFurniLibraryLoader{name, swf}
-}
+func LoadFurniLibrarySwf(swf *swfx.Swf) (assetLib AssetLibrary, err error) {
+	// find manifest tag to extract library name
+	var manifestTag *swfx.DefineBinaryData
+	for symbolName, chId := range swf.Symbols {
+		if strings.HasSuffix(symbolName, "_manifest") {
+			manifestTag = swf.Characters[chId].(*swfx.DefineBinaryData)
+			break
+		}
+	}
+	if manifestTag == nil {
+		err = fmt.Errorf("failed to find manifest in library")
+		return
+	}
+	var manifest Manifest
+	err = manifest.Unmarshal(manifestTag.Data)
+	if err != nil {
+		return
+	}
+	libName := manifest.Name
 
-func (loader *swfFurniLibraryLoader) Load() (assetLib AssetLibrary, err error) {
-	swf := loader.swf
-
-	indexTag := getBinaryTag(swf, loader.name+"_index")
+	indexTag := getBinaryTag(swf, libName+"_index")
 	if indexTag == nil {
-		err = fmt.Errorf("failed to find index in library %q", loader.name)
+		err = fmt.Errorf("failed to find index in library %q", libName)
 		return
 	}
 	var index Index
@@ -41,20 +50,9 @@ func (loader *swfFurniLibraryLoader) Load() (assetLib AssetLibrary, err error) {
 		return
 	}
 
-	manifestTag := getBinaryTag(swf, loader.name+"_manifest")
-	if manifestTag == nil {
-		err = fmt.Errorf("failed to find manifest in library %q", loader.name)
-		return
-	}
-	var manifest Manifest
-	err = manifest.Unmarshal(manifestTag.Data)
-	if err != nil {
-		return
-	}
-
-	logicTag := getBinaryTag(swf, loader.name+"_"+loader.name+"_logic")
+	logicTag := getBinaryTag(swf, libName+"_"+libName+"_logic")
 	if logicTag == nil {
-		err = fmt.Errorf("failed to find logic in library %q", loader.name)
+		err = fmt.Errorf("failed to find logic in library %q", libName)
 		return
 	}
 	var logic Logic
@@ -63,9 +61,9 @@ func (loader *swfFurniLibraryLoader) Load() (assetLib AssetLibrary, err error) {
 		return
 	}
 
-	visTag := getBinaryTag(swf, loader.name+"_"+loader.name+"_visualization")
+	visTag := getBinaryTag(swf, libName+"_"+libName+"_visualization")
 	if visTag == nil {
-		err = fmt.Errorf("failed to find visualization in library %q", loader.name)
+		err = fmt.Errorf("failed to find visualization in library %q", libName)
 		return
 	}
 	var visData VisualizationData
@@ -74,9 +72,9 @@ func (loader *swfFurniLibraryLoader) Load() (assetLib AssetLibrary, err error) {
 		return
 	}
 
-	assetsTag := getBinaryTag(swf, loader.name+"_"+loader.name+"_assets")
+	assetsTag := getBinaryTag(swf, libName+"_"+libName+"_assets")
 	if assetsTag == nil {
-		err = fmt.Errorf("failed to find assets in library %q", loader.name)
+		err = fmt.Errorf("failed to find assets in library %q", libName)
 		return
 	}
 	var assetsMap Assets
@@ -87,7 +85,7 @@ func (loader *swfFurniLibraryLoader) Load() (assetLib AssetLibrary, err error) {
 
 	lib := &swfFurniLibrary{
 		swf:            swf,
-		name:           loader.name,
+		name:           libName,
 		index:          &index,
 		manifest:       &manifest,
 		logic:          &logic,
@@ -99,10 +97,10 @@ func (loader *swfFurniLibraryLoader) Load() (assetLib AssetLibrary, err error) {
 		if assetsMap[assetName].Source != nil {
 			continue
 		}
-		imgTag := getImageTag(swf, loader.name+"_"+assetName)
+		imgTag := getImageTag(swf, libName+"_"+assetName)
 		if imgTag == nil {
 			err = fmt.Errorf("failed to find asset %q in %q",
-				assetName, loader.name)
+				assetName, libName)
 			continue
 		}
 		var img image.Image

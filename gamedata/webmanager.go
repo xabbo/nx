@@ -51,8 +51,8 @@ func (mgr *webGameDataManager) LibraryExists(name string) bool {
 	return mgr.assets.LibraryExists(name)
 }
 
-func (mgr *webGameDataManager) LoadLibrary(loader res.LibraryLoader) error {
-	return mgr.assets.LoadLibrary(loader)
+func (mgr *webGameDataManager) AddLibrary(lib res.AssetLibrary) bool {
+	return mgr.assets.AddLibrary(lib)
 }
 
 type bytesUnmarshaler interface {
@@ -278,14 +278,19 @@ func (mgr *webGameDataManager) LoadFurni(libraries ...string) (err error) {
 	}
 
 	furniCacheDir := filepath.Join(mgr.cacheDir, "swf", "furni")
-	for _, libName := range libraries {
-		fi, ok := mgr.furni[libName]
+	for _, identifier := range libraries {
+		fi, ok := mgr.furni[identifier]
 		if !ok {
-			err = fmt.Errorf("failed to find furni info for %q", libName)
+			err = fmt.Errorf("failed to find furni info for %q", identifier)
 			return
 		}
-		fpath := filepath.Join(furniCacheDir, libName+".swf")
-		url := downloadUrl + strconv.Itoa(fi.Revision) + "/" + libName + ".swf"
+
+		if mgr.assets.LibraryExists(identifier) {
+			continue
+		}
+
+		fpath := filepath.Join(furniCacheDir, identifier+".swf")
+		url := downloadUrl + strconv.Itoa(fi.Revision) + "/" + identifier + ".swf"
 		var data []byte
 		data, err = mgr.fetchOrGetCached(fpath, url, 0)
 		if err != nil {
@@ -298,10 +303,13 @@ func (mgr *webGameDataManager) LoadFurni(libraries ...string) (err error) {
 			return
 		}
 
-		err = mgr.assets.LoadLibrary(res.NewFurniLibraryLoader(libName, swf))
+		var lib res.AssetLibrary
+		lib, err = res.LoadFurniLibrarySwf(swf)
 		if err != nil {
 			return
 		}
+
+		mgr.assets.AddLibrary(lib)
 	}
 
 	return
@@ -339,10 +347,12 @@ func (mgr *webGameDataManager) LoadFigureParts(libraries ...string) (err error) 
 			return
 		}
 
-		err = mgr.assets.LoadLibrary(res.NewSwfFigureLibraryLoader(swf))
+		var lib res.AssetLibrary
+		lib, err = res.LoadFigureLibrarySwf(swf)
 		if err != nil {
 			return
 		}
+		mgr.assets.AddLibrary(lib)
 	}
 
 	return

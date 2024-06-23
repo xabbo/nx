@@ -32,16 +32,14 @@ func (mgr *assetManager) LibraryExists(name string) bool {
 	return exists
 }
 
-func (mgr *assetManager) LoadLibrary(loader LibraryLoader) (err error) {
-	library, err := loader.Load()
-	if err == nil {
-		if _, exists := mgr.libs[library.Name()]; exists {
-			err = fmt.Errorf("library already loaded: %q", library.Name())
-		} else {
-			mgr.libs[library.Name()] = library
-		}
+func (mgr *assetManager) AddLibrary(lib AssetLibrary) bool {
+	if _, exists := mgr.libs[lib.Name()]; exists {
+		// err = fmt.Errorf("library already loaded: %q", library.Name())
+		return false
+	} else {
+		mgr.libs[lib.Name()] = lib
+		return true
 	}
-	return
 }
 
 func parsePoint(s string) (pt image.Point, err error) {

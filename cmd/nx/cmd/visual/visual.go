@@ -26,7 +26,7 @@ var Cmd = &cobra.Command{
 }
 
 var opts struct {
-	size int
+	size   int
 	frames bool
 }
 
@@ -51,6 +51,11 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return
 	}
 
+	fi, ok := mgr.Furni()[identifier]
+	if !ok {
+		return errors.New("furni info not found")
+	}
+
 	err = spinner.DoErr("Loading furni library...", func() (err error) {
 		return mgr.LoadFurni(identifier)
 	})
@@ -67,6 +72,13 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	if !ok {
 		return errors.New("failed to load library")
 	}
+
+	index := lib.Index()
+	if index == nil {
+		return errors.New("failed to load index")
+	}
+	cmd.Printf("Furni name: %s\n", fi.Name)
+	cmd.Printf("Visualization type: %s\n", index.Visualization)
 
 	visualizations := lib.Visualizations()
 	if opts.size == 0 {

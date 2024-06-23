@@ -20,7 +20,7 @@ type Sprite struct {
 
 func (s *Sprite) Image() image.Image {
 	asset := s.Asset
-	for asset.Source != nil {
+	for asset.Source != nil && asset != asset.Source {
 		asset = asset.Source
 	}
 	return asset.Image
@@ -46,6 +46,7 @@ func (s *Sprite) Size() image.Point {
 type Layer struct {
 	Id       int
 	Name     string
+	Blend    string
 	Children []Layer
 	Sprites  []Sprite
 }
@@ -70,13 +71,51 @@ func (f Frame) Bounds() (bounds image.Rectangle) {
 }
 
 type Animation struct {
-	Sequence []int
-	Frames   map[int]Frame
+	Layers map[int]AnimationLayer
+}
+
+type AnimationLayer struct {
+	Frames      map[int]Frame
+	FrameRepeat int
+	Sequences   []res.FrameSequence
+}
+
+func (animationLayer AnimationLayer) FrameSequenceOrDefault(i int) res.FrameSequence {
+	if i < len(animationLayer.Sequences) {
+		return animationLayer.Sequences[i]
+	} else if len(animationLayer.Sequences) > 0 {
+		return animationLayer.Sequences[0]
+	} else {
+		return []int{0}
+	}
 }
 
 func (animation Animation) Bounds() (bounds image.Rectangle) {
-	for _, frame := range animation.Frames {
-		bounds = bounds.Union(frame.Bounds())
+	for _, layer := range animation.Layers {
+		for _, frame := range layer.Frames {
+			bounds = bounds.Union(frame.Bounds())
+		}
 	}
 	return
+}
+
+func (animation *Animation) TotalFrames() int {
+	n := 1
+	for _, layer := range animation.Layers {
+		sequenceLen := 1
+		if len(layer.Sequences) > 0 {
+			sequenceLen = len(layer.Sequences[0])
+		}
+		n = lcm(n, sequenceLen*max(1, layer.FrameRepeat))
+	}
+	return n
+}
+
+func (animation *Animation) LongestFrameSequence(seqIndex int) int {
+	n := 1
+	for _, layer := range animation.Layers {
+		seq := layer.FrameSequenceOrDefault(seqIndex)
+		n = max(n, len(seq)*max(1, layer.FrameRepeat))
+	}
+	return n
 }
