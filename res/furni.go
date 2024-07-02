@@ -189,8 +189,9 @@ func (animLayer *AnimationLayer) fromXml(v *x.AnimationLayer) {
 // logic
 
 type Logic struct {
-	Type  string
-	Model Model
+	Type            string
+	Model           Model
+	ParticleSystems map[int]*ParticleSystem // Particle systems mapped by size.
 }
 
 func (logic *Logic) UnmarshalBytes(b []byte) (err error) {
@@ -206,30 +207,29 @@ func (logic *Logic) UnmarshalBytes(b []byte) (err error) {
 
 func (logic *Logic) fromXml(v *x.Logic) {
 	*logic = Logic{
-		Type: v.Type,
+		Type:            v.Type,
+		ParticleSystems: make(map[int]*ParticleSystem, len(v.ParticleSystems)),
+	}
+	for _, xParticleSystem := range v.ParticleSystems {
+		var particleSystem ParticleSystem
+		particleSystem.fromXml(&xParticleSystem)
+		logic.ParticleSystems[particleSystem.Size] = &particleSystem
 	}
 	logic.Model.fromXml(&v.Model)
 }
 
 type Model struct {
-	Dimensions      Dimensions
-	Directions      []int
-	ParticleSystems map[int]*ParticleSystem // Particle systems mapped by size.
+	Dimensions Dimensions
+	Directions []int
 }
 
 func (model *Model) fromXml(v *x.Model) *Model {
 	*model = Model{
-		Directions:      make([]int, 0, len(v.Directions)),
-		ParticleSystems: make(map[int]*ParticleSystem, len(v.ParticleSystems)),
+		Directions: make([]int, 0, len(v.Directions)),
 	}
 	model.Dimensions.fromXml(&v.Dimensions)
 	for _, xDir := range v.Directions {
 		model.Directions = append(model.Directions, xDir.Id)
-	}
-	for _, xParticleSystem := range v.ParticleSystems {
-		var particleSystem ParticleSystem
-		particleSystem.fromXml(&xParticleSystem)
-		model.ParticleSystems[particleSystem.Size] = &particleSystem
 	}
 	return model
 }
