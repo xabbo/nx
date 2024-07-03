@@ -16,6 +16,9 @@ import (
 
 func (frame Frame) Draw(canvas draw.Image, drawer draw.Drawer) {
 	for _, layer := range frame {
+		if layer.Blend == "ADD" {
+			continue
+		}
 		for _, sprite := range layer.Sprites {
 			srcImg := sprite.Image()
 			if srcImg == nil {

@@ -181,9 +181,15 @@ func (r *furniRenderer) renderAnimated(lib res.FurniLibrary, furni Furni) (anim 
 				return
 			}
 
+			ink := ""
+			if visLayer, ok := vis.Layers[layer.Id]; ok {
+				ink = visLayer.Ink
+			}
+
 			frames[frameId] = Frame{
 				Layer{
-					Id: frameId,
+					Id:    frameId,
+					Blend: ink,
 					Sprites: []Sprite{
 						{
 							Asset:  asset,
