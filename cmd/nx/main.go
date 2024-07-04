@@ -24,6 +24,8 @@ import (
 	_ "xabbo.b7c.io/nx/cmd/nx/cmd/texts"
 
 	_ "xabbo.b7c.io/nx/cmd/nx/cmd/vars"
+	
+	_ "xabbo.b7c.io/nx/cmd/nx/cmd/extract"
 )
 
 func main() {
