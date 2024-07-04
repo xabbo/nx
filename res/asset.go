@@ -3,6 +3,7 @@ package res
 import (
 	"image"
 
+	"xabbo.b7c.io/nx/raw/nitro"
 	x "xabbo.b7c.io/nx/raw/xml"
 )
 
@@ -51,4 +52,14 @@ func (a *Asset) fromXml(xAsset x.Asset) {
 	a.FlipH = xAsset.FlipH
 	a.FlipV = xAsset.FlipV
 	a.Offset = image.Point{xAsset.X, xAsset.Y}
+}
+
+func (a *Asset) fromNitro(name string, src nitro.Asset) *Asset {
+	*a = Asset{
+		Name:   name,
+		FlipH:  src.FlipH,
+		FlipV:  src.FlipV,
+		Offset: image.Point{X: src.X, Y: src.Y},
+	}
+	return a
 }

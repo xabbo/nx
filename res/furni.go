@@ -3,6 +3,7 @@ package res
 import (
 	"strconv"
 
+	"xabbo.b7c.io/nx/raw/nitro"
 	x "xabbo.b7c.io/nx/raw/xml"
 )
 
@@ -25,9 +26,11 @@ func (spec *FurniAssetSpec) String() string {
 // visualization
 
 type VisualizationData struct {
-	Type           string                // The furni type for the visualization.
-	Visualizations map[int]*Visualization // A map of visualizations by size.
+	Type           string         // The furni type for the visualization.
+	Visualizations Visualizations // A map of visualizations by size.
 }
+
+type Visualizations map[int]*Visualization
 
 func (visualizationData *VisualizationData) UnmarshalBytes(b []byte) (err error) {
 	var xVisData x.VisualizationData
@@ -52,13 +55,21 @@ func (visualizationData *VisualizationData) fromXml(v *x.VisualizationData) {
 	}
 }
 
+func (visualizations Visualizations) fromNitro(v []nitro.Visualization) Visualizations {
+	visualizations = Visualizations{}
+	for i := range v {
+		visualizations[v[i].Size] = new(Visualization).fromNitro(&v[i])
+	}
+	return visualizations
+}
+
 type Visualization struct {
 	Size       int
 	LayerCount int
 	Angle      int
 	Directions map[int]struct{} // A map of directions.
-	Layers     map[int]*Layer    // Layers mapped by ID.
-	Colors     map[int]*Color    // Colors mapped by ID.
+	Layers     map[int]*Layer   // Layers mapped by ID.
+	Colors     map[int]*Color   // Colors mapped by ID.
 	Animations map[int]*Animation
 	// TODO postures, gestures
 }
@@ -103,12 +114,48 @@ func (vis *Visualization) fromXml(v *x.Visualization) {
 	}
 }
 
+func (vis *Visualization) fromNitro(v *nitro.Visualization) *Visualization {
+	vis.Size = v.Size
+	vis.LayerCount = v.LayerCount
+	vis.Angle = v.Angle
+
+	vis.Directions = make(map[int]struct{}, len(v.Directions))
+	for dir := range v.Directions {
+		vis.Directions[dir] = struct{}{}
+	}
+
+	vis.Layers = make(map[int]*Layer, len(v.Layers))
+	for id, layer := range v.Layers {
+		vis.Layers[id] = new(Layer).fromNitro(id, layer)
+	}
+
+	vis.Colors = make(map[int]*Color, len(v.Colors))
+	for id, color := range v.Colors {
+		vis.Colors[id] = new(Color).fromNitro(id, color)
+	}
+
+	vis.Animations = make(map[int]*Animation, len(v.Animations))
+	transitions := map[int]int{}
+	for id, animation := range v.Animations {
+		vis.Animations[id] = new(Animation).fromNitro(id, animation)
+		if animation.TransitionTo != nil {
+			transitions[id] = *animation.TransitionTo
+		}
+	}
+	for from, to := range transitions {
+		vis.Animations[from].TransitionTo = vis.Animations[to]
+	}
+
+	return vis
+}
+
 type Layer struct {
 	Id          int
 	Z           int
 	Alpha       int
 	Ink         string // Blend mode used for this layer.
 	IgnoreMouse bool
+	Color       int
 }
 
 func (layer *Layer) fromXml(v *x.Layer) {
@@ -117,6 +164,17 @@ func (layer *Layer) fromXml(v *x.Layer) {
 	layer.Alpha = v.Alpha
 	layer.Ink = v.Ink
 	layer.IgnoreMouse = v.IgnoreMouse
+	layer.Color = v.Color
+}
+
+func (layer *Layer) fromNitro(id int, v nitro.Layer) *Layer {
+	layer.Id = id
+	layer.Z = v.Z
+	layer.Alpha = v.Alpha
+	layer.Ink = v.Ink
+	layer.IgnoreMouse = v.IgnoreMouse
+	layer.Color = v.Color
+	return layer
 }
 
 type Color struct {
@@ -134,6 +192,17 @@ func (color *Color) fromXml(v *x.Color) {
 	}
 }
 
+func (color *Color) fromNitro(id int, v nitro.Color) *Color {
+	*color = Color{
+		Id:     id,
+		Layers: make(map[int]*ColorLayer, len(v.Layers)),
+	}
+	for id, layer := range v.Layers {
+		color.Layers[id] = new(ColorLayer).fromNitro(id, layer)
+	}
+	return color
+}
+
 type ColorLayer struct {
 	Id    int
 	Color string
@@ -144,10 +213,16 @@ func (colorLayer *ColorLayer) fromXml(v *x.ColorLayer) {
 	colorLayer.Color = v.Color
 }
 
+func (colorLayer *ColorLayer) fromNitro(id int, v nitro.Layer) *ColorLayer {
+	*colorLayer = ColorLayer{Id: id}
+	colorLayer.Color = strconv.FormatInt(int64(v.Color), 16)
+	return colorLayer
+}
+
 type Animation struct {
-	Id     int
+	Id           int
 	TransitionTo *Animation
-	Layers map[int]*AnimationLayer
+	Layers       map[int]*AnimationLayer
 }
 
 func (anim *Animation) fromXml(v *x.Animation) {
@@ -158,6 +233,17 @@ func (anim *Animation) fromXml(v *x.Animation) {
 		animLayer.fromXml(&v.Layers[i])
 		anim.Layers[animLayer.Id] = &animLayer
 	}
+}
+
+func (anim *Animation) fromNitro(id int, v nitro.Animation) *Animation {
+	*anim = Animation{
+		Id:     id,
+		Layers: make(map[int]*AnimationLayer, len(v.Layers)),
+	}
+	for id, layer := range v.Layers {
+		anim.Layers[id] = new(AnimationLayer).fromNitro(id, layer)
+	}
+	return anim
 }
 
 type AnimationLayer struct {
@@ -186,11 +272,29 @@ func (animLayer *AnimationLayer) fromXml(v *x.AnimationLayer) {
 	}
 }
 
+func (layer *AnimationLayer) fromNitro(id int, v nitro.AnimationLayer) *AnimationLayer {
+	*layer = AnimationLayer{
+		Id:             id,
+		LoopCount:      v.LoopCount,
+		FrameRepeat:    v.FrameRepeat,
+		Random:         v.Random != 0,
+		FrameSequences: make([]FrameSequence, 0, len(v.FrameSequences)),
+	}
+	for _, srcSeq := range v.FrameSequences {
+		frameSequence := make(FrameSequence, 0, len(srcSeq.Frames))
+		for _, srcFrame := range srcSeq.Frames {
+			frameSequence = append(frameSequence, srcFrame.Id)
+		}
+		layer.FrameSequences = append(layer.FrameSequences, frameSequence)
+	}
+	return layer
+}
+
 // logic
 
 type Logic struct {
 	Type            string
-	Model           Model
+	Model           *Model
 	ParticleSystems map[int]*ParticleSystem // Particle systems mapped by size.
 }
 
@@ -208,6 +312,7 @@ func (logic *Logic) UnmarshalBytes(b []byte) (err error) {
 func (logic *Logic) fromXml(v *x.Logic) {
 	*logic = Logic{
 		Type:            v.Type,
+		Model:           new(Model).fromXml(&v.Model),
 		ParticleSystems: make(map[int]*ParticleSystem, len(v.ParticleSystems)),
 	}
 	for _, xParticleSystem := range v.ParticleSystems {
@@ -215,7 +320,30 @@ func (logic *Logic) fromXml(v *x.Logic) {
 		particleSystem.fromXml(&xParticleSystem)
 		logic.ParticleSystems[particleSystem.Size] = &particleSystem
 	}
-	logic.Model.fromXml(&v.Model)
+}
+
+func (logic *Logic) fromNitro(v *nitro.Logic) *Logic {
+	*logic = Logic{
+		Model:           new(Model).fromNitro(v.Model),
+		ParticleSystems: make(map[int]*ParticleSystem, len(v.ParticleSystems)),
+	}
+	for _, srcParticleSystem := range v.ParticleSystems {
+		logic.ParticleSystems[srcParticleSystem.Size] = new(ParticleSystem).fromNitro(srcParticleSystem)
+	}
+	return logic
+}
+
+type ParticleSystem struct {
+	Size int
+}
+
+func (particleSystem *ParticleSystem) fromXml(v *x.ParticleSystem) {
+	*particleSystem = ParticleSystem{Size: v.Size}
+}
+
+func (particleSystem *ParticleSystem) fromNitro(v nitro.ParticleSystem) *ParticleSystem {
+	*particleSystem = ParticleSystem{Size: v.Size}
+	return particleSystem
 }
 
 type Model struct {
@@ -234,6 +362,17 @@ func (model *Model) fromXml(v *x.Model) *Model {
 	return model
 }
 
+func (model *Model) fromNitro(v nitro.Model) *Model {
+	*model = Model{
+		Dimensions: *new(Dimensions).fromNitro(v.Dimensions),
+		Directions: make([]int, 0, len(v.Directions)),
+	}
+	for _, srcDir := range v.Directions {
+		model.Directions = append(model.Directions, srcDir)
+	}
+	return model
+}
+
 type Dimensions struct {
 	X int
 	Y int
@@ -244,10 +383,7 @@ func (dimensions *Dimensions) fromXml(v *x.Dimensions) {
 	*dimensions = Dimensions{v.X, v.Y, v.Z}
 }
 
-type ParticleSystem struct {
-	Size int
-}
-
-func (particleSystem *ParticleSystem) fromXml(v *x.ParticleSystem) {
-	*particleSystem = ParticleSystem{Size: v.Size}
+func (dimensions *Dimensions) fromNitro(v nitro.Dimensions) *Dimensions {
+	*dimensions = Dimensions{v.X, v.Y, v.Z}
+	return dimensions
 }

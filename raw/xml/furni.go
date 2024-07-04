@@ -11,14 +11,14 @@ type Index struct {
 // logic.xml
 
 type Logic struct {
-	Type  string `xml:"type,attr"`
-	Model Model  `xml:"model"`
+	Type            string           `xml:"type,attr"`
+	Model           Model            `xml:"model"`
+	ParticleSystems []ParticleSystem `xml:"particlesystems>particlesystem"`
 }
 
 type Model struct {
-	Dimensions      Dimensions       `xml:"dimensions"`
-	Directions      []Direction      `xml:"directions>direction"`
-	ParticleSystems []ParticleSystem `xml:"particlesystems>particlesystem"`
+	Dimensions Dimensions  `xml:"dimensions"`
+	Directions []Direction `xml:"directions>direction"`
 }
 
 type Dimensions struct {
@@ -64,6 +64,7 @@ type Layer struct {
 	Alpha       int    `xml:"alpha,attr"`
 	Ink         string `xml:"ink,attr"`
 	IgnoreMouse bool   `xml:"ignoreMouse,attr"`
+	Color       int    `xml:"color,attr"`
 }
 
 type Color struct {

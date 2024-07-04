@@ -20,6 +20,7 @@ import (
 	"b7c.io/swfx"
 
 	gd "xabbo.b7c.io/nx/gamedata"
+	"xabbo.b7c.io/nx/raw/nitro"
 	"xabbo.b7c.io/nx/render"
 	"xabbo.b7c.io/nx/res"
 
@@ -96,7 +97,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	spinner.Start()
 	defer spinner.Stop()
 
-	var furniIdentifier string
+	var libraryName string
 
 	mgr := gd.NewManager(_root.Host)
 
@@ -105,13 +106,14 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			return errors.New("only one of furni identifier or input file may be specified")
 		}
 		cmd.SilenceUsage = true
-		if strings.HasSuffix(opts.inputFilePath, ".swf") {
+		switch {
+		case strings.HasSuffix(opts.inputFilePath, ".swf"):
 			spinner.Message("Loading SWF library...")
 
 			var swf *swfx.Swf
 			swf, err = loadSwfFile(opts.inputFilePath)
 			if err != nil {
-				return err
+				return
 			}
 
 			var lib res.AssetLibrary
@@ -121,8 +123,25 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			}
 
 			mgr.AddLibrary(lib)
-			furniIdentifier = lib.Name()
-		} else {
+			libraryName = lib.Name()
+		case strings.HasSuffix(opts.inputFilePath, ".nitro"):
+			spinner.Message("Loading Nitro library...")
+
+			var archive nitro.Archive
+			archive, err = loadNitroArchive(opts.inputFilePath)
+			if err != nil {
+				return
+			}
+
+			var lib res.AssetLibrary
+			lib, err = res.LoadFurniLibraryNitro(archive)
+			if err != nil {
+				return
+			}
+
+			mgr.AddLibrary(lib)
+			libraryName = lib.Name()
+		default:
 			return fmt.Errorf("input file format not supported")
 		}
 	} else {
@@ -131,7 +150,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 		cmd.SilenceUsage = true
 
-		furniIdentifier = args[0]
+		libraryName = args[0]
 
 		spinner.Message("Loading game data...")
 		err = mgr.Load(gd.GameDataVariables, gd.GameDataFurni)
@@ -140,7 +159,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 
 		spinner.Message("Loading furni library...")
-		err = mgr.LoadFurni(furniIdentifier)
+		err = mgr.LoadFurni(libraryName)
 		if err != nil {
 			return
 		}
@@ -148,7 +167,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	renderer := render.NewFurniRenderer(mgr)
 	anim, err := renderer.Render(render.Furni{
-		Identifier: furniIdentifier,
+		Identifier: libraryName,
 		Size:       opts.size,
 		Direction:  opts.dir,
 		State:      opts.state,
@@ -192,6 +211,16 @@ func loadSwfFile(filePath string) (swf *swfx.Swf, err error) {
 	}
 	defer f.Close()
 	return swfx.ReadSwf(f)
+}
+
+func loadNitroArchive(filePath string) (archive nitro.Archive, err error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	r := nitro.NewReader(f)
+	return r.ReadArchive()
 }
 
 func saveAPNG(imgs []image.Image) (err error) {

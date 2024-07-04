@@ -39,32 +39,45 @@ type ParticleSystem struct {
 }
 
 type Visualization struct {
-	Angle      int                  `json:"angle"`
-	LayerCount int                  `json:"layerCount"`
-	Size       int                  `json:"size"`
-	Layers     map[string]Layer     `json:"layers"`
-	Directions map[string]struct{}  `json:"directions"`
-	Animations map[string]Animation `json:"animations"`
+	Angle      int               `json:"angle"`
+	LayerCount int               `json:"layerCount"`
+	Size       int               `json:"size"`
+	Layers     map[int]Layer     `json:"layers"`
+	Directions map[int]Direction `json:"directions"`
+	Colors     map[int]Color     `json:"colors"`
+	Animations map[int]Animation `json:"animations"`
 }
 
 type Layer struct {
-	Z     int    `json:"z"`
-	Ink   string `json:"ink"`
-	Alpha int    `json:"alpha"`
+	Z           int    `json:"z"`
+	Ink         string `json:"ink"`
+	Alpha       int    `json:"alpha"`
+	Color       int    `json:"color"`
+	IgnoreMouse bool   `json:"ignoreMouse"`
+}
+
+type Direction struct {
+	Layers map[int]Layer `json:"layers"`
+}
+
+type Color struct {
+	Layers map[int]Layer `json:"layers"`
 }
 
 type Animation struct {
-	Layers map[string]AnimationLayer `json:"layers"`
+	Layers       map[int]AnimationLayer `json:"layers"`
+	TransitionTo *int
 }
 
 type AnimationLayer struct {
-	FrameRepeat    int                      `json:"frameRepeat"`
-	Random         int                      `json:"random"`
-	FrameSequences map[string]FrameSequence `json:"frameSequences"`
+	LoopCount      int                   `json:"loopCount"`
+	FrameRepeat    int                   `json:"frameRepeat"`
+	Random         int                   `json:"random"`
+	FrameSequences map[int]FrameSequence `json:"frameSequences"`
 }
 
 type FrameSequence struct {
-	Frames map[string]AnimationFrame `json:"frames"`
+	Frames map[int]AnimationFrame `json:"frames"`
 }
 
 type AnimationFrame struct {
