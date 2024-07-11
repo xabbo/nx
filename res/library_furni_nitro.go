@@ -23,8 +23,7 @@ type nitroFurniLibrary struct {
 	assets         map[string]*Asset
 }
 
-func LoadFurniLibraryNitro(archive nitro.Archive) (assetLib AssetLibrary, err error) {
-
+func LoadFurniLibraryNitro(archive nitro.Archive) (furniLibrary FurniLibrary, err error) {
 	nitroLib := &nitroFurniLibrary{
 		assets: map[string]*Asset{},
 	}
@@ -102,7 +101,7 @@ func LoadFurniLibraryNitro(archive nitro.Archive) (assetLib AssetLibrary, err er
 		asset.Image = spriteImg
 	}
 
-	assetLib = nitroLib
+	furniLibrary = nitroLib
 	return
 }
 

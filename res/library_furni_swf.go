@@ -19,7 +19,7 @@ type swfFurniLibrary struct {
 	assets         map[string]*Asset
 }
 
-func LoadFurniLibrarySwf(swf *swfx.Swf) (assetLib AssetLibrary, err error) {
+func LoadFurniLibrarySwf(swf *swfx.Swf) (furniLibrary FurniLibrary, err error) {
 	// find manifest tag to extract library name
 	var manifestTag *swfx.DefineBinaryData
 	for symbolName, chId := range swf.Symbols {
@@ -109,7 +109,7 @@ func LoadFurniLibrarySwf(swf *swfx.Swf) (assetLib AssetLibrary, err error) {
 		assetsMap[assetName].Image = img
 	}
 
-	assetLib = lib
+	furniLibrary = lib
 	return
 }
 
