@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"b7c.io/swfx"
@@ -285,12 +286,14 @@ func (mgr *webGameDataManager) LoadFurni(libraries ...string) (err error) {
 			return
 		}
 
-		if mgr.assets.LibraryExists(identifier) {
+		libraryName := strings.Split(identifier, "*")[0]
+
+		if mgr.assets.LibraryExists(libraryName) {
 			continue
 		}
 
-		fpath := filepath.Join(furniCacheDir, identifier+".swf")
-		url := downloadUrl + strconv.Itoa(fi.Revision) + "/" + identifier + ".swf"
+		fpath := filepath.Join(furniCacheDir, libraryName+".swf")
+		url := downloadUrl + strconv.Itoa(fi.Revision) + "/" + libraryName + ".swf"
 		var data []byte
 		data, err = mgr.fetchOrGetCached(fpath, url, 0)
 		if err != nil {
