@@ -174,14 +174,20 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 			}
 
 			ink := ""
+			alpha := uint8(255)
 			if visLayer, ok := vis.Layers[layer.Id]; ok {
 				ink = visLayer.Ink
+				if visLayer.Alpha > 0 {
+					alpha = uint8(visLayer.Alpha)
+				}
 			}
 
 			var blend Blend
 			switch ink {
 			case "ADD":
 				blend = BlendAdd
+			case "COPY":
+				blend = BlendCopy
 			default:
 				blend = BlendNone
 			}
@@ -207,6 +213,7 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 				Offset: asset.Offset,
 				Blend:  blend,
 				Color:  col,
+				Alpha:  alpha,
 			}}
 		}
 

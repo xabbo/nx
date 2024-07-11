@@ -17,6 +17,7 @@ type Sprite struct {
 	Offset image.Point
 	Color  color.Color
 	Blend  Blend
+	Alpha  uint8
 	Order  int
 }
 
@@ -25,6 +26,7 @@ type Blend int
 const (
 	BlendNone Blend = iota
 	BlendAdd
+	BlendCopy
 )
 
 // Image gets the source image for this sprite.
@@ -64,19 +66,22 @@ func (s *Sprite) Draw(canvas draw.Image, drawer draw.Drawer) {
 	if s.Color != color.White {
 		srcImg = blend.BlendNewImage(srcImg, image.NewUniform(s.Color), blend.Multiply)
 	}
-	if drawer == nil {
-		switch s.Blend {
-		case BlendAdd:
-			drawer = additiveDrawer{}
-		default:
-			drawer = draw.Over
-		}
-	}
 	bounds := srcImg.Bounds()
 	offset := s.Offset
 	if s.FlipH {
 		offset.X = offset.X*-1 + srcImg.Bounds().Dx() - 64
 		srcImg = imaging.FlipH(srcImg)
+	}
+	if drawer == nil {
+		switch s.Blend {
+		case BlendAdd:
+			drawer = additiveDrawer{}
+		case BlendCopy:
+			srcImg = alphaImage{src: srcImg, alpha: s.Alpha}
+			fallthrough
+		default:
+			drawer = draw.Over
+		}
 	}
 	drawer.Draw(canvas, bounds.Sub(offset), srcImg, image.Point{})
 }

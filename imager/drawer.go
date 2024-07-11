@@ -20,13 +20,47 @@ func (additiveDrawer) Draw(dst draw.Image, r image.Rectangle, src image.Image, s
 			}
 			sc := src.At(sBounds.Min.X+sp.X+x, sBounds.Min.Y+sp.Y+y)
 			sr, sg, sb, _ := sc.RGBA()
-			dc = color.RGBA{
-				R: uint8(float64(min(0xffff, dr+sr)) / 65535.0 * 255.0),
-				G: uint8(float64(min(0xffff, dg+sg)) / 65535.0 * 255.0),
-				B: uint8(float64(min(0xffff, db+sb)) / 65535.0 * 255.0),
-				A: uint8(float64(da) / 65535.0 * 255.0),
+			dc = color.NRGBA{
+				R: uint8(min(255, (dr+sr)>>8)),
+				G: uint8(min(255, (dg+sg)>>8)),
+				B: uint8(min(255, (db+sb)>>8)),
+				A: uint8(min(255, da>>8)),
 			}
 			dst.Set(r.Min.X+x, r.Min.Y+y, dc)
+		}
+	}
+}
+
+type alphaImage struct {
+	src   image.Image
+	alpha uint8
+}
+
+func (img alphaImage) ColorModel() color.Model {
+	return img.src.ColorModel()
+}
+
+func (img alphaImage) Bounds() image.Rectangle {
+	return img.src.Bounds()
+}
+
+func (img alphaImage) At(x, y int) color.Color {
+	sc := img.src.At(x, y)
+	switch sc := sc.(type) {
+	case *color.RGBA:
+		return color.NRGBA{
+			R: sc.R,
+			G: sc.G,
+			B: sc.B,
+			A: min(sc.A, img.alpha),
+		}
+	default:
+		sr, sg, sb, sa := sc.RGBA()
+		return color.NRGBA{
+			R: uint8(sr >> 8),
+			G: uint8(sg >> 8),
+			B: uint8(sb >> 8),
+			A: min(uint8(sa>>8), img.alpha),
 		}
 	}
 }
