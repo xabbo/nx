@@ -20,7 +20,7 @@ import (
 	"xabbo.b7c.io/nx/res"
 
 	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
-	_parent "xabbo.b7c.io/nx/cmd/nx/cmd/render"
+	_parent "xabbo.b7c.io/nx/cmd/nx/cmd/imager"
 	"xabbo.b7c.io/nx/cmd/nx/spinner"
 )
 

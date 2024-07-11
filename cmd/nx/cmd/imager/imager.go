@@ -1,4 +1,4 @@
-package render
+package imager
 
 import (
 	"github.com/spf13/cobra"
@@ -7,8 +7,9 @@ import (
 )
 
 var Cmd = &cobra.Command{
-	Use:   "render",
-	Short: "Render resources to images",
+	Use:     "imager",
+	Aliases: []string{"img"},
+	Short:   "Render resources to images",
 }
 
 func init() {

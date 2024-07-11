@@ -17,9 +17,9 @@ import (
 
 	_ "xabbo.b7c.io/nx/cmd/nx/cmd/visual"
 
-	_ "xabbo.b7c.io/nx/cmd/nx/cmd/render"
-	_ "xabbo.b7c.io/nx/cmd/nx/cmd/render/avatar"
-	_ "xabbo.b7c.io/nx/cmd/nx/cmd/render/furni"
+	_ "xabbo.b7c.io/nx/cmd/nx/cmd/imager"
+	_ "xabbo.b7c.io/nx/cmd/nx/cmd/imager/avatar"
+	_ "xabbo.b7c.io/nx/cmd/nx/cmd/imager/furni"
 
 	_ "xabbo.b7c.io/nx/cmd/nx/cmd/texts"
 
