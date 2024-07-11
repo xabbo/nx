@@ -345,7 +345,7 @@ func (r avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 		Type nx.FigurePartType
 		Id   int
 	}
-	partExtraData := map[partId]*partExtra{}
+	partExtraData := map[partId]partExtra{}
 
 	for i := range parts {
 		part := &parts[i]
@@ -394,7 +394,7 @@ func (r avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 			offset.X += 3
 		}
 
-		partExtraData[partId{part.Type, part.Id}] = &partExtra{
+		partExtraData[partId{part.Type, part.Id}] = partExtra{
 			Asset:  asset,
 			Spec:   *spec,
 			Order:  layerOrder[part.Type],
@@ -404,13 +404,6 @@ func (r avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 	}
 
 	slices.SortFunc(parts, func(a, b AvatarPart) int {
-		pxa := partExtraData[partId{a.Type, a.Id}]
-		pxb := partExtraData[partId{b.Type, b.Id}]
-		if pxa == nil {
-			return 0
-		} else if pxb == nil {
-			return 0
-		}
 		diff := partExtraData[partId{a.Type, a.Id}].Order - partExtraData[partId{b.Type, b.Id}].Order
 		if diff == 0 {
 			diff = a.Id - b.Id
