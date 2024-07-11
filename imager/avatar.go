@@ -144,12 +144,12 @@ var layerOrderSide = []layerGroup{
 	handItemLayers,
 }
 
-type AvatarRenderer struct {
+type avatarImager struct {
 	mgr gamedata.Manager
 }
 
-func NewAvatarRenderer(mgr gamedata.Manager) *AvatarRenderer {
-	return &AvatarRenderer{mgr}
+func NewAvatarImager(mgr gamedata.Manager) AvatarImager {
+	return avatarImager{mgr}
 }
 
 type AvatarPart struct {
@@ -165,7 +165,7 @@ type AvatarPart struct {
 }
 
 // Converts the specified figure into individual figure parts.
-func (r *AvatarRenderer) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
+func (r avatarImager) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 	if r.mgr.Figure() == nil {
 		err = fmt.Errorf("figure data not loaded")
 		return
@@ -236,7 +236,7 @@ func (r *AvatarRenderer) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 }
 
 // Finds the required figure part libraries given the specified Figure.
-func (r *AvatarRenderer) RequiredLibs(fig nx.Figure) (libs []string, err error) {
+func (r avatarImager) RequiredLibs(fig nx.Figure) (libs []string, err error) {
 	if r.mgr.Figure() == nil {
 		err = fmt.Errorf("figure data not loaded")
 		return
@@ -289,7 +289,7 @@ func flipDir(dir int) int {
 }
 
 // Renders an avatar to a list of sprites.
-func (r *AvatarRenderer) Sprites(avatar Avatar) (sprites []Sprite, err error) {
+func (r avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 	parts, err := r.Parts(avatar.Figure)
 	if err != nil {
 		return
@@ -404,6 +404,13 @@ func (r *AvatarRenderer) Sprites(avatar Avatar) (sprites []Sprite, err error) {
 	}
 
 	slices.SortFunc(parts, func(a, b AvatarPart) int {
+		pxa := partExtraData[partId{a.Type, a.Id}]
+		pxb := partExtraData[partId{b.Type, b.Id}]
+		if pxa == nil {
+			return 0
+		} else if pxb == nil {
+			return 0
+		}
 		diff := partExtraData[partId{a.Type, a.Id}].Order - partExtraData[partId{b.Type, b.Id}].Order
 		if diff == 0 {
 			diff = a.Id - b.Id
@@ -412,23 +419,36 @@ func (r *AvatarRenderer) Sprites(avatar Avatar) (sprites []Sprite, err error) {
 	})
 
 	// Convert parts into sprites
+	anim = Animation{
+		Layers: map[int]AnimationLayer{},
+	}
+
+	layerId := 0
 	for _, part := range parts {
 		if part.Hidden {
 			continue
 		}
 		extra := partExtraData[partId{part.Type, part.Id}]
-		sprites = append(sprites, Sprite{
-			Asset:  extra.Asset,
-			Offset: extra.Offset,
-			Color:  part.Color,
-			FlipH:  extra.FlipH,
-		})
+
+		anim.Layers[layerId] = AnimationLayer{
+			Frames: map[int]Frame{
+				0: {
+					Sprite{
+						Asset:  extra.Asset,
+						Offset: extra.Offset,
+						Color:  part.Color,
+						FlipH:  extra.FlipH,
+					},
+				},
+			},
+		}
+		layerId++
 	}
 
 	return
 }
 
-func (r *AvatarRenderer) ResolveAsset(lib res.AssetLibrary, avatar Avatar, part AvatarPart) *FigureAssetSpec {
+func (r *avatarImager) ResolveAsset(lib res.AssetLibrary, avatar Avatar, part AvatarPart) *FigureAssetSpec {
 	direction := avatar.Direction
 	if part.Type.IsHead() {
 		direction = avatar.HeadDirection
@@ -495,10 +515,10 @@ func (spec FigureAssetSpec) String() string {
 		strconv.Itoa(spec.Frame)
 }
 
-func (r *AvatarRenderer) Dependencies(fig nx.Figure) (err error) {
+func (r *avatarImager) Dependencies(fig nx.Figure) (err error) {
 	return nil
 }
 
-func (r *AvatarRenderer) CompileAssets(fig nx.Figure) []res.Asset {
+func (r *avatarImager) CompileAssets(fig nx.Figure) []res.Asset {
 	return nil
 }

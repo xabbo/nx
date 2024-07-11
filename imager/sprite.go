@@ -6,6 +6,7 @@ import (
 	"image/draw"
 
 	"github.com/disintegration/imaging"
+	"github.com/phrozen/blend"
 	"xabbo.b7c.io/nx/res"
 )
 
@@ -92,9 +93,9 @@ type AnimationLayer struct {
 
 // FrameSequenceOrDefault gets the specified frame sequence if it exists, or the first sequence if `i` is out of range.
 // If the animation has no frame sequences, a sequence with a single zero frame is returned.
-func (animationLayer AnimationLayer) FrameSequenceOrDefault(i int) res.FrameSequence {
-	if i < len(animationLayer.Sequences) {
-		return animationLayer.Sequences[i]
+func (animationLayer AnimationLayer) FrameSequenceOrDefault(seqIndex int) res.FrameSequence {
+	if seqIndex < len(animationLayer.Sequences) {
+		return animationLayer.Sequences[seqIndex]
 	} else if len(animationLayer.Sequences) > 0 {
 		return animationLayer.Sequences[0]
 	} else {
@@ -103,7 +104,7 @@ func (animationLayer AnimationLayer) FrameSequenceOrDefault(i int) res.FrameSequ
 }
 
 // Bounds gets the relative bounds in the animation for the specified sequence.
-func (animation Animation) Bounds(sequence int) (bounds image.Rectangle) {
+func (animation Animation) Bounds(seqIndex int) (bounds image.Rectangle) {
 	for _, layer := range animation.Layers {
 		for _, frame := range layer.Frames {
 			bounds = bounds.Union(frame.Bounds())

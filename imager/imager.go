@@ -3,6 +3,8 @@ package imager
 import (
 	"image"
 	"io"
+
+	"xabbo.b7c.io/nx"
 )
 
 type FurniImager interface {
@@ -10,7 +12,9 @@ type FurniImager interface {
 }
 
 type AvatarImager interface {
-	Compose(avatar Avatar) Animation
+	Compose(avatar Avatar) (Animation, error)
+	Parts(figure nx.Figure) ([]AvatarPart, error)
+	RequiredLibs(figure nx.Figure) ([]string, error)
 }
 
 type Renderer interface {

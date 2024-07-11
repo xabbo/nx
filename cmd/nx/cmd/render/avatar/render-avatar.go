@@ -4,16 +4,11 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"image"
-	"image/color"
-	"image/draw"
 	"image/png"
 	"io"
 	"os"
 	"slices"
 
-	"github.com/disintegration/imaging"
-	"github.com/phrozen/blend"
 	"github.com/spf13/cobra"
 
 	"xabbo.b7c.io/nx"
@@ -153,7 +148,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	mgr := gd.NewManager(_root.Host)
-	renderer := imager.NewAvatarRenderer(mgr)
+	renderer := imager.NewAvatarImager(mgr)
 
 	var figure nx.Figure
 	err = figure.Parse(figureString)
@@ -214,14 +209,9 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 		HeadOnly:      opts.headOnly,
 	}
 
-	sprites, err := renderer.Sprites(avatar)
+	anim, err := renderer.Compose(avatar)
 	if err != nil {
 		return
-	}
-
-	frameSize := image.Rectangle{}
-	for _, sprite := range sprites {
-		frameSize = frameSize.Union(sprite.Asset.Image.Bounds().Sub(sprite.Offset))
 	}
 
 	f, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
@@ -230,42 +220,18 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 	}
 	defer f.Close()
 
-	if opts.verbose {
-		fmt.Printf("Frame size: %v\n", frameSize.Size())
-	}
-
 	switch opts.outFormat {
 	case "png":
-		img := image.NewRGBA(frameSize)
-		for _, sprite := range sprites {
-			src := sprite.Asset.Image
-			if sprite.Color != color.White && !opts.noColor {
-				src = blend.BlendNewImage(src, image.NewUniform(sprite.Color), blend.Multiply)
-			}
-			if sprite.FlipH {
-				src = imaging.FlipH(src)
-			}
-			if opts.verbose {
-				fmt.Printf("Drawing %s at %v\n", sprite.Asset.Name, sprite.Offset.Mul(-1))
-			}
-			draw.Draw(img,
-				sprite.Asset.Image.Bounds().Sub(sprite.Offset),
-				src,
-				image.Point{},
-				draw.Over)
-		}
-
-		err = png.Encode(f, img)
-		if err != nil {
-			return
-		}
-
+		encoder := imager.NewEncoderPNG()
+		encoder.EncodeFrame(f, anim, 0, 0)
 	case "svg":
-		writeSvg(f, sprites)
+		encoder := imager.NewEncoderSVG()
+		encoder.EncodeFrame(f, anim, 0, 0)
+	default:
+		return
 	}
 
 	fmt.Printf("output: %s\n", fileName)
-
 	return
 }
 
