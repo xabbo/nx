@@ -1,10 +1,10 @@
 package json
 
-type GamedataHashes struct {
-	Hashes []GamedataHash `json:"hashes"`
+type GameDataHashes struct {
+	Hashes []GameDataHash `json:"hashes"`
 }
 
-type GamedataHash struct {
+type GameDataHash struct {
 	Name string `json:"name"`
 	Url  string `json:"url"`
 	Hash string `json:"hash"`

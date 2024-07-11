@@ -8,19 +8,26 @@ import (
 	"strings"
 )
 
+// ExternalVariables defines dynamic variables loaded by the client.
 type ExternalVariables map[string]string
+
+// ExternalTexts defines dynamic strings loaded by the client.
 type ExternalTexts map[string]string
 
+// Unmarshals a text file as raw bytes into an ExternalTexts.
 func (texts *ExternalTexts) UnmarshalBytes(data []byte) (err error) {
 	*texts = ExternalTexts(readKeyValueMap(data))
 	return
 }
 
+// Unmarshals a text file as raw bytes into an ExternalVariables.
 func (vars *ExternalVariables) UnmarshalBytes(data []byte) (err error) {
 	*vars = ExternalVariables(readKeyValueMap(data))
 	return
 }
 
+// Gets the client version from the external variables,
+// or returns an error if the key is not found.
 func (vars *ExternalVariables) ClientVersion() (version string, err error) {
 	if clientUrl, ok := (*vars)["flash.client.url"]; ok {
 		version = path.Base(clientUrl)

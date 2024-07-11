@@ -3,28 +3,29 @@ package gamedata
 import (
 	"encoding/xml"
 
-	x "xabbo.b7c.io/nx/xml"
+	x "xabbo.b7c.io/nx/raw/xml"
 )
 
-type AvatarActions map[string]AvatarActionInfo
+type AvatarActions map[string]*AvatarActionInfo
 
 type AvatarActionInfo struct {
 	Id string
 }
 
 func (actions *AvatarActions) UnmarshalBytes(data []byte) (err error) {
-	var xactions struct {
+	var xActions struct {
 		Actions []x.Action
 	}
-	err = xml.Unmarshal(data, &xactions)
+	err = xml.Unmarshal(data, &xActions)
 	if err != nil {
 		return
 	}
 
 	*actions = AvatarActions{}
-	for _, xaction := range xactions.Actions {
-		(*actions)[xaction.Id] = AvatarActionInfo{
-			Id: xaction.Id,
+	for i := range xActions.Actions {
+		xAction := &xActions.Actions[i]
+		(*actions)[xAction.Id] = &AvatarActionInfo{
+			Id: xAction.Id,
 		}
 	}
 

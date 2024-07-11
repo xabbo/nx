@@ -12,7 +12,13 @@ type Library struct {
 	Assets  []Asset `xml:"assets>asset"`
 }
 
-// manifest/assets.xml
+// assets.xml
+
+type Assets struct {
+	Assets []Asset `xml:"asset"`
+}
+
+// manifest.xml | assets.xml
 
 type Asset struct {
 	Name     string  `xml:"name,attr"`

@@ -4,32 +4,41 @@ import (
 	"encoding/xml"
 
 	"xabbo.b7c.io/nx"
-	x "xabbo.b7c.io/nx/xml"
+	x "xabbo.b7c.io/nx/raw/xml"
 )
 
+// FigureData defines the figure part sets and color palettes used for Habbo avatars.
 type FigureData struct {
-	Palettes    map[int]FigureColorPalette
+	// Palettes maps figure color palettes by ID.
+	// Each figure part set uses a certain color palette.
+	Palettes map[int]FigureColorPaletteMap
+	// SetPalettes maps figure part types to color palette IDs.
 	SetPalettes map[nx.FigurePartType]int
 	Sets        map[nx.FigurePartType]FigurePartSetMap
 }
 
-type FigureColorPalette map[int]FigurePartColorInfo
+// A FigureColorPaletteMap maps FigurePartColorInfo by ID.
+type FigureColorPaletteMap map[int]*FigurePartColorInfo
 
-type FigurePartSetMap map[int]FigurePartSetInfo
+// A FigurePartSetMap maps FigurePartsetInfo by ID.
+type FigurePartSetMap map[int]*FigurePartSetInfo
 
+// A FigurePartColorInfo defines information used to color figure parts.
 type FigurePartColorInfo = x.FigureColor
 
+// A FigurePartSetInfo contains information about a collection of figure parts.
 type FigurePartSetInfo struct {
 	Id            int
 	Gender        string
 	Club          int
-	Colorable     bool
-	Selectable    bool
+	Colorable     bool // Whether this part set is colorable.
+	Selectable    bool // Whether this part set can be selected.
 	Preselectable bool
-	Parts         []FigurePartInfo
-	HiddenLayers  []nx.FigurePartType
+	Parts         []FigurePartInfo    // The parts contained in this part set.
+	HiddenLayers  []nx.FigurePartType // Defines layers to be hidden when this part set is worn.
 }
 
+// A FigurePartInfo contains information about a figure part.
 type FigurePartInfo struct {
 	Id         int
 	Type       nx.FigurePartType
@@ -38,37 +47,42 @@ type FigurePartInfo struct {
 	ColorIndex int
 }
 
-func (fd *FigureData) PaletteFor(partType nx.FigurePartType) FigureColorPalette {
+// PaletteFor finds the color palette for the specified figure part type.
+func (fd *FigureData) PaletteFor(partType nx.FigurePartType) FigureColorPaletteMap {
 	return fd.Palettes[fd.SetPalettes[partType]]
 }
 
+// Unmarshals an XML document as raw bytes into a FigureData.
 func (fd *FigureData) UnmarshalBytes(data []byte) (err error) {
-	var xfd *x.FigureData
-	err = xml.Unmarshal(data, &xfd)
+	var xFigureData *x.FigureData
+	err = xml.Unmarshal(data, &xFigureData)
 	if err != nil {
 		return
 	}
 
 	*fd = FigureData{}
-	fd.Palettes = map[int]FigureColorPalette{}
+	fd.Palettes = map[int]FigureColorPaletteMap{}
 	fd.SetPalettes = map[nx.FigurePartType]int{}
 	fd.Sets = map[nx.FigurePartType]FigurePartSetMap{}
 
-	for _, p := range xfd.Palettes {
-		palette := FigureColorPalette{}
-		for _, c := range p.Colors {
+	for _, p := range xFigureData.Palettes {
+		palette := FigureColorPaletteMap{}
+		for i := range p.Colors {
+			c := &p.Colors[i]
 			palette[c.Id] = c
 		}
 		fd.Palettes[p.Id] = palette
 	}
 
-	for _, xSetType := range xfd.Sets {
+	for _, xSetType := range xFigureData.Sets {
 		partSetType := nx.FigurePartType(xSetType.Type)
 
 		setMap := FigurePartSetMap{}
-		for _, xSet := range xSetType.Sets {
+		for i := range xSetType.Sets {
+			xSet := &xSetType.Sets[i]
 			partSet := FigurePartSetInfo{}
-			for _, xPart := range xSet.Parts {
+			for i := range xSet.Parts {
+				xPart := &xSet.Parts[i]
 				part := FigurePartInfo{
 					Id:         xPart.Id,
 					Type:       nx.FigurePartType(xPart.Type),
@@ -78,11 +92,12 @@ func (fd *FigureData) UnmarshalBytes(data []byte) (err error) {
 				}
 				partSet.Parts = append(partSet.Parts, part)
 			}
-			for _, xLayer := range xSet.HiddenLayers {
+			for i := range xSet.HiddenLayers {
+				xLayer := &xSet.HiddenLayers[i]
 				partSet.HiddenLayers = append(partSet.HiddenLayers,
 					nx.FigurePartType(xLayer.PartType))
 			}
-			setMap[xSet.Id] = partSet
+			setMap[xSet.Id] = &partSet
 		}
 
 		fd.Sets[partSetType] = setMap

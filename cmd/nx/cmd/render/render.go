@@ -3,8 +3,7 @@ package render
 import (
 	"github.com/spf13/cobra"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
-	"xabbo.b7c.io/nx/cmd/nx/cmd/render/furni"
+	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
 )
 
 var Cmd = &cobra.Command{
@@ -13,7 +12,5 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	root.Cmd.AddCommand(Cmd)
-
-	Cmd.AddCommand(furni.Cmd)
+	_root.Cmd.AddCommand(Cmd)
 }

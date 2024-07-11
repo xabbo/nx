@@ -1,4 +1,4 @@
-package render
+package imager
 
 import (
 	"fmt"
@@ -36,6 +36,19 @@ Rendering process
 	  arm/sleeve, then fall back to std for the body etc.
 	- Some assets just don't exist for that part e.g. eye/face when facing away
 */
+
+// An Avatar defines the state of a Figure in a room.
+type Avatar struct {
+	nx.Figure
+	Direction     int
+	HeadDirection int
+	Action        nx.AvatarState
+	Expression    nx.AvatarState
+	HandItem      int
+	Effect        int
+	Sign          int
+	HeadOnly      bool
+}
 
 var layers = []nx.FigurePartType{
 	nx.LeftHand,
@@ -131,12 +144,12 @@ var layerOrderSide = []layerGroup{
 	handItemLayers,
 }
 
-type AvatarRenderer struct {
-	mgr *gamedata.GamedataManager
+type avatarImager struct {
+	mgr gamedata.Manager
 }
 
-func NewAvatarRenderer(mgr *gamedata.GamedataManager) *AvatarRenderer {
-	return &AvatarRenderer{mgr}
+func NewAvatarImager(mgr gamedata.Manager) AvatarImager {
+	return avatarImager{mgr}
 }
 
 type AvatarPart struct {
@@ -152,27 +165,27 @@ type AvatarPart struct {
 }
 
 // Converts the specified figure into individual figure parts.
-func (r *AvatarRenderer) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
-	if !r.mgr.FigureLoaded() {
+func (r avatarImager) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
+	if r.mgr.Figure() == nil {
 		err = fmt.Errorf("figure data not loaded")
 		return
 	}
-	if !r.mgr.FigureMapLoaded() {
+	if r.mgr.FigureMap() == nil {
 		err = fmt.Errorf("figure map not loaded")
 		return
 	}
 
 	hiddenLayers := map[nx.FigurePartType]bool{}
-	for _, partSet := range fig.Parts {
-		setInfo := r.mgr.Figure.Sets[partSet.Type][partSet.Id]
+	for _, partSet := range fig.Items {
+		setInfo := r.mgr.Figure().Sets[partSet.Type][partSet.Id]
 		for _, layer := range setInfo.HiddenLayers {
 			hiddenLayers[layer] = true
 		}
 	}
 
-	for _, partSet := range fig.Parts {
-		setInfo := r.mgr.Figure.Sets[partSet.Type][partSet.Id]
-		palette := r.mgr.Figure.PaletteFor(partSet.Type)
+	for _, partSet := range fig.Items {
+		setInfo := r.mgr.Figure().Sets[partSet.Type][partSet.Id]
+		palette := r.mgr.Figure().PaletteFor(partSet.Type)
 
 		assumedLibrary := ""
 		for _, partInfo := range setInfo.Parts {
@@ -202,7 +215,7 @@ func (r *AvatarRenderer) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 				Hidden:  hiddenLayers[partInfo.Type],
 			}
 
-			if lib, ok := r.mgr.FigureMap.Parts[gamedata.FigureMapPart{Type: partInfo.Type, Id: partInfo.Id}]; ok {
+			if lib, ok := r.mgr.FigureMap().Parts[nx.FigurePart{Type: partInfo.Type, Id: partInfo.Id}]; ok {
 				renderPart.LibraryName = lib.Name
 				assumedLibrary = lib.Name
 			} else {
@@ -223,20 +236,20 @@ func (r *AvatarRenderer) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 }
 
 // Finds the required figure part libraries given the specified Figure.
-func (r *AvatarRenderer) RequiredLibs(fig nx.Figure) (libs []string, err error) {
-	if !r.mgr.FigureLoaded() {
+func (r avatarImager) RequiredLibs(fig nx.Figure) (libs []string, err error) {
+	if r.mgr.Figure() == nil {
 		err = fmt.Errorf("figure data not loaded")
 		return
 	}
-	if !r.mgr.FigureMapLoaded() {
+	if r.mgr.FigureMap() == nil {
 		err = fmt.Errorf("figure map not loaded")
 		return
 	}
 
 	known := map[string]struct{}{}
 
-	for _, part := range fig.Parts {
-		setGroup, ok := r.mgr.Figure.Sets[part.Type]
+	for _, part := range fig.Items {
+		setGroup, ok := r.mgr.Figure().Sets[part.Type]
 		if !ok {
 			err = fmt.Errorf("no figure part sets found for part type %q", part.Type)
 			return
@@ -248,11 +261,11 @@ func (r *AvatarRenderer) RequiredLibs(fig nx.Figure) (libs []string, err error) 
 		}
 
 		for _, part := range set.Parts {
-			mapPart := gamedata.FigureMapPart{
+			mapPart := nx.FigurePart{
 				Type: part.Type,
 				Id:   part.Id,
 			}
-			partLib, ok := r.mgr.FigureMap.Parts[mapPart]
+			partLib, ok := r.mgr.FigureMap().Parts[mapPart]
 			if !ok {
 				err = fmt.Errorf("part library not found for %s:%d", part.Type, part.Id)
 				return
@@ -276,7 +289,7 @@ func flipDir(dir int) int {
 }
 
 // Renders an avatar to a list of sprites.
-func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error) {
+func (r avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 	parts, err := r.Parts(avatar.Figure)
 	if err != nil {
 		return
@@ -313,24 +326,17 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 	// First pass over parts
 
 	// Find flipped parts and replace if necessary.
-	// most assets are just flipped when facing S-NW
-	// however some parts have an asset for that direction
-	// e.g. left arm wave when facing S-NW has an asset
-	// since when facing S-NW, the assets are flipped
-	// the left arm is visually the right arm
-	// however, since there is a left arm asset
-	// there will be 2 left arms, one is the flipped right arm
-	// the flipped right arm must be removed
-
-	// the right arm must be removed and replaced with
-	// another left arm asset
-
-	// the left arm asset must also be moved to the
-	// right arm layer so that it is ordered correctly
+	// Most assets are just flipped when facing left.
+	// However, some parts have an asset for that direction
+	// e.g. left arm wave has an asset for each direction.
+	// The asset cannot simply be flipped as the waving arm would turn into the right arm.
+	// However, there will now be 2 left arms, with one being a right arm asset.
+	// The flipped right arm must be removed and replaced with a flipped left arm asset.
+	// The left arm asset must also be moved to the right arm layer so that it is ordered correctly.
 
 	type partExtra struct {
 		Spec   FigureAssetSpec
-		Asset  res.Asset
+		Asset  *res.Asset
 		Order  int
 		Offset image.Point
 		FlipH  bool
@@ -352,11 +358,11 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 			continue
 		}
 
-		if !r.mgr.Assets.LibraryExists(part.LibraryName) {
+		if !r.mgr.LibraryExists(part.LibraryName) {
 			err = fmt.Errorf("required part library not loaded: %q", part.LibraryName)
 			return
 		}
-		lib := r.mgr.Assets.Library(part.LibraryName)
+		lib := r.mgr.Library(part.LibraryName)
 
 		partDir := avatar.Direction
 		isHead := part.Type.IsHead()
@@ -372,7 +378,7 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 			continue
 		}
 
-		var asset res.Asset
+		var asset *res.Asset
 		asset, err = lib.Asset(spec.String())
 		if err != nil {
 			return
@@ -406,24 +412,36 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 	})
 
 	// Convert parts into sprites
+	anim = Animation{
+		Layers: map[int]AnimationLayer{},
+	}
+
+	layerId := 0
 	for _, part := range parts {
 		if part.Hidden {
 			continue
 		}
 		extra := partExtraData[partId{part.Type, part.Id}]
-		sprites = append(sprites, Sprite{
-			Name:   extra.Spec.String(),
-			Asset:  extra.Asset,
-			Offset: extra.Offset,
-			Color:  part.Color,
-			FlipH:  extra.FlipH,
-		})
+
+		anim.Layers[layerId] = AnimationLayer{
+			Frames: map[int]Frame{
+				0: {
+					Sprite{
+						Asset:  extra.Asset,
+						Offset: extra.Offset,
+						Color:  part.Color,
+						FlipH:  extra.FlipH,
+					},
+				},
+			},
+		}
+		layerId++
 	}
 
 	return
 }
 
-func (r *AvatarRenderer) ResolveAsset(lib res.AssetLibrary, avatar nx.Avatar, part AvatarPart) *FigureAssetSpec {
+func (r *avatarImager) ResolveAsset(lib res.AssetLibrary, avatar Avatar, part AvatarPart) *FigureAssetSpec {
 	direction := avatar.Direction
 	if part.Type.IsHead() {
 		direction = avatar.HeadDirection
@@ -481,15 +499,19 @@ type FigureAssetSpec struct {
 	Frame int
 }
 
-func (n FigureAssetSpec) String() string {
-	return fmt.Sprintf("h_%s_%s_%d_%d_%d",
-		n.State, n.Type, n.Id, n.Dir, n.Frame)
+func (spec FigureAssetSpec) String() string {
+	return "h_" +
+		string(spec.State) + "_" +
+		string(spec.Type) + "_" +
+		strconv.Itoa(spec.Id) + "_" +
+		strconv.Itoa(spec.Dir) + "_" +
+		strconv.Itoa(spec.Frame)
 }
 
-func (r *AvatarRenderer) Dependencies(fig nx.Figure) (err error) {
+func (r *avatarImager) Dependencies(fig nx.Figure) (err error) {
 	return nil
 }
 
-func (r *AvatarRenderer) CompileAssets(fig nx.Figure) []res.Asset {
+func (r *avatarImager) CompileAssets(fig nx.Figure) []res.Asset {
 	return nil
 }

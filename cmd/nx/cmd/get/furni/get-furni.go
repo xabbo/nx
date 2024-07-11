@@ -1,4 +1,4 @@
-package get
+package furni
 
 import (
 	"errors"
@@ -12,20 +12,21 @@ import (
 
 	gd "xabbo.b7c.io/nx/gamedata"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_parent "xabbo.b7c.io/nx/cmd/nx/cmd/get"
 	"xabbo.b7c.io/nx/cmd/nx/spinner"
 	"xabbo.b7c.io/nx/cmd/nx/util"
 )
 
 var ErrNotFound = errors.New("not found")
 
-var getFurniCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:  "furni <identifier>",
 	RunE: runGetFurni,
 }
 
 func init() {
-	getCmd.AddCommand(getFurniCmd)
+	_parent.Cmd.AddCommand(Cmd)
 }
 
 func runGetFurni(cmd *cobra.Command, args []string) (err error) {
@@ -34,7 +35,7 @@ func runGetFurni(cmd *cobra.Command, args []string) (err error) {
 	}
 	cmd.SilenceUsage = true
 
-	mgr := gd.NewGamedataManager(root.Host)
+	mgr := gd.NewManager(_root.Host)
 	err = util.LoadFurni(mgr)
 	if err != nil {
 		return
@@ -43,8 +44,8 @@ func runGetFurni(cmd *cobra.Command, args []string) (err error) {
 	defer spinner.Stop()
 
 	for _, identifier := range args {
-		if furni, ok := mgr.Furni[identifier]; ok {
-			err := downloadFurni(&furni)
+		if furni, ok := mgr.Furni()[identifier]; ok {
+			err := downloadFurni(furni)
 			if err != nil {
 				return fmt.Errorf("failed to get %d/%s: %s", furni.Revision, furni.Identifier, err)
 			}

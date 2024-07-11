@@ -4,35 +4,25 @@ import (
 	"encoding/json"
 
 	"xabbo.b7c.io/nx"
-	j "xabbo.b7c.io/nx/json"
+	j "xabbo.b7c.io/nx/raw/json"
 )
 
-type FurniData map[string]FurniInfo
+// FurniData maps furniture info by identifier.
+type FurniData map[string]*FurniInfo
 
-/*
-type FurniData struct {
-	identifier map[string]*FurniInfo
-	typeKind map[ItemTypeKind]*FurniInfo
-}
-
-func (fd *FurniData) Identifier(identifier string) *FurniInfo{
-	return fd.identifier[identifier]
-}
-
-func (fd *FurniData) Kind(kind ItemTypeKind) *FurniInfo {
-	return fd.typeKind[kind]
-}
-*/
-
+// FurniInfo defines various information about a furniture.
 type FurniInfo struct {
 	// A numeric identifier for the furni.
 	// A floor and wall item may share the same kind.
-	// This identifier also differs between hotels.
+	// This identifier may differ between hotels.
+	// Also known as the "Id" in the original document.
+	// It is named "Kind" to differentiate it from a furni's unique instance ID.
 	Kind int
-	// The type of the furni, whether it is a floor or wall item.
+	// The type of the furni, which may be a floor or wall item.
 	Type nx.ItemType
-	// The identifier of the furni, also known as its class name.
-	// This uniquely identifies furni and is the same across hotels.
+	// A unique string identifier for a kind of furniture.
+	// This identifier is the same across hotels.
+	// Also known as "ClassName" in the original document.
 	Identifier      string
 	Revision        int
 	Name            string
@@ -55,26 +45,29 @@ type FurniInfo struct {
 	CanLayOn        bool
 }
 
+// Unmarshals a JSON document as raw bytes into a FurniData.
 func (fd *FurniData) UnmarshalBytes(data []byte) (err error) {
-	jfd := j.FurniData{}
-	err = json.Unmarshal(data, &jfd)
+	jFurniData := j.FurniData{}
+	err = json.Unmarshal(data, &jFurniData)
 	if err != nil {
 		return
 	}
 
 	*fd = FurniData{}
-	for _, jfi := range jfd.FloorItems.Infos {
-		(*fd)[jfi.Identifier] = fromJsonFurniInfo(nx.ItemFloor, jfi)
+	for i := range jFurniData.FloorItems.Infos {
+		jFurniInfo := &jFurniData.FloorItems.Infos[i]
+		(*fd)[jFurniInfo.Identifier] = fromJsonFurniInfo(nx.ItemFloor, jFurniInfo)
 	}
-	for _, jfi := range jfd.WallItems.Infos {
-		(*fd)[jfi.Identifier] = fromJsonFurniInfo(nx.ItemWall, jfi)
+	for i := range jFurniData.WallItems.Infos {
+		jFurniInfo := &jFurniData.WallItems.Infos[i]
+		(*fd)[jFurniInfo.Identifier] = fromJsonFurniInfo(nx.ItemWall, jFurniInfo)
 	}
 
 	return
 }
 
-func fromJsonFurniInfo(furniType nx.ItemType, jfi j.FurniInfo) FurniInfo {
-	return FurniInfo{
+func fromJsonFurniInfo(furniType nx.ItemType, jfi *j.FurniInfo) *FurniInfo {
+	return &FurniInfo{
 		Type:            furniType,
 		Kind:            jfi.Id,
 		Identifier:      jfi.Identifier,

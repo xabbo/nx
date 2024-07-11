@@ -7,36 +7,37 @@ import (
 
 	gd "xabbo.b7c.io/nx/gamedata"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
 	"xabbo.b7c.io/nx/cmd/nx/util"
 )
 
-var varsCommand = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "vars",
 	Short: "List and search external variables",
 	RunE:  runVars,
 }
 
-var (
+var opts struct {
 	searchKey   util.Wildcard
 	searchValue util.Wildcard
-)
+}
 
 func init() {
-	root.Cmd.AddCommand(varsCommand)
+	f := Cmd.Flags()
+	f.VarP(&opts.searchKey, "key", "k", "Key search text")
+	f.VarP(&opts.searchValue, "value", "v", "Value search text")
 
-	varsCommand.Flags().VarP(&searchKey, "key", "k", "Key search text")
-	varsCommand.Flags().VarP(&searchValue, "value", "v", "Value search text")
+	_root.Cmd.AddCommand(Cmd)
 }
 
 func runVars(cmd *cobra.Command, args []string) (err error) {
-	mgr := gd.NewGamedataManager(root.Host)
-	err = util.LoadGamedata(mgr, "Loading external variables...", gd.GamedataVariables)
+	mgr := gd.NewManager(_root.Host)
+	err = util.LoadGameData(mgr, "Loading external variables...", gd.GameDataVariables)
 	if err != nil {
 		return
 	}
 
-	for k, v := range mgr.Variables {
+	for k, v := range mgr.Variables() {
 		if !filterVar(k, v) {
 			fmt.Printf("%s=%s\n", k, v)
 		}
@@ -46,5 +47,5 @@ func runVars(cmd *cobra.Command, args []string) (err error) {
 }
 
 func filterVar(k, v string) bool {
-	return searchKey.Filter(k) || searchValue.Filter(v)
+	return opts.searchKey.Filter(k) || opts.searchValue.Filter(v)
 }

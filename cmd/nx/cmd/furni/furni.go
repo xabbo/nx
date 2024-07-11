@@ -8,45 +8,45 @@ import (
 
 	gd "xabbo.b7c.io/nx/gamedata"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
 	"xabbo.b7c.io/nx/cmd/nx/util"
 )
 
-var furniCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:  "furni",
 	RunE: runFurni,
 }
 
-var (
+var opts struct {
 	listSwitch util.MutexValue
-)
+}
 
 func init() {
-	f := furniCmd.Flags()
-	listSwitch.Switch(f, "lines", "List furni lines")
-	listSwitch.Switch(f, "categories", "List furni categories")
-	listSwitch.Switch(f, "environments", "List furni environments")
+	f := Cmd.Flags()
+	opts.listSwitch.Switch(f, "lines", "List furni lines")
+	opts.listSwitch.Switch(f, "categories", "List furni categories")
+	opts.listSwitch.Switch(f, "environments", "List furni environments")
 
-	root.Cmd.AddCommand(furniCmd)
+	_root.Cmd.AddCommand(Cmd)
 }
 
 func runFurni(cmd *cobra.Command, args []string) (err error) {
-	if listSwitch.Selected() == "" {
+	if opts.listSwitch.Selected() == "" {
 		return fmt.Errorf("no options specified")
 	}
 
-	mgr := gd.NewGamedataManager(root.Host)
+	mgr := gd.NewManager(_root.Host)
 	err = util.LoadFurni(mgr)
 	if err != nil {
 		return
 	}
 
-	furnis := make([]gd.FurniInfo, len(mgr.Furni))
-	for _, furni := range mgr.Furni {
-		furnis = append(furnis, furni)
+	furnis := make([]gd.FurniInfo, len(mgr.Furni()))
+	for _, furni := range mgr.Furni() {
+		furnis = append(furnis, *furni)
 	}
 
-	switch listSwitch.Selected() {
+	switch opts.listSwitch.Selected() {
 	case "lines":
 		listDistinctBy(furnis, getLine)
 	case "categories":

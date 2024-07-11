@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
+	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
 	"xabbo.b7c.io/nx/cmd/nx/spinner"
 	"xabbo.b7c.io/nx/cmd/nx/util"
 
@@ -14,21 +14,22 @@ import (
 	"xabbo.b7c.io/nx/web"
 )
 
-var (
-	outputJson bool
-)
-
-var profileCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:     "profile [name|unique-id]",
 	Aliases: []string{"user"},
 	Short:   "Gets a user's profile information",
 	RunE:    run,
 }
 
-func init() {
-	root.Cmd.AddCommand(profileCmd)
+var opts struct {
+	outputJson bool
+}
 
-	profileCmd.Flags().BoolVar(&outputJson, "json", false, "Output raw JSON data")
+func init() {
+	f := Cmd.Flags()
+	f.BoolVar(&opts.outputJson, "json", false, "Output raw JSON data")
+
+	_root.Cmd.AddCommand(Cmd)
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
@@ -38,11 +39,11 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 	cmd.SilenceUsage = true
 
-	api := nx.NewApiClient(root.Host)
+	api := nx.NewApiClient(_root.Host)
 
 	userName := args[0]
 
-	if outputJson {
+	if opts.outputJson {
 		var data []byte
 		err = spinner.DoErr("Loading user...", func() (err error) {
 			data, err = api.GetRawUser(userName)
