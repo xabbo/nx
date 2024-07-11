@@ -6,6 +6,7 @@ import (
 	"image"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -35,6 +36,7 @@ var opts struct {
 	dir            int // furni direction
 	state          int
 	seq            int
+	color          int
 	colors         int
 	verbose        bool
 	format         string
@@ -50,6 +52,7 @@ func init() {
 	f.IntVar(&opts.size, "size", 64, "The visualization size.")
 	f.IntVarP(&opts.state, "state", "s", 0, "The animation state.")
 	f.IntVar(&opts.seq, "seq", 0, "The animation sequence index.")
+	f.IntVar(&opts.color, "color", 0, "The color index to use.")
 	f.IntVar(&opts.colors, "colors", 256, "Number of colors to quantize when encoding to GIF.")
 	f.BoolVarP(&opts.verbose, "verbose", "v", false, "Output detailed information.")
 	f.BoolVar(&opts.fullSequence, "full-sequence", false, "Render the full animation sequence.")
@@ -132,7 +135,16 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			return
 		}
 
-		libraryName = strings.Split(libraryName, "*")[0]
+		split := strings.SplitN(libraryName, "*", 2)
+		libraryName = split[0]
+		if len(split) >= 2 {
+			strColorIndex := split[1]
+			if colorIndex, err := strconv.Atoi(strColorIndex); err == nil {
+				if opts.color == 0 {
+					opts.color = colorIndex
+				}
+			}
+		}
 	}
 
 	imgr := imager.NewFurniImager(mgr)
@@ -141,6 +153,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		Size:       opts.size,
 		Direction:  opts.dir,
 		State:      opts.state,
+		Color:      opts.color,
 	})
 	if err != nil {
 		return

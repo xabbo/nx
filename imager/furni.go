@@ -1,8 +1,10 @@
 package imager
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"image/color"
 	"os"
 
 	"xabbo.b7c.io/nx/res"
@@ -14,6 +16,7 @@ type Furni struct {
 	Direction  int
 	State      int
 	Sequence   int // Animation sequence to use.
+	Color      int
 }
 
 type furniImager struct {
@@ -115,6 +118,7 @@ func (r *furniImager) composeStatic(lib res.FurniLibrary, furni Furni) (frame Fr
 			FlipH:  asset.FlipH,
 			FlipV:  asset.FlipV,
 			Offset: asset.Offset,
+			Color:  color.White,
 		})
 	}
 
@@ -182,12 +186,27 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 				blend = BlendNone
 			}
 
+			col := color.Color(color.White)
+			if colors, ok := vis.Colors[furni.Color]; ok {
+				if colorLayer, ok := colors.Layers[layer.Id]; ok {
+					if bytes, err := hex.DecodeString(colorLayer.Color); err == nil {
+						col = color.RGBA{
+							R: bytes[0],
+							G: bytes[1],
+							B: bytes[2],
+							A: 255,
+						}
+					}
+				}
+			}
+
 			frames[frameId] = Frame{Sprite{
 				Asset:  asset,
 				FlipH:  asset.FlipH,
 				FlipV:  asset.FlipV,
 				Offset: asset.Offset,
 				Blend:  blend,
+				Color:  col,
 			}}
 		}
 

@@ -59,6 +59,9 @@ func (s *Sprite) Draw(canvas draw.Image, drawer draw.Drawer) {
 	if srcImg == nil {
 		return
 	}
+	if s.Color != color.White {
+		srcImg = blend.BlendNewImage(srcImg, image.NewUniform(s.Color), blend.Multiply)
+	}
 	bounds := srcImg.Bounds()
 	offset := s.Offset
 	if s.FlipH {
