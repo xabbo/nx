@@ -12,14 +12,24 @@ import (
 	"github.com/xyproto/palgen"
 )
 
-const alphaThreshold = 0xffff
+type gifEncoder struct {
+	alphaThreshold uint16
+}
 
-type gifEncoder struct{}
+type GifEncoderOptions struct {
+	AlphaThreshold uint16
+}
 
-type GifEncoderOptions struct{}
-
-func NewEncoderGIF() Encoder {
-	return gifEncoder{}
+func NewEncoderGIF(options ...EncoderOption) Encoder {
+	opts := GifEncoderOptions{
+		AlphaThreshold: 0x8000,
+	}
+	for _, configure := range options {
+		configure(&opts)
+	}
+	return gifEncoder{
+		alphaThreshold: opts.AlphaThreshold,
+	}
 }
 
 func (g gifEncoder) EncodeImages(w io.Writer, frames []image.Image) (err error) {
@@ -29,7 +39,7 @@ func (g gifEncoder) EncodeImages(w io.Writer, frames []image.Image) (err error) 
 			for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
 				col := img.At(x, y)
 				_, _, _, a := col.RGBA()
-				if a >= alphaThreshold {
+				if a >= uint32(g.alphaThreshold) {
 					colors = append(colors, img.At(x, y))
 				}
 			}
@@ -55,7 +65,7 @@ func (g gifEncoder) EncodeImages(w io.Writer, frames []image.Image) (err error) 
 			for i := range chImgIndex {
 				bounds := frames[i].Bounds()
 				bounds = bounds.Sub(bounds.Min)
-				src := alphaThresholdImage{frames[i], alphaThreshold}
+				src := alphaThresholdImage{frames[i], uint32(g.alphaThreshold)}
 				img := image.NewPaletted(bounds, globalPalette)
 				draw.Src.Draw(img, img.Bounds(), image.Transparent, image.Point{})
 				draw.Over.Draw(img, bounds, src, frames[i].Bounds().Min)

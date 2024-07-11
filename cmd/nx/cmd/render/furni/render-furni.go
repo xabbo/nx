@@ -30,15 +30,16 @@ var Cmd = &cobra.Command{
 }
 
 var opts struct {
-	inputFilePath string
-	size          int // visualization size
-	dir           int // furni direction
-	state         int
-	seq           int
-	colors        int
-	verbose       bool
-	format        string
-	fullSequence  bool
+	inputFilePath  string
+	size           int // visualization size
+	dir            int // furni direction
+	state          int
+	seq            int
+	colors         int
+	verbose        bool
+	format         string
+	fullSequence   bool
+	alphaThreshold float64
 }
 
 func init() {
@@ -52,6 +53,7 @@ func init() {
 	f.IntVar(&opts.colors, "colors", 256, "Number of colors to quantize when encoding to GIF.")
 	f.BoolVarP(&opts.verbose, "verbose", "v", false, "Output detailed information.")
 	f.BoolVar(&opts.fullSequence, "full-sequence", false, "Render the full animation sequence.")
+	f.Float64Var(&opts.alphaThreshold, "alpha-threshold", 0, "Alpha threshold for GIF encoding.")
 
 	f.StringVarP(&opts.format, "format", "f", "png", "Output image format. (apng, png, gif, svg)")
 
@@ -195,7 +197,8 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		encoder := imager.NewEncoderAPNG()
 		saveEncoded(outName+".apng", encoder, imgs)
 	case "gif":
-		encoder := imager.NewEncoderGIF()
+		threshold := uint16(opts.alphaThreshold * 0xffff)
+		encoder := imager.NewEncoderGIF(imager.WithAlphaThreshold(threshold))
 		saveEncoded(outName+".gif", encoder, imgs)
 	}
 
