@@ -1,23 +1,32 @@
-package render
+package imager
 
 import (
 	"image"
 	"image/color"
+	"image/draw"
 
+	"github.com/disintegration/imaging"
 	"xabbo.b7c.io/nx/res"
 )
 
 type Sprite struct {
 	Asset  *res.Asset // A reference to the asset used by this sprite.
-	Name   string
 	FlipH  bool
 	FlipV  bool
 	Offset image.Point
 	Color  color.Color
-	Blend  int
+	Blend  Blend
 	Order  int
 }
 
+type Blend int
+
+const (
+	BlendNone Blend = iota
+	BlendAdd
+)
+
+// Image gets the source image for this sprite.
 func (s *Sprite) Image() image.Image {
 	asset := s.Asset
 	for asset.Source != nil && asset != asset.Source {
@@ -26,7 +35,7 @@ func (s *Sprite) Image() image.Image {
 	return asset.Image
 }
 
-// Returns the relative bounds of the sprite.
+// Bounds returns the relative bounds of the sprite.
 func (s *Sprite) Bounds() image.Rectangle {
 	img := s.Image()
 	if img == nil {
@@ -39,33 +48,31 @@ func (s *Sprite) Bounds() image.Rectangle {
 	return img.Bounds().Sub(offset)
 }
 
+// Size returns the size of the sprite.
 func (s *Sprite) Size() image.Point {
 	return s.Bounds().Size()
 }
 
-type Layer struct {
-	Id       int
-	Name     string
-	Blend    string
-	Children []Layer
-	Sprites  []Sprite
+// Draw draws the sprite onto the canvas using the provided drawer.
+func (s *Sprite) Draw(canvas draw.Image, drawer draw.Drawer) {
+	srcImg := s.Image()
+	if srcImg == nil {
+		return
+	}
+	bounds := srcImg.Bounds()
+	offset := s.Offset
+	if s.FlipH {
+		offset.X = offset.X*-1 + srcImg.Bounds().Dx() - 64
+		srcImg = imaging.FlipH(srcImg)
+	}
+	drawer.Draw(canvas, bounds.Sub(offset), srcImg, image.Point{})
 }
 
-func (layer *Layer) Bounds() (bounds image.Rectangle) {
-	for _, child := range layer.Children {
-		bounds = bounds.Union(child.Bounds())
-	}
-	for _, sprite := range layer.Sprites {
-		bounds = bounds.Union(sprite.Bounds())
-	}
-	return
-}
-
-type Frame []Layer
+type Frame []Sprite
 
 func (f Frame) Bounds() (bounds image.Rectangle) {
-	for _, layer := range f {
-		bounds = bounds.Union(layer.Bounds())
+	for _, sprite := range f {
+		bounds = bounds.Union(sprite.Bounds())
 	}
 	return
 }
@@ -80,6 +87,8 @@ type AnimationLayer struct {
 	Sequences   []res.FrameSequence
 }
 
+// FrameSequenceOrDefault gets the specified frame sequence if it exists, or the first sequence if `i` is out of range.
+// If the animation has no frame sequences, a sequence with a single zero frame is returned.
 func (animationLayer AnimationLayer) FrameSequenceOrDefault(i int) res.FrameSequence {
 	if i < len(animationLayer.Sequences) {
 		return animationLayer.Sequences[i]
@@ -90,7 +99,8 @@ func (animationLayer AnimationLayer) FrameSequenceOrDefault(i int) res.FrameSequ
 	}
 }
 
-func (animation Animation) Bounds() (bounds image.Rectangle) {
+// Bounds gets the relative bounds in the animation for the specified sequence.
+func (animation Animation) Bounds(sequence int) (bounds image.Rectangle) {
 	for _, layer := range animation.Layers {
 		for _, frame := range layer.Frames {
 			bounds = bounds.Union(frame.Bounds())
@@ -99,18 +109,16 @@ func (animation Animation) Bounds() (bounds image.Rectangle) {
 	return
 }
 
-func (animation *Animation) TotalFrames() int {
+func (animation *Animation) TotalFrames(seqIndex int) int {
 	n := 1
 	for _, layer := range animation.Layers {
-		sequenceLen := 1
-		if len(layer.Sequences) > 0 {
-			sequenceLen = len(layer.Sequences[0])
-		}
-		n = lcm(n, sequenceLen*max(1, layer.FrameRepeat))
+		seq := layer.FrameSequenceOrDefault(seqIndex)
+		n = lcm(n, len(seq)*max(1, layer.FrameRepeat))
 	}
 	return n
 }
 
+// LongestFrameSequence gets the longest frame sequence (given the specified sequence index) of all layers in the animation.
 func (animation *Animation) LongestFrameSequence(seqIndex int) int {
 	n := 1
 	for _, layer := range animation.Layers {

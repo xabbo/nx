@@ -4,32 +4,24 @@ import (
 	"errors"
 	"fmt"
 	"image"
-	"image/color"
-	"image/draw"
-	"image/gif"
 	"os"
 	"runtime"
 	"strings"
-	"sync"
 	"time"
 
-	"github.com/kettek/apng"
 	"github.com/spf13/cobra"
-	"github.com/xyproto/palgen"
 
 	"b7c.io/swfx"
 
 	gd "xabbo.b7c.io/nx/gamedata"
+	"xabbo.b7c.io/nx/imager"
 	"xabbo.b7c.io/nx/raw/nitro"
-	"xabbo.b7c.io/nx/render"
 	"xabbo.b7c.io/nx/res"
 
 	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
 	_parent "xabbo.b7c.io/nx/cmd/nx/cmd/render"
 	"xabbo.b7c.io/nx/cmd/nx/spinner"
 )
-
-const alphaThreshold = 0x8000
 
 var Cmd = &cobra.Command{
 	Use:  "furni [flags] [identifier]",
@@ -61,35 +53,9 @@ func init() {
 	f.BoolVarP(&opts.verbose, "verbose", "v", false, "Output detailed information.")
 	f.BoolVar(&opts.fullSequence, "full-sequence", false, "Render the full animation sequence.")
 
-	f.StringVarP(&opts.format, "format", "f", "apng", "Output image format. (apng, png, gif)")
+	f.StringVarP(&opts.format, "format", "f", "png", "Output image format. (apng, png, gif, svg)")
 
 	_parent.Cmd.AddCommand(Cmd)
-}
-
-type alphaThresholdImage struct {
-	img       image.Image
-	threshold uint32
-}
-
-func (i alphaThresholdImage) ColorModel() color.Model {
-	return i.img.ColorModel()
-}
-
-func (i alphaThresholdImage) Bounds() image.Rectangle {
-	return i.img.Bounds()
-}
-
-func (i alphaThresholdImage) At(x, y int) color.Color {
-	c := i.img.At(x, y)
-	switch c.(type) {
-	default:
-		_, _, _, a := c.RGBA()
-		if a >= i.threshold {
-			return c
-		} else {
-			return color.Transparent
-		}
-	}
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
@@ -163,10 +129,12 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return
 		}
+
+		libraryName = strings.Split(libraryName, "*")[0]
 	}
 
-	renderer := render.NewFurniRenderer(mgr)
-	anim, err := renderer.Render(render.Furni{
+	imgr := imager.NewFurniImager(mgr)
+	anim, err := imgr.Compose(imager.Furni{
 		Identifier: libraryName,
 		Size:       opts.size,
 		Direction:  opts.dir,
@@ -177,28 +145,58 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if opts.verbose {
-		spinner.Printf("Total animation frames: %d\n", anim.TotalFrames())
+		spinner.Printf("Total animation frames: %d\n", anim.TotalFrames(opts.seq))
+	}
+
+	if opts.format == "svg" {
+		outName := fmt.Sprintf("%s_%d_%d_%d_%d.%d",
+			libraryName, opts.size, opts.dir, opts.state, opts.seq, 0)
+
+		var f *os.File
+		f, err = os.OpenFile(outName+".svg", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		encoder := imager.NewEncoderSVG()
+		err = encoder.EncodeFrame(f, anim, opts.seq, 0)
+		return nil
 	}
 
 	start := time.Now()
 	spinner.Message(fmt.Sprintf("Drawing frames with %d cores...", runtime.NumCPU()))
 
 	var renderFrameCount int
-	if opts.fullSequence {
-		renderFrameCount = anim.TotalFrames()
-	} else {
-		renderFrameCount = anim.LongestFrameSequence(opts.seq)
+	switch opts.format {
+	case "apng", "gif":
+		if opts.fullSequence {
+			renderFrameCount = anim.TotalFrames(opts.seq)
+		} else {
+			renderFrameCount = anim.LongestFrameSequence(opts.seq)
+		}
+	default:
+		renderFrameCount = 1
 	}
-	imgs := anim.RenderFrames(opts.seq, renderFrameCount) // anim.DrawQuantizedFrames(opts.seq, colorPalette, renderFrameCount)
+
+	outName := fmt.Sprintf("%s_%d_%d_%d_%d.%d",
+		libraryName, opts.size, opts.dir, opts.state, opts.seq, renderFrameCount)
+
+	imgs := imager.RenderFrames(anim, opts.seq, renderFrameCount)
 	if opts.verbose {
-		spinner.Printf("Rendered %d frames in %dms\n", len(imgs), time.Since(start).Milliseconds())
+		spinner.Printf("Rendered %d frame(s) in %dms\n", len(imgs), time.Since(start).Milliseconds())
 	}
 
 	switch opts.format {
+	case "png":
+		encoder := imager.NewEncoderPNG()
+		saveEncoded(outName+".png", encoder, imgs)
 	case "apng":
-		err = saveAPNG(imgs)
+		encoder := imager.NewEncoderAPNG()
+		saveEncoded(outName+".apng", encoder, imgs)
 	case "gif":
-		err = saveGIF(imgs)
+		encoder := imager.NewEncoderGIF()
+		saveEncoded(outName+".gif", encoder, imgs)
 	}
 
 	return
@@ -223,130 +221,12 @@ func loadNitroArchive(filePath string) (archive nitro.Archive, err error) {
 	return r.ReadArchive()
 }
 
-func saveAPNG(imgs []image.Image) (err error) {
-	spinner.Message("Encoding image...")
-	start := time.Now()
-
-	a := apng.APNG{
-		Frames: make([]apng.Frame, len(imgs)),
-	}
-
-	for i := range imgs {
-		a.Frames[i].Image = imgs[i]
-		a.Frames[i].DelayNumerator = 1
-		a.Frames[i].DelayDenominator = 30
-	}
-
-	f, err := os.Create("out.png")
+func saveEncoded(name string, encoder imager.ImageEncoder, imgs []image.Image) (err error) {
+	f, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return
 	}
 	defer f.Close()
 
-	err = apng.Encode(f, a)
-	if err != nil {
-		return
-	}
-
-	if opts.verbose {
-		spinner.Printf("Encoded image in %dms.\n", time.Since(start).Milliseconds())
-	}
-	return
-}
-
-func saveGIF(imgs []image.Image) (err error) {
-	colors := make([]color.Color, 0)
-	for _, img := range imgs {
-		for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
-			for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
-				col := img.At(x, y)
-				_, _, _, a := col.RGBA()
-				if a >= 0x8000 {
-					colors = append(colors, img.At(x, y))
-				}
-			}
-		}
-	}
-
-	globalPalette, err := palgen.Generate(paletteImg(colors), 255)
-	if err != nil {
-		return
-	}
-	globalPalette = append(globalPalette, color.Transparent)
-
-	delays := make([]int, 0, len(imgs))
-	disposals := make([]byte, 0, len(imgs))
-
-	spinner.Message(fmt.Sprintf("Drawing quantized frames with %d cores...", runtime.NumCPU()))
-	start := time.Now()
-
-	wg := &sync.WaitGroup{}
-	wg.Add(len(imgs))
-
-	paletteImgs := make([]*image.Paletted, len(imgs))
-	chImgIndex := make(chan int)
-	for range runtime.NumCPU() {
-		go func() {
-			for i := range chImgIndex {
-				bounds := imgs[i].Bounds()
-				bounds = bounds.Sub(bounds.Min)
-				src := alphaThresholdImage{imgs[i], alphaThreshold}
-				img := image.NewPaletted(bounds, globalPalette)
-				draw.Src.Draw(img, img.Bounds(), image.Transparent, image.Point{})
-				draw.Over.Draw(img, bounds, src, imgs[i].Bounds().Min)
-				paletteImgs[i] = img
-				wg.Done()
-			}
-		}()
-	}
-
-	for i := range imgs {
-		chImgIndex <- i
-		delays = append(delays, 3)
-		disposals = append(disposals, gif.DisposalPrevious)
-	}
-	wg.Wait()
-	close(chImgIndex)
-
-	if opts.verbose {
-		spinner.Printf("Rendered quantized frames in %dms\n", time.Since(start).Milliseconds())
-	}
-
-	f, err := os.Create("test.gif")
-	if err != nil {
-		return
-	}
-	defer f.Close()
-
-	spinner.Message("Encoding image")
-	start = time.Now()
-
-	err = gif.EncodeAll(f, &gif.GIF{
-		Image:    paletteImgs,
-		Delay:    delays,
-		Disposal: disposals,
-	})
-	if err != nil {
-		return
-	}
-
-	if opts.verbose {
-		spinner.Printf("Encoded image in %dms\n", time.Since(start).Milliseconds())
-	}
-
-	return
-}
-
-type paletteImg color.Palette
-
-func (p paletteImg) ColorModel() color.Model {
-	return color.RGBAModel
-}
-
-func (p paletteImg) Bounds() image.Rectangle {
-	return image.Rect(0, 0, len(p), 1)
-}
-
-func (p paletteImg) At(x, y int) color.Color {
-	return p[x]
+	return encoder.EncodeImages(f, imgs)
 }

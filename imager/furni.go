@@ -1,4 +1,4 @@
-package render
+package imager
 
 import (
 	"errors"
@@ -8,30 +8,24 @@ import (
 	"xabbo.b7c.io/nx/res"
 )
 
-type FurniRenderer interface {
-	// Render assembles the furni into an Animation.
-	Render(furni Furni) Animation
-}
-
-type furniRenderer struct {
-	mgr res.LibraryManager
-}
-
 type Furni struct {
 	Identifier string
 	Size       int
 	Direction  int
 	State      int
-	Seq        int // Animation sequence to use.
+	Sequence   int // Animation sequence to use.
 }
 
-func NewFurniRenderer(mgr res.LibraryManager) *furniRenderer {
-	return &furniRenderer{mgr}
+type furniImager struct {
+	mgr res.LibraryManager
 }
 
-// Renders the furni to an Animation.
-// A furni with static visualization will return an animation with a single frame and no animation layers.
-func (r *furniRenderer) Render(furni Furni) (anim Animation, err error) {
+func NewFurniImager(mgr res.LibraryManager) *furniImager {
+	return &furniImager{mgr}
+}
+
+// Compose composes the furni to an Animation.
+func (r *furniImager) Compose(furni Furni) (anim Animation, err error) {
 	assetLib := r.mgr.Library(furni.Identifier)
 	if assetLib == nil {
 		err = errors.New("no library found")
@@ -66,7 +60,7 @@ func (r *furniRenderer) Render(furni Furni) (anim Animation, err error) {
 	switch index.Visualization {
 	case "furniture_static":
 		var fr Frame
-		fr, err = r.renderStatic(lib, furni)
+		fr, err = r.composeStatic(lib, furni)
 		if err != nil {
 			return
 		}
@@ -76,7 +70,7 @@ func (r *furniRenderer) Render(furni Furni) (anim Animation, err error) {
 			Sequences: []res.FrameSequence{[]int{0}},
 		}
 	case "furniture_animated":
-		anim, err = r.renderAnimated(lib, furni)
+		anim, err = r.composeAnimated(lib, furni)
 		if err != nil {
 			return
 		}
@@ -88,8 +82,8 @@ func (r *furniRenderer) Render(furni Furni) (anim Animation, err error) {
 	return
 }
 
-// Renders a static furniture.
-func (r *furniRenderer) renderStatic(lib res.FurniLibrary, furni Furni) (frame Frame, err error) {
+// Composes a static furniture.
+func (r *furniImager) composeStatic(lib res.FurniLibrary, furni Furni) (frame Frame, err error) {
 	// get the visualization for the specified size
 	vis, ok := lib.Visualizations()[furni.Size]
 	if !ok {
@@ -116,25 +110,19 @@ func (r *furniRenderer) renderStatic(lib res.FurniLibrary, furni Furni) (frame F
 			return
 		}
 
-		layer := Layer{
-			Id: i,
-			Sprites: []Sprite{
-				{
-					Asset:  asset,
-					FlipH:  asset.FlipH,
-					FlipV:  asset.FlipV,
-					Offset: asset.Offset,
-				},
-			},
-		}
-		frame = append(frame, layer)
+		frame = append(frame, Sprite{
+			Asset:  asset,
+			FlipH:  asset.FlipH,
+			FlipV:  asset.FlipV,
+			Offset: asset.Offset,
+		})
 	}
 
 	return
 }
 
-// Renders an animated furniture.
-func (r *furniRenderer) renderAnimated(lib res.FurniLibrary, furni Furni) (anim Animation, err error) {
+// Composes an animated furniture.
+func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim Animation, err error) {
 	// get the visualization for the specified size
 	vis, ok := lib.Visualizations()[furni.Size]
 	if !ok {
@@ -186,20 +174,21 @@ func (r *furniRenderer) renderAnimated(lib res.FurniLibrary, furni Furni) (anim 
 				ink = visLayer.Ink
 			}
 
-			frames[frameId] = Frame{
-				Layer{
-					Id:    frameId,
-					Blend: ink,
-					Sprites: []Sprite{
-						{
-							Asset:  asset,
-							FlipH:  asset.FlipH,
-							FlipV:  asset.FlipV,
-							Offset: asset.Offset,
-						},
-					},
-				},
+			var blend Blend
+			switch ink {
+			case "ADD":
+				blend = BlendAdd
+			default:
+				blend = BlendNone
 			}
+
+			frames[frameId] = Frame{Sprite{
+				Asset:  asset,
+				FlipH:  asset.FlipH,
+				FlipV:  asset.FlipV,
+				Offset: asset.Offset,
+				Blend:  blend,
+			}}
 		}
 
 		anim.Layers[layer.Id] = AnimationLayer{

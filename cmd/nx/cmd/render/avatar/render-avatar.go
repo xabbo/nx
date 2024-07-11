@@ -18,7 +18,7 @@ import (
 
 	"xabbo.b7c.io/nx"
 	gd "xabbo.b7c.io/nx/gamedata"
-	"xabbo.b7c.io/nx/render"
+	"xabbo.b7c.io/nx/imager"
 	"xabbo.b7c.io/nx/web"
 
 	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
@@ -153,7 +153,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	mgr := gd.NewManager(_root.Host)
-	renderer := render.NewAvatarRenderer(mgr)
+	renderer := imager.NewAvatarRenderer(mgr)
 
 	var figure nx.Figure
 	err = figure.Parse(figureString)
@@ -205,7 +205,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 		return
 	}
 
-	avatar := nx.Avatar{
+	avatar := imager.Avatar{
 		Figure:        figure,
 		Direction:     opts.dir,
 		HeadDirection: opts.headDir,
@@ -752,7 +752,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 // 	// }
 // 	// defer fsvg.close()
 
-func writeSvg(f io.StringWriter, sprites []render.Sprite) {
+func writeSvg(f io.StringWriter, sprites []imager.Sprite) {
 	f.WriteString(`<svg xmlns="http://www.w3.org/2000/svg"
 		xmlns:svg="http://www.w3.org/2000/svg"
 		xmlns:xlink="http://www.w3.org/1999/xlink"

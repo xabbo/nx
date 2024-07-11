@@ -7,18 +7,23 @@ import (
 	x "xabbo.b7c.io/nx/raw/xml"
 )
 
+// FurniAssetSpec represents an asset specifier for a furni library.
 type FurniAssetSpec struct {
 	Name      string
 	Size      int
-	Layer     int
+	Layer     int // The layer index. A negative value represents the `sd` (shadow) layer.
 	Direction int
-	Frame     int
+	Frame     int // The frame index.
 }
 
 func (spec *FurniAssetSpec) String() string {
+	layer := "sd"
+	if spec.Layer >= 0 {
+		layer = string('a' + rune(spec.Layer))
+	}
 	return spec.Name + "_" +
 		strconv.Itoa(spec.Size) + "_" +
-		string('a'+rune(spec.Layer)) + "_" +
+		layer + "_" +
 		strconv.Itoa(spec.Direction) + "_" +
 		strconv.Itoa(spec.Frame)
 }
@@ -153,7 +158,7 @@ type Layer struct {
 	Id          int
 	Z           int
 	Alpha       int
-	Ink         string // Blend mode used for this layer.
+	Ink         string
 	IgnoreMouse bool
 	Color       int
 }
@@ -250,7 +255,7 @@ type AnimationLayer struct {
 	Id             int
 	LoopCount      int
 	FrameRepeat    int
-	Random         bool
+	Random         int
 	FrameSequences []FrameSequence // A list of frame sequences.
 }
 
@@ -277,7 +282,7 @@ func (layer *AnimationLayer) fromNitro(id int, v nitro.AnimationLayer) *Animatio
 		Id:             id,
 		LoopCount:      v.LoopCount,
 		FrameRepeat:    v.FrameRepeat,
-		Random:         v.Random != 0,
+		Random:         v.Random,
 		FrameSequences: make([]FrameSequence, 0, len(v.FrameSequences)),
 	}
 	for _, srcSeq := range v.FrameSequences {
@@ -374,8 +379,8 @@ func (model *Model) fromNitro(v nitro.Model) *Model {
 }
 
 type Dimensions struct {
-	X int
-	Y int
+	X float64
+	Y float64
 	Z float64
 }
 

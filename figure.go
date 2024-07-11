@@ -12,19 +12,6 @@ type Figure struct {
 	Items  []FigureItem
 }
 
-// An Avatar defines the state of a Figure in a room.
-type Avatar struct {
-	Figure
-	Direction     int
-	HeadDirection int
-	Action        AvatarState
-	Expression    AvatarState
-	HandItem      int
-	Effect        int
-	Sign          int
-	HeadOnly      bool
-}
-
 // A FigureItem defines a figure part set type and identifier with colors.
 type FigureItem struct {
 	Type   FigurePartType // The type of figure part set.

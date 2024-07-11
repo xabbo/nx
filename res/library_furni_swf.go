@@ -99,8 +99,6 @@ func LoadFurniLibrarySwf(swf *swfx.Swf) (assetLib AssetLibrary, err error) {
 		}
 		imgTag := getImageTag(swf, libName+"_"+assetName)
 		if imgTag == nil {
-			err = fmt.Errorf("failed to find asset %q in %q",
-				assetName, libName)
 			continue
 		}
 		var img image.Image

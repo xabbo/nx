@@ -1,5 +1,10 @@
 package xml
 
+import (
+	"encoding/xml"
+	"strconv"
+)
+
 // index.xml
 
 type Index struct {
@@ -22,8 +27,8 @@ type Model struct {
 }
 
 type Dimensions struct {
-	X int     `xml:"x,attr"`
-	Y int     `xml:"y,attr"`
+	X float64 `xml:"x,attr"`
+	Y float64 `xml:"y,attr"`
 	Z float64 `xml:"z,attr"`
 }
 
@@ -87,8 +92,44 @@ type AnimationLayer struct {
 	Id             int             `xml:"id,attr"`
 	LoopCount      int             `xml:"loopCount,attr"`
 	FrameRepeat    int             `xml:"frameRepeat,attr"`
-	Random         bool            `xml:"random,attr"`
+	Random         int             `xml:"random,attr"`
 	FrameSequences []FrameSequence `xml:"frameSequence"`
+}
+
+func (layer *AnimationLayer) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	shim := struct {
+		Id             int             `xml:"id,attr"`
+		LoopCount      string          `xml:"loopCount,attr"`
+		FrameRepeat    float64         `xml:"frameRepeat,attr"`
+		Random         int             `xml:"random,attr"`
+		FrameSequences []FrameSequence `xml:"frameSequence"`
+	}{}
+
+	err := d.DecodeElement(&shim, &start)
+	if err != nil {
+		return err
+	}
+
+	// TODO: investigate
+	// -----
+	// wf_act_furni_to_furni
+	// frameRepeat="1.5"
+	// -----
+	// arcade_c23_cyberpunk
+	// <frame id="NaN"/>
+	// -----
+	// hween12_duck
+	// <animationLayer id="1" loopCount="+">
+
+	loopCount, _ := strconv.Atoi(shim.LoopCount)
+	*layer = AnimationLayer{
+		Id:             shim.Id,
+		LoopCount:      loopCount,
+		FrameRepeat:    int(shim.FrameRepeat),
+		Random:         shim.Random,
+		FrameSequences: shim.FrameSequences,
+	}
+	return nil
 }
 
 type FrameSequence struct {
@@ -97,4 +138,19 @@ type FrameSequence struct {
 
 type AnimationFrame struct {
 	Id int `xml:"id,attr"`
+}
+
+func (frame *AnimationFrame) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	shim := struct {
+		Id string `xml:"id,attr"`
+	}{}
+
+	err := d.DecodeElement(&shim, &start)
+	if err != nil {
+		return err
+	}
+
+	id, _ := strconv.Atoi(shim.Id)
+	*frame = AnimationFrame{Id: id}
+	return nil
 }

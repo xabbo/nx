@@ -1,4 +1,4 @@
-package render
+package imager
 
 import (
 	"fmt"
@@ -36,6 +36,19 @@ Rendering process
 	  arm/sleeve, then fall back to std for the body etc.
 	- Some assets just don't exist for that part e.g. eye/face when facing away
 */
+
+// An Avatar defines the state of a Figure in a room.
+type Avatar struct {
+	nx.Figure
+	Direction     int
+	HeadDirection int
+	Action        nx.AvatarState
+	Expression    nx.AvatarState
+	HandItem      int
+	Effect        int
+	Sign          int
+	HeadOnly      bool
+}
 
 var layers = []nx.FigurePartType{
 	nx.LeftHand,
@@ -276,7 +289,7 @@ func flipDir(dir int) int {
 }
 
 // Renders an avatar to a list of sprites.
-func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error) {
+func (r *AvatarRenderer) Sprites(avatar Avatar) (sprites []Sprite, err error) {
 	parts, err := r.Parts(avatar.Figure)
 	if err != nil {
 		return
@@ -313,20 +326,13 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 	// First pass over parts
 
 	// Find flipped parts and replace if necessary.
-	// most assets are just flipped when facing S-NW
-	// however some parts have an asset for that direction
-	// e.g. left arm wave when facing S-NW has an asset
-	// since when facing S-NW, the assets are flipped
-	// the left arm is visually the right arm
-	// however, since there is a left arm asset
-	// there will be 2 left arms, one is the flipped right arm
-	// the flipped right arm must be removed
-
-	// the right arm must be removed and replaced with
-	// another left arm asset
-
-	// the left arm asset must also be moved to the
-	// right arm layer so that it is ordered correctly
+	// Most assets are just flipped when facing left.
+	// However, some parts have an asset for that direction
+	// e.g. left arm wave has an asset for each direction.
+	// The asset cannot simply be flipped as the waving arm would turn into the right arm.
+	// However, there will now be 2 left arms, with one being a right arm asset.
+	// The flipped right arm must be removed and replaced with a flipped left arm asset.
+	// The left arm asset must also be moved to the right arm layer so that it is ordered correctly.
 
 	type partExtra struct {
 		Spec   FigureAssetSpec
@@ -412,7 +418,6 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 		}
 		extra := partExtraData[partId{part.Type, part.Id}]
 		sprites = append(sprites, Sprite{
-			Name:   extra.Spec.String(),
 			Asset:  extra.Asset,
 			Offset: extra.Offset,
 			Color:  part.Color,
@@ -423,7 +428,7 @@ func (r *AvatarRenderer) Sprites(avatar nx.Avatar) (sprites []Sprite, err error)
 	return
 }
 
-func (r *AvatarRenderer) ResolveAsset(lib res.AssetLibrary, avatar nx.Avatar, part AvatarPart) *FigureAssetSpec {
+func (r *AvatarRenderer) ResolveAsset(lib res.AssetLibrary, avatar Avatar, part AvatarPart) *FigureAssetSpec {
 	direction := avatar.Direction
 	if part.Type.IsHead() {
 		direction = avatar.HeadDirection
