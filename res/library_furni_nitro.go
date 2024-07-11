@@ -93,7 +93,6 @@ func LoadFurniLibraryNitro(archive nitro.Archive) (assetLib AssetLibrary, err er
 		name = nitroLib.name + "_" + name
 		spriteInfo, ok := nitroFurni.Spritesheet.Frames[name]
 		if !ok {
-			fmt.Println("no", name)
 			continue
 		}
 		frame := spriteInfo.Frame
