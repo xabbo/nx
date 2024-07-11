@@ -55,6 +55,7 @@ func (s *Sprite) Size() image.Point {
 }
 
 // Draw draws the sprite onto the canvas using the provided drawer.
+// If the drawer is nil, one will be selected automatically based on the sprite's blending mode.
 func (s *Sprite) Draw(canvas draw.Image, drawer draw.Drawer) {
 	srcImg := s.Image()
 	if srcImg == nil {
@@ -62,6 +63,14 @@ func (s *Sprite) Draw(canvas draw.Image, drawer draw.Drawer) {
 	}
 	if s.Color != color.White {
 		srcImg = blend.BlendNewImage(srcImg, image.NewUniform(s.Color), blend.Multiply)
+	}
+	if drawer == nil {
+		switch s.Blend {
+		case BlendAdd:
+			drawer = additiveDrawer{}
+		default:
+			drawer = draw.Over
+		}
 	}
 	bounds := srcImg.Bounds()
 	offset := s.Offset

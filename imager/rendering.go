@@ -15,9 +15,6 @@ import (
 
 func (frame Frame) Draw(canvas draw.Image, drawer draw.Drawer) {
 	for _, sprite := range frame {
-		if sprite.Blend == BlendAdd {
-			continue
-		}
 		sprite.Draw(canvas, drawer)
 	}
 }
@@ -64,7 +61,7 @@ func RenderFrames(anim Animation, seqIndex, frameCount int) []image.Image {
 		go func() {
 			for frameIndex := range ch {
 				img := image.NewRGBA(bounds)
-				DrawFrame(anim, img, draw.Over, seqIndex, frameIndex)
+				DrawFrame(anim, img, nil, seqIndex, frameIndex)
 				frames[frameIndex] = img
 				wg.Done()
 			}
@@ -92,7 +89,7 @@ func RenderQuantizedFrames(anim Animation, seqIndex int, palette color.Palette, 
 			for frameIndex := range ch {
 				img := image.NewPaletted(bounds, palette)
 				draw.Src.Draw(img, bounds, image.Transparent, image.Point{})
-				DrawFrame(anim, img, draw.Over, seqIndex, frameIndex)
+				DrawFrame(anim, img, nil, seqIndex, frameIndex)
 				frames[frameIndex] = img
 				wg.Done()
 			}
