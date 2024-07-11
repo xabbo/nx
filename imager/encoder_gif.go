@@ -77,7 +77,7 @@ func (g gifEncoder) EncodeImages(w io.Writer, frames []image.Image) (err error) 
 
 	for i := range frames {
 		chImgIndex <- i
-		delays = append(delays, 3)
+		delays = append(delays, 4)
 		disposals = append(disposals, gif.DisposalBackground)
 	}
 	wg.Wait()
