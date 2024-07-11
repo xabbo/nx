@@ -174,7 +174,7 @@ func printAnimationLayer(l list.Writer, layer *res.AnimationLayer) {
 	l.Indent()
 	l.AppendItem(fmt.Sprintf("Loop count: %d", layer.LoopCount))
 	l.AppendItem(fmt.Sprintf("Frame repeat: %d", layer.FrameRepeat))
-	l.AppendItem(fmt.Sprintf("Random: %t", layer.Random))
+	l.AppendItem(fmt.Sprintf("Random: %d", layer.Random))
 	l.AppendItem(fmt.Sprintf("Sequences: %d", len(layer.FrameSequences)))
 	l.Indent()
 	for i, seq := range layer.FrameSequences {
