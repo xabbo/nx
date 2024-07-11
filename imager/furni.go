@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"image"
 	"image/color"
 	"os"
 
@@ -113,11 +114,16 @@ func (r *furniImager) composeStatic(lib res.FurniLibrary, furni Furni) (frame Fr
 			return
 		}
 
+		offset := asset.Offset
+		if asset.FlipH {
+			offset = flipOffsetFurni(offset, asset.SourceImage().Bounds())
+		}
+
 		frame = append(frame, Sprite{
 			Asset:  asset,
 			FlipH:  asset.FlipH,
 			FlipV:  asset.FlipV,
-			Offset: asset.Offset,
+			Offset: offset,
 			Color:  color.White,
 		})
 	}
@@ -206,11 +212,16 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 				}
 			}
 
+			offset := asset.Offset
+			if asset.FlipH {
+				offset = flipOffsetFurni(offset, asset.SourceImage().Bounds())
+			}
+
 			frames[frameId] = Frame{Sprite{
 				Asset:  asset,
 				FlipH:  asset.FlipH,
 				FlipV:  asset.FlipV,
-				Offset: asset.Offset,
+				Offset: offset,
 				Blend:  blend,
 				Color:  col,
 				Alpha:  alpha,
@@ -225,4 +236,9 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 	}
 
 	return
+}
+
+func flipOffsetFurni(offset image.Point, bounds image.Rectangle) image.Point {
+	offset.X = -offset.X + bounds.Dx()
+	return offset
 }

@@ -44,11 +44,7 @@ func (s *Sprite) Bounds() image.Rectangle {
 	if img == nil {
 		return image.Rectangle{}
 	}
-	offset := s.Offset
-	if s.FlipH {
-		offset.X = -offset.X + img.Bounds().Dx() - 64
-	}
-	return img.Bounds().Sub(offset)
+	return img.Bounds().Sub(s.Offset)
 }
 
 // Size returns the size of the sprite.
@@ -69,7 +65,6 @@ func (s *Sprite) Draw(canvas draw.Image, drawer draw.Drawer) {
 	bounds := srcImg.Bounds()
 	offset := s.Offset
 	if s.FlipH {
-		offset.X = offset.X*-1 + srcImg.Bounds().Dx() - 64
 		srcImg = imaging.FlipH(srcImg)
 	}
 	if drawer == nil {
