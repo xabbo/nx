@@ -3,47 +3,79 @@
 version: '3'
 
 vars:
-  HostOS:
+  GOHOSTOS:
     sh: go env GOHOSTOS
-  HostArch:
+  GOHOSTARCH:
     sh: go env GOHOSTARCH
 
 tasks:
   default:
     cmds:
       - task: build
+      - task: pkg
   build:
     cmds:
-      - for: [windows, linux, darwin]
-        vars:
-          Platform: '{{.ITEM}}'
-        task: build-for
-  build-for:
-    internal: true
-    vars:
-      Platform: '{{.Platform | default .HostOS}}'
-      Os: '{{.Platform | replace "darwin" "mac"}}'
-    env:
-      GOOS: "{{.Platform}}"
+      - for: [windows, linux, mac]
+        task: build-{{.ITEM}}
+  build-windows:
     cmds:
-      - go build -ldflags="-s -w" -trimpath=1 -o ./bin/{{.Os}}/ ./cmd/nx
+      - task: go-build
+        vars:
+          Os: windows
+          Arch: amd64
+          Output: bin/windows/nx.exe
+  build-linux:
+    cmds:
+      - task: go-build
+        vars:
+          Os: linux
+          Arch: amd64
+          Output: bin/linux/nx
+  build-mac:
+    cmds:
+      - task: go-build
+        vars:
+          Os: darwin
+          Arch: amd64
+          Output: bin/mac/nx_amd64
+      - task: go-build
+        vars:
+          Os: darwin
+          Arch: arm64
+          Output: bin/mac/nx_arm64
+      - lipo -create -output bin/mac/nx bin/mac/nx_{arm64,amd64}
+      - '{{if eq .OS "Windows_NT"}}powershell rm ".\bin\mac\*" -Include "nx_*"{{else}}rm bin/mac/nx_{arm64,amd64}{{end}}'
+  go-build:
+    env:
+      GOOS: '{{.Os | default .GOHOSTOS}}'
+      GOARCH: '{{.Arch | default .GOHOSTARCH}}'
+    cmds:
+      - go build -ldflags="-s -w" -trimpath=1 -o "{{.Output}}" ./cmd/nx
   pkg:
     cmds:
-      - for: [windows, linux, darwin]
-        vars:  
-          Platform: '{{.ITEM}}'
-        task: pkg-platform
+      - task: pkg-platform
+        vars:
+          Os: windows
+          Arch: amd64
+      - task: pkg-platform
+        vars:
+          Os: linux
+          Arch: amd64
+      - task: pkg-platform
+        vars:
+          Os: mac
+          Arch: universal
   pkg-platform:
     internal: true
     dir: bin
     vars:
-      Platform: '{{.Platform | default .HostOS}}'
-      Os: '{{.Platform | replace "darwin" "mac"}}' 
+      Os: '{{.Os | default "windows"}}' 
+      Arch: '{{.Arch | default "amd64"}}'
     cmds:
       - task: zip
         vars:
           Files: '.\{{.Os}}\*'
-          Output: '{{.Os}}_{{.HostArch}}.zip'
+          Output: '{{.Os}}_{{.Arch}}.zip'
   zip:
     internal: true
     dir: bin
