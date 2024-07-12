@@ -193,7 +193,17 @@ func (r avatarImager) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 			c = color.White
 			if partInfo.Colorable && partInfo.Type != nx.Eyes {
 				if partInfo.ColorIndex > 0 {
-					cv, err := strconv.ParseInt(palette[partSet.Colors[partInfo.ColorIndex-1]].Value, 16, 64)
+					if (partInfo.ColorIndex - 1) >= len(partSet.Colors) {
+						err = fmt.Errorf("expected at least %d color(s) for part %s-%d", partInfo.ColorIndex, partSet.Type, partSet.Id)
+						return
+					}
+					colorId := partSet.Colors[partInfo.ColorIndex-1]
+					partColor, ok := palette[colorId]
+					if !ok {
+						err = fmt.Errorf("color %d not found for part %s", colorId, partSet.String())
+						return
+					}
+					cv, err := strconv.ParseInt(partColor.Value, 16, 64)
 					if err != nil {
 						return nil, err
 					}
