@@ -19,6 +19,7 @@ tasks:
           Platform: '{{.ITEM}}'
         task: build-for
   build-for:
+    internal: true
     vars:
       Platform: '{{.Platform | default .HostOS}}'
       Os: '{{.Platform | replace "darwin" "mac"}}'
@@ -27,31 +28,25 @@ tasks:
     cmds:
       - go build -ldflags="-s -w" -trimpath=1 -o ./bin/{{.Os}}/ ./cmd/nx
   pkg:
-    deps: [build]
     cmds:
       - for: [windows, linux, darwin]
         vars:  
           Platform: '{{.ITEM}}'
-        task: pkg-for
-  pkg-for:
+        task: pkg-platform
+  pkg-platform:
+    internal: true
+    dir: bin
     vars:
       Platform: '{{.Platform | default .HostOS}}'
       Os: '{{.Platform | replace "darwin" "mac"}}' 
-      Packager: '{{eq .Platform "windows" | ternary "zip" "tar"}}'
     cmds:
-      - cmd: echo {{.Packager}} {{.Platform}}
-      - task: pkg-{{.Packager}}
+      - task: zip
         vars:
-          Dir: '{{.Os}}'
-  pkg-zip:
+          Files: '.\{{.Os}}\*'
+          Output: '{{.Os}}_{{.HostArch}}.zip'
+  zip:
+    internal: true
     dir: bin
-    vars:
-      Dir: '{{.Dir | default .HostOS}}'
     cmds:
-      - cmd: 7z a {{.Dir}}_{{.HostArch}}.zip '.\{{.Dir}}\*'
-  pkg-tar:
-    dir: bin
-    vars:
-      Dir: '{{.Dir | default .HostOS}}'
-    cmds:
-      - cmd: 'tar -C {{.Dir}} -cvf {{.Dir}}_{{.HostArch}}.tar.gz .'
+      - cmd: pwd
+      - cmd: 7z a {{.Output}} "{{.Files}}" &>/dev/null
