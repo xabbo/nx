@@ -188,16 +188,16 @@ $ nx figure info -pci hr-4090-61.hd-180-1.ch-3934-110-110.lg-3596-110-110.ea-397
 ```
 
 ### Imager
-The imager is a work in progress, there will be many bugs to work out.
+The imager is a work in progress, there are still many bugs to work out.
 
 #### Avatars
 
 ```sh
-nx img avatar hr-4090-61.hd-4174-1.ch-3934-110-110.lg-3596-110-110.ea-3141.cc-4184-110-110
+nx img avatar -u Strawberry
 ```
-![hr-4090-61 hd-4174-1 ch-3934-110-110 lg-3596-110-110 ea-3141 cc-4184-110-110](https://github.com/user-attachments/assets/bce8d6fd-2680-48af-8926-f0d2a6801c31)
+![Strawberry-std-ntr-2-2](https://github.com/user-attachments/assets/39a733b2-a7ec-44ff-9406-faa2be87f00a)
 
-You can also fetch a user's figure from the API with `nx img avatar -u username`.
+You can also render a figure string directly: `nx img avatar hr-3090-42.hd-180-1.ch-3110-64-1408.lg-275-64.ha-1003-64`
 
 #### Furni
 ```sh
