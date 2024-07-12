@@ -186,3 +186,22 @@ $ nx figure info -pci hr-4090-61.hd-180-1.ch-3934-110-110.lg-3596-110-110.ea-397
    ├─  110: #1e1e1e
    └─  110: #1e1e1e
 ```
+
+### Imager
+The imager is a work in progress, there will be many bugs to work out.
+
+#### Avatars
+
+```sh
+nx img avatar hr-4090-61.hd-4174-1.ch-3934-110-110.lg-3596-110-110.ea-3141.cc-4184-110-110
+```
+![hr-4090-61 hd-4174-1 ch-3934-110-110 lg-3596-110-110 ea-3141 cc-4184-110-110](https://github.com/user-attachments/assets/bce8d6fd-2680-48af-8926-f0d2a6801c31)
+
+You can also fetch a user's figure from the API with `nx img avatar -u username`.
+
+#### Furni
+```sh
+nx img furni stellar_c23_galaxydragon -d 2 -f gif
+```
+![stellar_c23_galaxydragon_64_2_0_0 816](https://github.com/user-attachments/assets/e777a51f-04be-4c71-ac64-6761e1786697)
+
