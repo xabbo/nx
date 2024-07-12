@@ -92,7 +92,10 @@ func LoadFurniLibraryNitro(archive nitro.Archive) (furniLibrary FurniLibrary, er
 		name = nitroLib.name + "_" + name
 		spriteInfo, ok := nitroFurni.Spritesheet.Frames[name]
 		if !ok {
-			continue
+			spriteInfo, ok = nitroFurni.Spritesheet.Frames[name+".png"]
+			if !ok {
+				continue
+			}
 		}
 		frame := spriteInfo.Frame
 		size := image.Rect(0, 0, frame.W, frame.H)
