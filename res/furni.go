@@ -1,8 +1,10 @@
 package res
 
 import (
+	"slices"
 	"strconv"
 
+	"golang.org/x/exp/maps"
 	"xabbo.b7c.io/nx/raw/nitro"
 	x "xabbo.b7c.io/nx/raw/xml"
 )
@@ -287,8 +289,10 @@ func (layer *AnimationLayer) fromNitro(id int, v nitro.AnimationLayer) *Animatio
 	}
 	for _, srcSeq := range v.FrameSequences {
 		frameSequence := make(FrameSequence, 0, len(srcSeq.Frames))
-		for _, srcFrame := range srcSeq.Frames {
-			frameSequence = append(frameSequence, srcFrame.Id)
+		frameIndices := maps.Keys(srcSeq.Frames)
+		slices.Sort(frameIndices)
+		for _, frameIndex := range frameIndices {
+			frameSequence = append(frameSequence, srcSeq.Frames[frameIndex].Id)
 		}
 		layer.FrameSequences = append(layer.FrameSequences, frameSequence)
 	}
