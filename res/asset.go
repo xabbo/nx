@@ -59,7 +59,7 @@ func (a *Asset) fromNitro(name string, src nitro.Asset) *Asset {
 		Name:   name,
 		FlipH:  src.FlipH,
 		FlipV:  src.FlipV,
-		Offset: image.Point{X: src.X, Y: src.Y},
+		Offset: image.Point{X: int(src.X), Y: int(src.Y)},
 	}
 	return a
 }

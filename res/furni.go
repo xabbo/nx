@@ -176,7 +176,7 @@ func (layer *Layer) fromXml(v *x.Layer) {
 
 func (layer *Layer) fromNitro(id int, v nitro.Layer) *Layer {
 	layer.Id = id
-	layer.Z = v.Z
+	layer.Z = int(v.Z)
 	layer.Alpha = v.Alpha
 	layer.Ink = v.Ink
 	layer.IgnoreMouse = v.IgnoreMouse

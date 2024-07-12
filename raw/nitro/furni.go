@@ -1,5 +1,10 @@
 package nitro
 
+import (
+	"encoding/json"
+	"strconv"
+)
+
 type Furni struct {
 	Name              string           `json:"name"`
 	LogicType         string           `json:"logicType"`
@@ -11,11 +16,11 @@ type Furni struct {
 }
 
 type Asset struct {
-	Source string `json:"source"`
-	X      int    `json:"x"`
-	Y      int    `json:"y"`
-	FlipH  bool   `json:"flipH"`
-	FlipV  bool   `json:"flipV"`
+	Source string  `json:"source"`
+	X      float64 `json:"x"`
+	Y      float64 `json:"y"`
+	FlipH  bool    `json:"flipH"`
+	FlipV  bool    `json:"flipV"`
 }
 
 type Logic struct {
@@ -49,11 +54,11 @@ type Visualization struct {
 }
 
 type Layer struct {
-	Z           int    `json:"z"`
-	Ink         string `json:"ink"`
-	Alpha       int    `json:"alpha"`
-	Color       int    `json:"color"`
-	IgnoreMouse bool   `json:"ignoreMouse"`
+	Z           float64 `json:"z"`
+	Ink         string  `json:"ink"`
+	Alpha       int     `json:"alpha"`
+	Color       int     `json:"color"`
+	IgnoreMouse bool    `json:"ignoreMouse"`
 }
 
 type Direction struct {
@@ -111,8 +116,37 @@ type Pivot struct {
 }
 
 type Meta struct {
-	Image  string `json:"image"`
-	Format string `json:"format"`
-	Size   Size   `json:"size"`
-	Scale  int    `json:"scale"`
+	Image  string  `json:"image"`
+	Format string  `json:"format"`
+	Size   Size    `json:"size"`
+	Scale  float64 `json:"scale"`
+}
+
+func (m *Meta) UnmarshalJSON(data []byte) (err error) {
+	shim := struct {
+		Image  string `json:"image"`
+		Format string `json:"format"`
+		Size   Size   `json:"size"`
+		Scale  any    `json:"scale"`
+	}{}
+
+	err = json.Unmarshal(data, &shim)
+	if err == nil {
+		*m = Meta{
+			Image:  shim.Image,
+			Format: shim.Format,
+			Size:   shim.Size,
+		}
+		switch scale := shim.Scale.(type) {
+		case float64:
+			m.Scale = scale
+		case string:
+			scalef64, err := strconv.ParseFloat(scale, 64)
+			if err != nil {
+				return err
+			}
+			m.Scale = scalef64
+		}
+	}
+	return
 }
