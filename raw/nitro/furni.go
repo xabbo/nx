@@ -75,9 +75,9 @@ type Animation struct {
 }
 
 type AnimationLayer struct {
-	LoopCount      int                   `json:"loopCount"`
-	FrameRepeat    int                   `json:"frameRepeat"`
-	Random         int                   `json:"random"`
+	LoopCount      float64               `json:"loopCount"`
+	FrameRepeat    float64               `json:"frameRepeat"`
+	Random         float64               `json:"random"`
 	FrameSequences map[int]FrameSequence `json:"frameSequences"`
 }
 

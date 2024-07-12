@@ -282,9 +282,9 @@ func (animLayer *AnimationLayer) fromXml(v *x.AnimationLayer) {
 func (layer *AnimationLayer) fromNitro(id int, v nitro.AnimationLayer) *AnimationLayer {
 	*layer = AnimationLayer{
 		Id:             id,
-		LoopCount:      v.LoopCount,
-		FrameRepeat:    v.FrameRepeat,
-		Random:         v.Random,
+		LoopCount:      int(v.LoopCount),
+		FrameRepeat:    int(v.FrameRepeat),
+		Random:         int(v.Random),
 		FrameSequences: make([]FrameSequence, 0, len(v.FrameSequences)),
 	}
 	for _, srcSeq := range v.FrameSequences {
