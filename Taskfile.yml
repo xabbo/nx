@@ -1,0 +1,57 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  HostOS:
+    sh: go env GOHOSTOS
+  HostArch:
+    sh: go env GOHOSTARCH
+
+tasks:
+  default:
+    cmds:
+      - task: build
+  build:
+    cmds:
+      - for: [windows, linux, darwin]
+        vars:
+          Platform: '{{.ITEM}}'
+        task: build-for
+  build-for:
+    vars:
+      Platform: '{{.Platform | default .HostOS}}'
+      Os: '{{.Platform | replace "darwin" "mac"}}'
+    env:
+      GOOS: "{{.Platform}}"
+    cmds:
+      - go build -ldflags="-s -w" -trimpath=1 -o ./bin/{{.Os}}/ ./cmd/nx
+  pkg:
+    deps: [build]
+    cmds:
+      - for: [windows, linux, darwin]
+        vars:  
+          Platform: '{{.ITEM}}'
+        task: pkg-for
+  pkg-for:
+    vars:
+      Platform: '{{.Platform | default .HostOS}}'
+      Os: '{{.Platform | replace "darwin" "mac"}}' 
+      Packager: '{{eq .Platform "windows" | ternary "zip" "tar"}}'
+    cmds:
+      - cmd: echo {{.Packager}} {{.Platform}}
+      - task: pkg-{{.Packager}}
+        vars:
+          Dir: '{{.Os}}'
+  pkg-zip:
+    dir: bin
+    vars:
+      Dir: '{{.Dir | default .HostOS}}'
+    cmds:
+      - cmd: 7z a {{.Dir}}_{{.HostArch}}.zip '.\{{.Dir}}\*'
+  pkg-tar:
+    dir: bin
+    vars:
+      Dir: '{{.Dir | default .HostOS}}'
+    cmds:
+      - cmd: 'tar -C {{.Dir}} -cvf {{.Dir}}_{{.HostArch}}.tar.gz .'
