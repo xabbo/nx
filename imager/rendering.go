@@ -124,6 +124,6 @@ func DrawFrame(anim Animation, canvas draw.Image, drawer draw.Drawer, sequenceIn
 
 func RenderFrame(anim Animation, seqIndex int, frameIndex int) image.Image {
 	canvas := image.NewRGBA(anim.Bounds(seqIndex))
-	DrawFrame(anim, canvas, draw.Over, seqIndex, frameIndex)
+	DrawFrame(anim, canvas, nil, seqIndex, frameIndex)
 	return canvas
 }
