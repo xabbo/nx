@@ -80,6 +80,8 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return
 		}
+
+		mgr.AddLibrary(lib)
 	} else {
 		if len(args) != 1 {
 			return errors.New("no furni identifier or input file specified")
