@@ -32,6 +32,10 @@ func NewEncoderGIF(options ...EncoderOption) Encoder {
 	}
 }
 
+func (e gifEncoder) EncodeImage(w io.Writer, frame image.Image) error {
+	return e.EncodeImages(w, []image.Image{frame})
+}
+
 func (g gifEncoder) EncodeImages(w io.Writer, frames []image.Image) (err error) {
 	colors := make([]color.Color, 0)
 	for _, img := range frames {

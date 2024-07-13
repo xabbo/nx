@@ -9,7 +9,7 @@ import (
 
 type apngEncoder struct{}
 
-func NewEncoderAPNG() Encoder {
+func NewEncoderAPNG() AnimatedEncoder {
 	return apngEncoder{}
 }
 
@@ -28,9 +28,4 @@ func (e apngEncoder) EncodeImages(w io.Writer, imgs []image.Image) error {
 func (e apngEncoder) EncodeAnimation(w io.Writer, anim Animation, seqIndex, frameCount int) error {
 	imgs := RenderFrames(anim, seqIndex, frameCount)
 	return e.EncodeImages(w, imgs)
-}
-
-func (e apngEncoder) EncodeFrame(w io.Writer, anim Animation, seqIndex, frameIndex int) error {
-	img := RenderFrame(anim, seqIndex, frameIndex)
-	return e.EncodeImages(w, []image.Image{img})
 }
