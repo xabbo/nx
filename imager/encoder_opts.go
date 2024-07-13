@@ -9,3 +9,11 @@ func WithAlphaThreshold(threshold uint16) EncoderOption {
 		}
 	}
 }
+
+func WithColors(n int) EncoderOption {
+	return func(a any) {
+		if opts, ok := a.(*GifEncoderOptions); ok {
+			opts.Colors = n
+		}
+	}
+}

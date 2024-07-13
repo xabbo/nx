@@ -219,7 +219,10 @@ func saveAnimation(furni imager.Furni, anim imager.Animation, seqIndex, frameInd
 		encoder = imager.NewEncoderAPNG()
 	case "gif":
 		threshold := uint16(opts.alphaThreshold * 0xffff)
-		encoder = imager.NewEncoderGIF(imager.WithAlphaThreshold(threshold))
+		encoder = imager.NewEncoderGIF(
+			imager.WithAlphaThreshold(threshold),
+			imager.WithColors(opts.colors),
+		)
 	case "svg":
 		encoder = imager.NewEncoderSVG()
 	}
