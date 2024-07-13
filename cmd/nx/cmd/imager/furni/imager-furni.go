@@ -3,12 +3,9 @@ package furni
 import (
 	"errors"
 	"fmt"
-	"image"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 
@@ -30,19 +27,22 @@ var Cmd = &cobra.Command{
 	RunE: run,
 }
 
-var opts struct {
-	inputFilePath  string
-	size           int // visualization size
-	dir            int // furni direction
-	state          int
-	seq            int
-	color          int
-	colors         int
-	verbose        bool
-	format         string
-	fullSequence   bool
-	alphaThreshold float64
-}
+var (
+	lib  res.FurniLibrary
+	opts struct {
+		inputFilePath  string
+		size           int // visualization size
+		dir            int // furni direction
+		state          int
+		seq            int
+		color          int
+		colors         int
+		verbose        bool
+		format         string
+		fullSequence   bool
+		alphaThreshold float64
+	}
+)
 
 func init() {
 	f := Cmd.Flags()
@@ -68,52 +68,17 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	spinner.Start()
 	defer spinner.Stop()
 
-	var libraryName string
-
 	mgr := gd.NewManager(_root.Host)
 
 	if opts.inputFilePath != "" {
 		if len(args) > 0 {
 			return errors.New("only one of furni identifier or input file may be specified")
 		}
+
 		cmd.SilenceUsage = true
-		switch {
-		case strings.HasSuffix(opts.inputFilePath, ".swf"):
-			spinner.Message("Loading SWF library...")
-
-			var swf *swfx.Swf
-			swf, err = loadSwfFile(opts.inputFilePath)
-			if err != nil {
-				return
-			}
-
-			var lib res.AssetLibrary
-			lib, err = res.LoadFurniLibrarySwf(swf)
-			if err != nil {
-				return
-			}
-
-			mgr.AddLibrary(lib)
-			libraryName = lib.Name()
-		case strings.HasSuffix(opts.inputFilePath, ".nitro"):
-			spinner.Message("Loading Nitro library...")
-
-			var archive nitro.Archive
-			archive, err = loadNitroArchive(opts.inputFilePath)
-			if err != nil {
-				return
-			}
-
-			var lib res.AssetLibrary
-			lib, err = res.LoadFurniLibraryNitro(archive)
-			if err != nil {
-				return
-			}
-
-			mgr.AddLibrary(lib)
-			libraryName = lib.Name()
-		default:
-			return fmt.Errorf("input file format not supported")
+		lib, err = loadLibraryFile(opts.inputFilePath)
+		if err != nil {
+			return
 		}
 	} else {
 		if len(args) != 1 {
@@ -121,7 +86,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 		cmd.SilenceUsage = true
 
-		libraryName = args[0]
+		libName := args[0]
 
 		spinner.Message("Loading game data...")
 		err = mgr.Load(gd.GameDataVariables, gd.GameDataFurni)
@@ -130,17 +95,21 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 
 		spinner.Message("Loading furni library...")
-		err = mgr.LoadFurni(libraryName)
+		err = mgr.LoadFurni(libName)
 		if err != nil {
 			return
 		}
 
-		split := strings.SplitN(libraryName, "*", 2)
-		libraryName = split[0]
+		var ok bool
+		if lib, ok = mgr.Library(libName).(res.FurniLibrary); !ok {
+			err = fmt.Errorf("failed to load furni library")
+		}
+
+		split := strings.SplitN(libName, "*", 2)
 		if len(split) >= 2 {
 			strColorIndex := split[1]
 			if colorIndex, err := strconv.Atoi(strColorIndex); err == nil {
-				if opts.color == 0 {
+				if !cmd.Flags().Lookup("color").Changed {
 					opts.color = colorIndex
 				}
 			}
@@ -148,77 +117,49 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	imgr := imager.NewFurniImager(mgr)
-	anim, err := imgr.Compose(imager.Furni{
-		Identifier: libraryName,
+	furni := imager.Furni{
+		Identifier: lib.Name(),
 		Size:       opts.size,
 		Direction:  opts.dir,
 		State:      opts.state,
 		Color:      opts.color,
-	})
+	}
+	anim, err := imgr.Compose(furni)
 	if err != nil {
 		return
 	}
 
+	err = saveAnimation(furni, anim, opts.seq, 0)
+
 	if opts.verbose {
 		spinner.Printf("Total animation frames: %d\n", anim.TotalFrames(opts.seq))
 	}
-
-	if opts.format == "svg" {
-		outName := fmt.Sprintf("%s_%d_%d_%d_%d.%d",
-			libraryName, opts.size, opts.dir, opts.state, opts.seq, 0)
-
-		var f *os.File
-		f, err = os.OpenFile(outName+".svg", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-
-		encoder := imager.NewEncoderSVG()
-		err = encoder.EncodeFrame(f, anim, opts.seq, 0)
-		return nil
-	}
-
-	start := time.Now()
-	spinner.Message(fmt.Sprintf("Drawing frames with %d cores...", runtime.NumCPU()))
-
-	var renderFrameCount int
-	switch opts.format {
-	case "apng", "gif":
-		if opts.fullSequence {
-			renderFrameCount = anim.TotalFrames(opts.seq)
-		} else {
-			renderFrameCount = anim.LongestFrameSequence(opts.seq)
-		}
-	default:
-		renderFrameCount = 1
-	}
-
-	outName := fmt.Sprintf("%s_%d_%d_%d_%d.%d",
-		libraryName, opts.size, opts.dir, opts.state, opts.seq, renderFrameCount)
-
-	imgs := imager.RenderFrames(anim, opts.seq, renderFrameCount)
-	if opts.verbose {
-		spinner.Printf("Rendered %d frame(s) in %dms\n", len(imgs), time.Since(start).Milliseconds())
-	}
-
-	switch opts.format {
-	case "png":
-		encoder := imager.NewEncoderPNG()
-		saveEncoded(outName+".png", encoder, imgs)
-	case "apng":
-		encoder := imager.NewEncoderAPNG()
-		saveEncoded(outName+".apng", encoder, imgs)
-	case "gif":
-		threshold := uint16(opts.alphaThreshold * 0xffff)
-		encoder := imager.NewEncoderGIF(imager.WithAlphaThreshold(threshold))
-		saveEncoded(outName+".gif", encoder, imgs)
-	}
-
 	return
 }
 
-func loadSwfFile(filePath string) (swf *swfx.Swf, err error) {
+func loadLibraryFile(name string) (lib res.FurniLibrary, err error) {
+	switch {
+	case strings.HasSuffix(strings.ToLower(name), ".swf"):
+		var swf *swfx.Swf
+		swf, err = loadSwf(name)
+		if err != nil {
+			return
+		}
+		lib, err = res.LoadFurniLibrarySwf(swf)
+	case strings.HasSuffix(strings.ToLower(name), ".nitro"):
+		var archive nitro.Archive
+		archive, err = loadNitroArchive(name)
+		if err != nil {
+			return
+		}
+		lib, err = res.LoadFurniLibraryNitro(archive)
+	default:
+		err = fmt.Errorf("input file format not supported")
+	}
+	return
+}
+
+func loadSwf(filePath string) (swf *swfx.Swf, err error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return
@@ -237,12 +178,54 @@ func loadNitroArchive(filePath string) (archive nitro.Archive, err error) {
 	return r.ReadArchive()
 }
 
-func saveEncoded(name string, encoder imager.ImageEncoder, imgs []image.Image) (err error) {
-	f, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+func saveAnimation(furni imager.Furni, anim imager.Animation, seqIndex, frameIndex int) (err error) {
+	if opts.format == "svg" {
+		return nil
+	}
+
+	frameCount := 1
+	if opts.format == "apng" || opts.format == "gif" {
+		if opts.fullSequence {
+			frameCount = anim.TotalFrames(opts.seq)
+		} else {
+			frameCount = anim.LongestFrameSequence(opts.seq)
+		}
+	}
+
+	outName := fmt.Sprintf("%s_%d_%d_%d_%d.%d",
+		furni.Identifier, furni.Size, furni.Direction, furni.State, seqIndex, frameCount)
+
+	var encoder any
+	switch opts.format {
+	case "png":
+		encoder = imager.NewEncoderPNG()
+	case "apng":
+		encoder = imager.NewEncoderAPNG()
+	case "gif":
+		threshold := uint16(opts.alphaThreshold * 0xffff)
+		encoder = imager.NewEncoderGIF(imager.WithAlphaThreshold(threshold))
+	case "svg":
+		encoder = imager.NewEncoderSVG()
+	}
+
+	return saveEncoder(outName+"."+opts.format, encoder, anim, seqIndex, frameIndex, frameCount)
+}
+
+func saveEncoder(output string, encoder any, anim imager.Animation, seqIndex, frameIndex, frameCount int) (err error) {
+	f, err := os.OpenFile(output, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return
 	}
 	defer f.Close()
 
-	return encoder.EncodeImages(f, imgs)
+	switch encoder := encoder.(type) {
+	case imager.AnimationEncoder:
+		encoder.EncodeAnimation(f, anim, seqIndex, frameCount)
+	case imager.FrameEncoder:
+		encoder.EncodeFrame(f, anim, seqIndex, frameIndex)
+	default:
+		err = fmt.Errorf("unknown encoder type: %T", encoder)
+	}
+
+	return
 }
