@@ -47,6 +47,7 @@ var (
 		allStates      bool
 		allColors      bool
 		all            bool
+		shadow         bool
 	}
 )
 
@@ -67,6 +68,7 @@ func init() {
 	f.BoolVarP(&opts.allStates, "states", "S", false, "Output all states.")
 	f.BoolVarP(&opts.allColors, "colors", "C", false, "Output all colors.")
 	f.BoolVarP(&opts.all, "all", "A", false, "Output all directions, states and colors.")
+	f.BoolVar(&opts.shadow, "shadow", false, "Whether to render the shadow. (default true for png, apng, svg; false for gif)")
 	f.StringVarP(&opts.format, "format", "f", "png", "Output image format. (apng, png, gif, svg)")
 
 	_parent.Cmd.AddCommand(Cmd)
@@ -181,6 +183,15 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		colors = append(colors, opts.color)
 	}
 
+	if !cmd.Flags().Lookup("shadow").Changed {
+		switch opts.format {
+		case "gif":
+			opts.shadow = false
+		default:
+			opts.shadow = true
+		}
+	}
+
 	imgr := imager.NewFurniImager(mgr)
 
 	for _, dir := range directions {
@@ -192,6 +203,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 					Direction:  dir,
 					State:      state,
 					Color:      color,
+					Shadow:     opts.shadow,
 				}
 
 				var anim imager.Animation

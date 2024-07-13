@@ -11,6 +11,8 @@ import (
 	"xabbo.b7c.io/nx/res"
 )
 
+const shadowAlpha = 46
+
 type Furni struct {
 	Identifier string
 	Size       int
@@ -18,6 +20,7 @@ type Furni struct {
 	State      int
 	Sequence   int // Animation sequence to use.
 	Color      int
+	Shadow     bool // Whether to render the shadow.
 }
 
 type furniImager struct {
@@ -95,11 +98,16 @@ func (r *furniImager) composeStatic(lib res.FurniLibrary, furni Furni) (frame Fr
 		return
 	}
 
-	for i := range vis.LayerCount {
+	for i := range vis.LayerCount + 1 {
+		layerId := i - 1
+		if layerId < 0 && !furni.Shadow {
+			continue
+		}
+
 		spec := res.FurniAssetSpec{
 			Name:      furni.Identifier,
 			Size:      furni.Size,
-			Layer:     i,
+			Layer:     layerId,
 			Direction: furni.Direction,
 			Frame:     0,
 		}
@@ -119,12 +127,21 @@ func (r *furniImager) composeStatic(lib res.FurniLibrary, furni Furni) (frame Fr
 			offset = flipOffsetFurni(offset, asset.SourceImage().Bounds())
 		}
 
+		var blend Blend
+		alpha := uint8(255)
+		if layerId < 0 {
+			blend = BlendCopy
+			alpha = shadowAlpha
+		}
+
 		frame = append(frame, Sprite{
 			Asset:  asset,
 			FlipH:  asset.FlipH,
 			FlipV:  asset.FlipV,
 			Offset: offset,
 			Color:  color.White,
+			Blend:  blend,
+			Alpha:  alpha,
 		})
 	}
 
@@ -148,7 +165,12 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 
 	anim.Layers = map[int]AnimationLayer{}
 
-	for layerId := range vis.LayerCount {
+	for i := range vis.LayerCount + 1 {
+		layerId := i - 1
+		if layerId < 0 && !furni.Shadow {
+			continue
+		}
+
 		layer := vAnim.Layers[layerId]
 		frameRepeat := 0
 		frameSequences := []res.FrameSequence{[]int{0}}
@@ -204,6 +226,11 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 				blend = BlendCopy
 			default:
 				blend = BlendNone
+			}
+
+			if layerId < 0 {
+				blend = BlendCopy
+				alpha = shadowAlpha
 			}
 
 			col := color.Color(color.White)

@@ -29,6 +29,9 @@ func NewEncoderGIF(options ...EncoderOption) Encoder {
 	for _, configure := range options {
 		configure(&opts)
 	}
+	if opts.AlphaThreshold == 0 {
+		opts.AlphaThreshold = 1
+	}
 	return gifEncoder{
 		opts: opts,
 	}

@@ -105,7 +105,7 @@ func RenderQuantizedFrames(anim Animation, seqIndex int, palette color.Palette, 
 func DrawFrame(anim Animation, canvas draw.Image, drawer draw.Drawer, sequenceIndex int, frameIndex int) {
 	layerIds := maps.Keys(anim.Layers)
 	slices.Sort(layerIds)
-	for layerId := range layerIds {
+	for _, layerId := range layerIds {
 		layer := anim.Layers[layerId]
 		var seq res.FrameSequence
 		if sequenceIndex < len(layer.Sequences) {
