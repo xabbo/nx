@@ -134,6 +134,12 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return
 	}
 
+	if opts.all {
+		opts.allDirections = true
+		opts.allStates = true
+		opts.allColors = true
+	}
+
 	directions := []int{}
 	if opts.allDirections {
 		directions = maps.Keys(vis.Directions)
@@ -151,12 +157,6 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 		directions = append(directions, dir)
-	}
-
-	if opts.all {
-		opts.allDirections = true
-		opts.allStates = true
-		opts.allColors = true
 	}
 
 	states := []int{}
