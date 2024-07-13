@@ -46,6 +46,7 @@ var (
 		allDirections  bool
 		allStates      bool
 		allColors      bool
+		all            bool
 	}
 )
 
@@ -65,7 +66,7 @@ func init() {
 	f.BoolVarP(&opts.allDirections, "dirs", "D", false, "Output all directions.")
 	f.BoolVarP(&opts.allStates, "states", "S", false, "Output all states.")
 	f.BoolVarP(&opts.allColors, "colors", "C", false, "Output all colors.")
-
+	f.BoolVarP(&opts.all, "all", "A", false, "Output all directions, states and colors.")
 	f.StringVarP(&opts.format, "format", "f", "png", "Output image format. (apng, png, gif, svg)")
 
 	_parent.Cmd.AddCommand(Cmd)
@@ -150,6 +151,12 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 		directions = append(directions, dir)
+	}
+
+	if opts.all {
+		opts.allDirections = true
+		opts.allStates = true
+		opts.allColors = true
 	}
 
 	states := []int{}
