@@ -148,11 +148,19 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 
 	anim.Layers = map[int]AnimationLayer{}
 
-	for _, layer := range vAnim.Layers {
+	for layerId := range vis.LayerCount {
+		layer := vAnim.Layers[layerId]
+		frameRepeat := 0
+		frameSequences := []res.FrameSequence{[]int{0}}
+
 		requiredFrames := map[int]struct{}{}
-		for _, seq := range layer.FrameSequences {
-			for _, id := range seq {
-				requiredFrames[id] = struct{}{}
+		if layer != nil {
+			frameRepeat = layer.FrameRepeat
+			frameSequences = layer.FrameSequences
+			for _, seq := range layer.FrameSequences {
+				for _, id := range seq {
+					requiredFrames[id] = struct{}{}
+				}
 			}
 		}
 		if len(requiredFrames) == 0 {
@@ -164,7 +172,7 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 			spec := res.FurniAssetSpec{
 				Name:      furni.Identifier,
 				Size:      furni.Size,
-				Layer:     layer.Id,
+				Layer:     layerId,
 				Direction: furni.Direction,
 				Frame:     frameId,
 			}
@@ -181,7 +189,7 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 
 			ink := ""
 			alpha := uint8(255)
-			if visLayer, ok := vis.Layers[layer.Id]; ok {
+			if visLayer, ok := vis.Layers[layerId]; ok {
 				ink = visLayer.Ink
 				if visLayer.Alpha > 0 {
 					alpha = uint8(visLayer.Alpha)
@@ -200,7 +208,7 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 
 			col := color.Color(color.White)
 			if colors, ok := vis.Colors[furni.Color]; ok {
-				if colorLayer, ok := colors.Layers[layer.Id]; ok {
+				if colorLayer, ok := colors.Layers[layerId]; ok {
 					if bytes, err := hex.DecodeString(colorLayer.Color); err == nil {
 						col = color.RGBA{
 							R: bytes[0],
@@ -228,10 +236,10 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 			}}
 		}
 
-		anim.Layers[layer.Id] = AnimationLayer{
+		anim.Layers[layerId] = AnimationLayer{
 			Frames:      frames,
-			FrameRepeat: layer.FrameRepeat,
-			Sequences:   layer.FrameSequences,
+			FrameRepeat: frameRepeat,
+			Sequences:   frameSequences,
 		}
 	}
 
