@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/maps"
 
 	"b7c.io/swfx"
 
@@ -41,6 +43,9 @@ var (
 		format         string
 		fullSequence   bool
 		alphaThreshold float64
+		allDirections  bool
+		allStates      bool
+		allColors      bool
 	}
 )
 
@@ -52,11 +57,14 @@ func init() {
 	f.IntVar(&opts.size, "size", 64, "The visualization size.")
 	f.IntVarP(&opts.state, "state", "s", 0, "The animation state.")
 	f.IntVar(&opts.seq, "seq", 0, "The animation sequence index.")
-	f.IntVar(&opts.color, "color", 0, "The color index to use.")
-	f.IntVar(&opts.colors, "colors", 256, "Number of colors to quantize when encoding to GIF.")
+	f.IntVarP(&opts.color, "color", "c", 0, "The color index to use.")
+	f.IntVar(&opts.colors, "num-colors", 256, "Number of colors to quantize when encoding to GIF.")
 	f.BoolVarP(&opts.verbose, "verbose", "v", false, "Output detailed information.")
 	f.BoolVar(&opts.fullSequence, "full-sequence", false, "Render the full animation sequence.")
 	f.Float64Var(&opts.alphaThreshold, "alpha-threshold", 0, "Alpha threshold for GIF encoding.")
+	f.BoolVarP(&opts.allDirections, "dirs", "D", false, "Output all directions.")
+	f.BoolVarP(&opts.allStates, "states", "S", false, "Output all states.")
+	f.BoolVarP(&opts.allColors, "colors", "C", false, "Output all colors.")
 
 	f.StringVarP(&opts.format, "format", "f", "png", "Output image format. (apng, png, gif, svg)")
 
@@ -119,37 +127,85 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	dir := opts.dir
-	if !cmd.Flags().Lookup("dir").Changed {
-		if vis, ok := lib.Visualizations()[opts.size]; ok {
-			for i := range 4 {
-				d := (2 + i*2) % 8
-				if _, ok := vis.Directions[d]; ok {
-					dir = d
-					break
+	vis, ok := lib.Visualizations()[opts.size]
+	if !ok {
+		err = fmt.Errorf("no visualization for size: %d", opts.size)
+		return
+	}
+
+	directions := []int{}
+	if opts.allDirections {
+		directions = maps.Keys(vis.Directions)
+	} else {
+		dir := opts.dir
+		if !cmd.Flags().Lookup("dir").Changed {
+			if vis, ok := lib.Visualizations()[opts.size]; ok {
+				for i := range 4 {
+					d := (2 + i*2) % 8
+					if _, ok := vis.Directions[d]; ok {
+						dir = d
+						break
+					}
 				}
+			}
+		}
+		directions = append(directions, dir)
+	}
+
+	states := []int{}
+	if opts.allStates {
+		states = maps.Keys(vis.Animations)
+		slices.Sort(states)
+		if len(states) == 0 {
+			states = append(states, 0)
+		}
+	} else {
+		states = append(states, opts.state)
+	}
+
+	colors := []int{}
+	if opts.allColors {
+		colors = maps.Keys(vis.Colors)
+		slices.Sort(colors)
+		if len(colors) == 0 {
+			colors = append(colors, 0)
+		}
+	} else {
+		colors = append(colors, opts.color)
+	}
+
+	imgr := imager.NewFurniImager(mgr)
+
+	for _, dir := range directions {
+		for _, state := range states {
+			for _, color := range colors {
+				furni := imager.Furni{
+					Identifier: lib.Name(),
+					Size:       opts.size,
+					Direction:  dir,
+					State:      state,
+					Color:      color,
+				}
+
+				var anim imager.Animation
+				anim, err = imgr.Compose(furni)
+				if err != nil {
+					return
+				}
+				if len(anim.Layers) == 0 {
+					continue
+				}
+
+				var name string
+				name, err = saveAnimation(furni, anim, opts.seq, 0)
+				if err != nil {
+					return
+				}
+				spinner.Printf("%s\n", name)
 			}
 		}
 	}
 
-	imgr := imager.NewFurniImager(mgr)
-	furni := imager.Furni{
-		Identifier: lib.Name(),
-		Size:       opts.size,
-		Direction:  dir,
-		State:      opts.state,
-		Color:      opts.color,
-	}
-	anim, err := imgr.Compose(furni)
-	if err != nil {
-		return
-	}
-
-	err = saveAnimation(furni, anim, opts.seq, 0)
-
-	if opts.verbose {
-		spinner.Printf("Total animation frames: %d\n", anim.TotalFrames(opts.seq))
-	}
 	return
 }
 
@@ -194,11 +250,7 @@ func loadNitroArchive(filePath string) (archive nitro.Archive, err error) {
 	return r.ReadArchive()
 }
 
-func saveAnimation(furni imager.Furni, anim imager.Animation, seqIndex, frameIndex int) (err error) {
-	if opts.format == "svg" {
-		return nil
-	}
-
+func saveAnimation(furni imager.Furni, anim imager.Animation, seqIndex, frameIndex int) (name string, err error) {
 	frameCount := 1
 	if opts.format == "apng" || opts.format == "gif" {
 		if opts.fullSequence {
@@ -208,8 +260,8 @@ func saveAnimation(furni imager.Furni, anim imager.Animation, seqIndex, frameInd
 		}
 	}
 
-	outName := fmt.Sprintf("%s_%d_%d_%d_%d.%d",
-		furni.Identifier, furni.Size, furni.Direction, furni.State, seqIndex, frameCount)
+	outName := fmt.Sprintf("%s_%d_%d_%d_%d_%d.%d",
+		furni.Identifier, furni.Size, furni.Direction, furni.State, furni.Color, seqIndex, frameCount)
 
 	var encoder any
 	switch opts.format {
@@ -227,7 +279,8 @@ func saveAnimation(furni imager.Furni, anim imager.Animation, seqIndex, frameInd
 		encoder = imager.NewEncoderSVG()
 	}
 
-	return saveEncoder(outName+"."+opts.format, encoder, anim, seqIndex, frameIndex, frameCount)
+	outName += "." + opts.format
+	return outName, saveEncoder(outName, encoder, anim, seqIndex, frameIndex, frameCount)
 }
 
 func saveEncoder(output string, encoder any, anim imager.Animation, seqIndex, frameIndex, frameCount int) (err error) {
