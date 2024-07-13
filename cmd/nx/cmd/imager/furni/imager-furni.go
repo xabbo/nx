@@ -117,11 +117,24 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
+	dir := opts.dir
+	if !cmd.Flags().Lookup("dir").Changed {
+		if vis, ok := lib.Visualizations()[opts.size]; ok {
+			for i := range 4 {
+				d := (2 + i*2) % 8
+				if _, ok := vis.Directions[d]; ok {
+					dir = d
+					break
+				}
+			}
+		}
+	}
+
 	imgr := imager.NewFurniImager(mgr)
 	furni := imager.Furni{
 		Identifier: lib.Name(),
 		Size:       opts.size,
-		Direction:  opts.dir,
+		Direction:  dir,
 		State:      opts.state,
 		Color:      opts.color,
 	}
