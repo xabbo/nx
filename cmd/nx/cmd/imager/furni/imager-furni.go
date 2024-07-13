@@ -86,7 +86,17 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 		cmd.SilenceUsage = true
 
-		libName := args[0]
+		furniIdentifier := args[0]
+		split := strings.SplitN(furniIdentifier, "*", 2)
+		libName := split[0]
+		if len(split) >= 2 {
+			strColorIndex := split[1]
+			if colorIndex, err := strconv.Atoi(strColorIndex); err == nil {
+				if !cmd.Flags().Lookup("color").Changed {
+					opts.color = colorIndex
+				}
+			}
+		}
 
 		spinner.Message("Loading game data...")
 		err = mgr.Load(gd.GameDataVariables, gd.GameDataFurni)
@@ -95,7 +105,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		}
 
 		spinner.Message("Loading furni library...")
-		err = mgr.LoadFurni(libName)
+		err = mgr.LoadFurni(furniIdentifier)
 		if err != nil {
 			return
 		}
@@ -103,16 +113,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		var ok bool
 		if lib, ok = mgr.Library(libName).(res.FurniLibrary); !ok {
 			err = fmt.Errorf("failed to load furni library")
-		}
-
-		split := strings.SplitN(libName, "*", 2)
-		if len(split) >= 2 {
-			strColorIndex := split[1]
-			if colorIndex, err := strconv.Atoi(strColorIndex); err == nil {
-				if !cmd.Flags().Lookup("color").Changed {
-					opts.color = colorIndex
-				}
-			}
+			return
 		}
 	}
 
