@@ -7,8 +7,9 @@ import (
 	"slices"
 	"strconv"
 
+	"golang.org/x/exp/maps"
 	"xabbo.b7c.io/nx"
-	"xabbo.b7c.io/nx/gamedata"
+	gd "xabbo.b7c.io/nx/gamedata"
 	"xabbo.b7c.io/nx/res"
 )
 
@@ -50,37 +51,7 @@ type Avatar struct {
 	HeadOnly      bool
 }
 
-var layers = []nx.FigurePartType{
-	nx.LeftHand,
-	nx.LeftSleeve,
-	nx.LeftCoat,
-	nx.Body,
-	nx.Shoes,
-	nx.Legs,
-	nx.Chest,
-	nx.Waist,
-	nx.Coat,
-	nx.ChestAcc,
-	nx.ChestPrint,
-	nx.Head,
-	nx.Face,
-	nx.Eyes,
-	nx.Hair,
-	nx.HairBelow,
-	nx.FaceAcc,
-	nx.EyeAcc,
-	nx.Hat,
-	nx.HeadAcc,
-	nx.LeftHandItem,
-	nx.RightHandItem,
-	nx.RightHand,
-	nx.RightSleeve,
-	nx.RightCoat,
-}
-
-type layerGroup []nx.FigurePartType
-
-var bodyLayers = layerGroup{
+var bodyLayers = []nx.FigurePartType{
 	nx.Body,
 	nx.Shoes,
 	nx.Legs,
@@ -91,24 +62,24 @@ var bodyLayers = layerGroup{
 	nx.ChestAcc,
 }
 
-var leftArmLayers = layerGroup{
+var leftArmLayers = []nx.FigurePartType{
 	nx.LeftHand,
 	nx.LeftSleeve,
 	nx.LeftCoat,
 }
 
-var rightArmLayers = layerGroup{
+var rightArmLayers = []nx.FigurePartType{
 	nx.RightHand,
 	nx.RightSleeve,
 	nx.RightCoat,
 }
 
-var handItemLayers = layerGroup{
+var handItemLayers = []nx.FigurePartType{
 	nx.LeftHandItem,
 	nx.RightHandItem,
 }
 
-var headLayers = layerGroup{
+var headLayers = []nx.FigurePartType{
 	nx.Head,
 	nx.Face,
 	nx.Eyes,
@@ -120,7 +91,7 @@ var headLayers = layerGroup{
 	nx.HeadAcc,
 }
 
-var layerOrderUp = []layerGroup{
+var layerOrderUp = [][]nx.FigurePartType{
 	handItemLayers,
 	leftArmLayers,
 	rightArmLayers,
@@ -128,7 +99,7 @@ var layerOrderUp = []layerGroup{
 	headLayers,
 }
 
-var layerOrderDown = []layerGroup{
+var layerOrderDown = [][]nx.FigurePartType{
 	bodyLayers,
 	headLayers,
 	handItemLayers,
@@ -136,19 +107,27 @@ var layerOrderDown = []layerGroup{
 	rightArmLayers,
 }
 
-var layerOrderSide = []layerGroup{
+var layerOrderSide = [][]nx.FigurePartType{
 	leftArmLayers,
 	bodyLayers,
 	headLayers,
 	rightArmLayers,
 	handItemLayers,
+}
+
+func isMirrored(dir int) bool {
+	return dir >= 4 && dir <= 6
+}
+
+func flipDir(dir int) int {
+	return (6 - dir) % 8
 }
 
 type avatarImager struct {
-	mgr gamedata.Manager
+	mgr gd.Manager
 }
 
-func NewAvatarImager(mgr gamedata.Manager) AvatarImager {
+func NewAvatarImager(mgr gd.Manager) AvatarImager {
 	return avatarImager{mgr}
 }
 
@@ -165,68 +144,70 @@ type AvatarPart struct {
 }
 
 // Converts the specified figure into individual figure parts.
-func (r avatarImager) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
-	if r.mgr.Figure() == nil {
+func (imgr avatarImager) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
+	figureData := imgr.mgr.Figure()
+	if figureData == nil {
 		err = fmt.Errorf("figure data not loaded")
 		return
 	}
-	if r.mgr.FigureMap() == nil {
+	figureMap := imgr.mgr.FigureMap()
+	if figureMap == nil {
 		err = fmt.Errorf("figure map not loaded")
 		return
 	}
 
+	// Find all part layers that should be hidden.
+	// Certain figure items may cause other layers to be hidden,
+	// e.g. a hat may cause certain hair assets to be hidden.
 	hiddenLayers := map[nx.FigurePartType]bool{}
-	for _, partSet := range fig.Items {
-		setInfo := r.mgr.Figure().Sets[partSet.Type][partSet.Id]
+	for _, item := range fig.Items {
+		setInfo := figureData.Sets[item.Type][item.Id]
 		for _, layer := range setInfo.HiddenLayers {
 			hiddenLayers[layer] = true
 		}
 	}
 
-	for _, partSet := range fig.Items {
-		setInfo := r.mgr.Figure().Sets[partSet.Type][partSet.Id]
-		palette := r.mgr.Figure().PaletteFor(partSet.Type)
+	for _, item := range fig.Items {
+		setInfo := figureData.Sets[item.Type][item.Id]
+		palette := figureData.PaletteFor(item.Type)
 
 		assumedLibrary := ""
 		for _, partInfo := range setInfo.Parts {
-			var c color.Color
-			c = color.White
-			if partInfo.Colorable && partInfo.Type != nx.Eyes {
-				if partInfo.ColorIndex > 0 {
-					if (partInfo.ColorIndex - 1) >= len(partSet.Colors) {
-						err = fmt.Errorf("expected at least %d color(s) for part %s-%d", partInfo.ColorIndex, partSet.Type, partSet.Id)
-						return
-					}
-					colorId := partSet.Colors[partInfo.ColorIndex-1]
-					partColor, ok := palette[colorId]
-					if !ok {
-						err = fmt.Errorf("color %d not found for part %s", colorId, partSet.String())
-						return
-					}
-					cv, err := strconv.ParseInt(partColor.Value, 16, 64)
-					if err != nil {
-						return nil, err
-					}
-					c = color.RGBA{
-						R: uint8((cv >> 16) & 0xff),
-						G: uint8((cv >> 8) & 0xff),
-						B: uint8(cv & 0xff),
-						A: 0xff,
-					}
+			var col color.Color = color.White
+			if partInfo.Colorable && partInfo.ColorIndex > 0 && partInfo.Type != nx.Eyes {
+				if (partInfo.ColorIndex - 1) >= len(item.Colors) {
+					err = fmt.Errorf("expected at least %d color(s) for part %s-%d", partInfo.ColorIndex, item.Type, item.Id)
+					return
+				}
+				colorId := item.Colors[partInfo.ColorIndex-1]
+				partColor, ok := palette[colorId]
+				if !ok {
+					err = fmt.Errorf("color %d not found for part %s", colorId, item.String())
+					return
+				}
+				colorValue, err := strconv.ParseInt(partColor.Value, 16, 64)
+				if err != nil {
+					return nil, err
+				}
+				col = color.RGBA{
+					R: uint8((colorValue >> 16) & 0xff),
+					G: uint8((colorValue >> 8) & 0xff),
+					B: uint8(colorValue & 0xff),
+					A: 0xff,
 				}
 			}
 
-			renderPart := AvatarPart{
-				SetType: partSet.Type,
-				SetId:   partSet.Id,
+			part := AvatarPart{
+				SetType: item.Type,
+				SetId:   item.Id,
 				Type:    partInfo.Type,
 				Id:      partInfo.Id,
-				Color:   c,
+				Color:   col,
 				Hidden:  hiddenLayers[partInfo.Type],
 			}
 
-			if lib, ok := r.mgr.FigureMap().Parts[nx.FigurePart{Type: partInfo.Type, Id: partInfo.Id}]; ok {
-				renderPart.LibraryName = lib.Name
+			if lib, ok := figureMap.Parts[nx.FigurePart{Type: partInfo.Type, Id: partInfo.Id}]; ok {
+				part.LibraryName = lib.Name
 				assumedLibrary = lib.Name
 			} else {
 				// Some parts don't have a mapping for some reason,
@@ -235,10 +216,10 @@ func (r avatarImager) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 					err = fmt.Errorf("failed to find library for part %s-%d", partInfo.Type, partInfo.Id)
 					return
 				}
-				renderPart.LibraryName = assumedLibrary
+				part.LibraryName = assumedLibrary
 			}
 
-			parts = append(parts, renderPart)
+			parts = append(parts, part)
 		}
 	}
 
@@ -246,73 +227,60 @@ func (r avatarImager) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 }
 
 // Finds the required figure part libraries given the specified Figure.
-func (r avatarImager) RequiredLibs(fig nx.Figure) (libs []string, err error) {
-	if r.mgr.Figure() == nil {
+func (imgr avatarImager) RequiredLibs(fig nx.Figure) (libs []string, err error) {
+	figureData := imgr.mgr.Figure()
+	if figureData == nil {
 		err = fmt.Errorf("figure data not loaded")
 		return
 	}
-	if r.mgr.FigureMap() == nil {
+	figureMap := imgr.mgr.FigureMap()
+	if figureMap == nil {
 		err = fmt.Errorf("figure map not loaded")
 		return
 	}
 
-	known := map[string]struct{}{}
-
-	for _, part := range fig.Items {
-		setGroup, ok := r.mgr.Figure().Sets[part.Type]
+	libSet := map[string]struct{}{}
+	for _, item := range fig.Items {
+		setGroup, ok := figureData.Sets[item.Type]
 		if !ok {
-			err = fmt.Errorf("no figure part sets found for part type %q", part.Type)
+			err = fmt.Errorf("no figure part sets found for part type %q", item.Type)
 			return
 		}
 
-		set, ok := setGroup[part.Id]
+		partSet, ok := setGroup[item.Id]
 		if !ok {
-			err = fmt.Errorf("no figure part set found for %s-%d", part.Type, part.Id)
+			err = fmt.Errorf("no figure part set found for %s-%d", item.Type, item.Id)
 		}
 
-		for _, part := range set.Parts {
-			mapPart := nx.FigurePart{
-				Type: part.Type,
-				Id:   part.Id,
-			}
-			partLib, ok := r.mgr.FigureMap().Parts[mapPart]
+		for _, partInfo := range partSet.Parts {
+			partLib, ok := figureMap.Parts[nx.FigurePart{Type: partInfo.Type, Id: partInfo.Id}]
 			if !ok {
-				err = fmt.Errorf("part library not found for %s:%d", part.Type, part.Id)
+				err = fmt.Errorf("part library not found for %s:%d", partInfo.Type, partInfo.Id)
 				return
 			}
-			if _, exist := known[partLib.Name]; !exist {
-				known[partLib.Name] = struct{}{}
-				libs = append(libs, partLib.Name)
-			}
+			libSet[partLib.Name] = struct{}{}
 		}
 	}
 
+	libs = maps.Keys(libSet)
 	return
 }
 
-func isMirrored(dir int) bool {
-	return dir >= 4 && dir <= 6
-}
-
-func flipDir(dir int) int {
-	return (6 - dir) % 8
-}
-
 // Renders an avatar to a list of sprites.
-func (r avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
-	parts, err := r.Parts(avatar.Figure)
+func (imgr avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
+	parts, err := imgr.Parts(avatar.Figure)
 	if err != nil {
 		return
 	}
 
-	var ordering []layerGroup
+	var ordering [][]nx.FigurePartType
 	switch avatar.Direction {
-	case 7:
-		ordering = layerOrderUp
 	case 0, 1, 2, 4, 5, 6:
 		ordering = layerOrderSide
 	case 3:
 		ordering = layerOrderDown
+	case 7:
+		ordering = layerOrderUp
 	}
 
 	n := 0
@@ -351,11 +319,7 @@ func (r avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 		Offset image.Point
 		FlipH  bool
 	}
-	type partId struct {
-		Type nx.FigurePartType
-		Id   int
-	}
-	partExtraData := map[partId]partExtra{}
+	partExtraData := map[nx.FigurePart]partExtra{}
 
 	for i := range parts {
 		part := &parts[i]
@@ -368,11 +332,11 @@ func (r avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 			continue
 		}
 
-		if !r.mgr.LibraryExists(part.LibraryName) {
+		if !imgr.mgr.LibraryExists(part.LibraryName) {
 			err = fmt.Errorf("required part library not loaded: %q", part.LibraryName)
 			return
 		}
-		lib := r.mgr.Library(part.LibraryName)
+		lib := imgr.mgr.Library(part.LibraryName)
 
 		partDir := avatar.Direction
 		isHead := part.Type.IsHead()
@@ -382,7 +346,7 @@ func (r avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 
 		flipPart := isMirrored(partDir)
 
-		spec := r.ResolveAsset(lib, avatar, *part)
+		spec := imgr.ResolveAsset(lib, avatar, *part)
 		if spec == nil {
 			part.Hidden = true
 			continue
@@ -404,7 +368,7 @@ func (r avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 			offset.X += 3
 		}
 
-		partExtraData[partId{part.Type, part.Id}] = partExtra{
+		partExtraData[nx.FigurePart{Type: part.Type, Id: part.Id}] = partExtra{
 			Asset:  asset,
 			Spec:   *spec,
 			Order:  layerOrder[part.Type],
@@ -414,7 +378,9 @@ func (r avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 	}
 
 	slices.SortFunc(parts, func(a, b AvatarPart) int {
-		diff := partExtraData[partId{a.Type, a.Id}].Order - partExtraData[partId{b.Type, b.Id}].Order
+		partA := nx.FigurePart{Type: a.Type, Id: a.Id}
+		partB := nx.FigurePart{Type: b.Type, Id: b.Id}
+		diff := partExtraData[partA].Order - partExtraData[partB].Order
 		if diff == 0 {
 			diff = a.Id - b.Id
 		}
@@ -431,7 +397,7 @@ func (r avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 		if part.Hidden {
 			continue
 		}
-		extra := partExtraData[partId{part.Type, part.Id}]
+		extra := partExtraData[nx.FigurePart{Type: part.Type, Id: part.Id}]
 
 		anim.Layers[layerId] = AnimationLayer{
 			Frames: map[int]Frame{
@@ -516,12 +482,4 @@ func (spec FigureAssetSpec) String() string {
 		strconv.Itoa(spec.Id) + "_" +
 		strconv.Itoa(spec.Dir) + "_" +
 		strconv.Itoa(spec.Frame)
-}
-
-func (r *avatarImager) Dependencies(fig nx.Figure) (err error) {
-	return nil
-}
-
-func (r *avatarImager) CompileAssets(fig nx.Figure) []res.Asset {
-	return nil
 }
