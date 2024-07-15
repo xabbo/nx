@@ -64,99 +64,6 @@ func (r *furniImager) Compose(furni Furni) (anim Animation, err error) {
 		return
 	}
 
-	switch index.Visualization {
-	case "furniture_static":
-		var fr Frame
-		fr, err = r.composeStatic(lib, furni)
-		if err != nil {
-			return
-		}
-		anim.Layers = map[int]AnimationLayer{}
-		anim.Layers[0] = AnimationLayer{
-			Frames:    map[int]Frame{0: fr},
-			Sequences: []res.FrameSequence{[]int{0}},
-		}
-	case "furniture_animated":
-		anim, err = r.composeAnimated(lib, furni)
-		if err != nil {
-			return
-		}
-	default:
-		err = fmt.Errorf("visualization type not implemented: %s", index.Visualization)
-		return
-	}
-
-	return
-}
-
-// Composes a static furniture.
-func (r *furniImager) composeStatic(lib res.FurniLibrary, furni Furni) (frame Frame, err error) {
-	// get the visualization for the specified size
-	vis, ok := lib.Visualizations()[furni.Size]
-	if !ok {
-		err = fmt.Errorf("no visualization for size %d [%s]", furni.Size, furni.Identifier)
-		return
-	}
-
-	for i := range vis.LayerCount + 1 {
-		layerId := i - 1
-		if layerId < 0 && !furni.Shadow {
-			continue
-		}
-
-		spec := res.FurniAssetSpec{
-			Name:      furni.Identifier,
-			Size:      furni.Size,
-			Layer:     layerId,
-			Direction: furni.Direction,
-			Frame:     0,
-		}
-		assetName := spec.String()
-		if !lib.AssetExists(assetName) {
-			continue
-		}
-		var asset *res.Asset
-		asset, err = lib.Asset(spec.String())
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "frame not found: %q", spec.String())
-			return
-		}
-
-		offset := asset.Offset
-		if asset.FlipH {
-			offset = flipOffsetFurni(offset, asset.SourceImage().Bounds())
-		}
-
-		var blend Blend
-		alpha := uint8(255)
-		if layerId < 0 {
-			blend = BlendCopy
-			alpha = shadowAlpha
-		}
-
-		frame = append(frame, Sprite{
-			Asset:  asset,
-			FlipH:  asset.FlipH,
-			FlipV:  asset.FlipV,
-			Offset: offset,
-			Color:  color.White,
-			Blend:  blend,
-			Alpha:  alpha,
-		})
-	}
-
-	return
-}
-
-// Composes an animated furniture.
-func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim Animation, err error) {
-	// get the visualization for the specified size
-	vis, ok := lib.Visualizations()[furni.Size]
-	if !ok {
-		err = fmt.Errorf("no visualization for size %d [%s]", furni.Size, furni.Identifier)
-		return
-	}
-
 	vAnim, ok := vis.Animations[furni.State]
 	if !ok {
 		if furni.State == 0 {
@@ -193,6 +100,32 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 			requiredFrames[0] = struct{}{}
 		}
 
+		ink := ""
+		alpha := uint8(255)
+		z := 0
+		if visLayer, ok := vis.Layers[layerId]; ok {
+			ink = visLayer.Ink
+			if visLayer.Alpha > 0 {
+				alpha = uint8(visLayer.Alpha)
+			}
+			z = visLayer.Z
+		}
+
+		var blend Blend
+		switch ink {
+		case "ADD":
+			blend = BlendAdd
+		case "COPY":
+			blend = BlendCopy
+		default:
+			blend = BlendNone
+		}
+
+		if layerId < 0 {
+			blend = BlendCopy
+			alpha = shadowAlpha
+		}
+
 		frames := map[int]Frame{}
 		for frameId := range requiredFrames {
 			spec := res.FurniAssetSpec{
@@ -211,30 +144,6 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "frame not found: %q", spec.String())
 				return
-			}
-
-			ink := ""
-			alpha := uint8(255)
-			if visLayer, ok := vis.Layers[layerId]; ok {
-				ink = visLayer.Ink
-				if visLayer.Alpha > 0 {
-					alpha = uint8(visLayer.Alpha)
-				}
-			}
-
-			var blend Blend
-			switch ink {
-			case "ADD":
-				blend = BlendAdd
-			case "COPY":
-				blend = BlendCopy
-			default:
-				blend = BlendNone
-			}
-
-			if layerId < 0 {
-				blend = BlendCopy
-				alpha = shadowAlpha
 			}
 
 			col := color.Color(color.White)
@@ -271,6 +180,7 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 			Frames:      frames,
 			FrameRepeat: frameRepeat,
 			Sequences:   frameSequences,
+			Z:           z,
 		}
 	}
 
