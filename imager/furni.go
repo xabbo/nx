@@ -159,8 +159,12 @@ func (r *furniImager) composeAnimated(lib res.FurniLibrary, furni Furni) (anim A
 
 	vAnim, ok := vis.Animations[furni.State]
 	if !ok {
-		err = fmt.Errorf("no animation for state %d [%s]", furni.State, furni.Identifier)
-		return
+		if len(vis.Animations) == 0 && furni.State == 0 {
+			vAnim = &res.Animation{}
+		} else {
+			err = fmt.Errorf("no animation for state %d [%s]", furni.State, furni.Identifier)
+			return
+		}
 	}
 
 	anim.Layers = map[int]AnimationLayer{}
