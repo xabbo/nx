@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/list"
 	"github.com/spf13/cobra"
@@ -63,14 +64,12 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return
 	}
 
-	l := list.NewWriter()
-	l.SetStyle(list.StyleConnectedLight)
-	l.SetOutputMirror(cmd.OutOrStdout())
-	l.UnIndentAll()
+	split := strings.Split(identifier, "*")
+	libName := split[0]
 
-	lib, ok := mgr.Library(identifier).(res.FurniLibrary)
+	lib, ok := mgr.Library(libName).(res.FurniLibrary)
 	if !ok {
-		return errors.New("failed to load library")
+		return fmt.Errorf("failed to load library: %q", identifier)
 	}
 
 	index := lib.Index()
@@ -79,6 +78,11 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 	cmd.Printf("Furni name: %s\n", fi.Name)
 	cmd.Printf("Visualization type: %s\n", index.Visualization)
+
+	l := list.NewWriter()
+	l.SetStyle(list.StyleConnectedLight)
+	l.SetOutputMirror(cmd.OutOrStdout())
+	l.UnIndentAll()
 
 	visualizations := lib.Visualizations()
 	if opts.size == 0 {
