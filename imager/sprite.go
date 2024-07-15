@@ -72,10 +72,9 @@ func (s *Sprite) Draw(canvas draw.Image, drawer draw.Drawer) {
 		case BlendAdd:
 			drawer = additiveDrawer{}
 		case BlendCopy:
-			srcImg = alphaImage{src: srcImg, alpha: s.Alpha}
 			fallthrough
 		default:
-			drawer = draw.Over
+			drawer = alphaDrawer(s.Alpha)
 		}
 	}
 	drawer.Draw(canvas, bounds.Sub(offset), srcImg, image.Point{})
