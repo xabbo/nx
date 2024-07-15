@@ -3,6 +3,7 @@ package furni
 import (
 	"errors"
 	"fmt"
+	"image"
 	"image/color"
 	"os"
 	"slices"
@@ -49,7 +50,19 @@ var (
 		allColors      bool
 		all            bool
 		shadow         bool
+		background     string
+		cycle          bool
 	}
+)
+
+type furniAnimation struct {
+	furni imager.Furni
+	anim  imager.Animation
+}
+
+var (
+	validFormats    = []string{"png", "apng", "gif", "svg"}
+	animatedFormats = []string{"apng", "gif"}
 )
 
 func init() {
@@ -72,11 +85,26 @@ func init() {
 	f.BoolVar(&opts.shadow, "shadow", false, "Whether to render the shadow. (default true for png, apng, svg; false for gif)")
 	f.StringVarP(&opts.format, "format", "f", "png", "Output image format. (apng, png, gif, svg)")
 	f.StringVarP(&opts.background, "background", "b", "", "The background color to use. (default transparent)")
+	f.BoolVar(&opts.cycle, "cycle", false, "Animated cycle through states.")
 
 	_parent.Cmd.AddCommand(Cmd)
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
+
+	cmd.SilenceUsage = true
+
+	opts.format = strings.ToLower(opts.format)
+	if !slices.Contains(validFormats, opts.format) {
+		return fmt.Errorf("invalid format: %q", opts.format)
+	}
+	if opts.cycle && !slices.Contains(animatedFormats, opts.format) {
+		if !cmd.Flags().Lookup("format").Changed {
+			opts.format = "gif"
+		} else {
+			return fmt.Errorf("cannot cycle, not an animated format: %q", opts.format)
+		}
+	}
 
 	spinner.Start()
 	defer spinner.Stop()
@@ -88,7 +116,6 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			return errors.New("only one of furni identifier or input file may be specified")
 		}
 
-		cmd.SilenceUsage = true
 		lib, err = loadLibraryFile(opts.inputFilePath)
 		if err != nil {
 			return
@@ -99,7 +126,6 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		if len(args) != 1 {
 			return errors.New("no furni identifier or input file specified")
 		}
-		cmd.SilenceUsage = true
 
 		furniIdentifier := args[0]
 		split := strings.SplitN(furniIdentifier, "*", 2)
@@ -221,9 +247,13 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	imgr := imager.NewFurniImager(mgr)
 
+	spinner.Message("Composing animations...")
+
+	animations := []furniAnimation{}
+
 	for _, dir := range directions {
-		for _, state := range states {
-			for _, color := range colors {
+		for _, color := range colors {
+			for _, state := range states {
 				furni := imager.Furni{
 					Identifier: lib.Name(),
 					Size:       opts.size,
@@ -241,14 +271,37 @@ func run(cmd *cobra.Command, args []string) (err error) {
 				if len(anim.Layers) == 0 {
 					continue
 				}
+				anim.Background = background
 
-				var name string
-				name, err = saveAnimation(furni, anim, opts.seq, 0)
-				if err != nil {
-					return
-				}
-				spinner.Printf("%s\n", name)
+				animations = append(animations, furniAnimation{
+					furni: furni,
+					anim:  anim,
+				})
 			}
+		}
+	}
+
+	spinner.Message("Rendering images...")
+
+	if opts.cycle {
+		anims := []imager.Animation{}
+		for _, furniAnim := range animations {
+			anims = append(anims, furniAnim.anim)
+		}
+		fname := lib.Name() + "." + opts.format
+		err = saveAnimationSequence(fname, anims, opts.seq)
+		if err != nil {
+			return
+		}
+		spinner.Printf("%s\n", fname)
+	} else {
+		for _, furniAnim := range animations {
+			var name string
+			name, err = saveAnimation(furniAnim.furni, furniAnim.anim, opts.seq, 0)
+			if err != nil {
+				return
+			}
+			spinner.Printf("%s\n", name)
 		}
 	}
 
@@ -294,6 +347,46 @@ func loadNitroArchive(filePath string) (archive nitro.Archive, err error) {
 	defer f.Close()
 	r := nitro.NewReader(f)
 	return r.ReadArchive()
+}
+
+func saveAnimationSequence(fname string, anims []imager.Animation, seqIndex int) (err error) {
+	var encoder imager.AnimatedImageEncoder
+	switch opts.format {
+	case "apng":
+		encoder = imager.NewEncoderAPNG()
+	case "gif":
+		threshold := uint16(opts.alphaThreshold * 0xffff)
+		encoder = imager.NewEncoderGIF(
+			imager.WithAlphaThreshold(threshold),
+			imager.WithColors(opts.colors),
+		)
+	}
+
+	bounds := image.Rectangle{}
+	for _, anim := range anims {
+		bounds = bounds.Union(anim.Bounds(seqIndex))
+	}
+
+	imgs := []image.Image{}
+	for _, anim := range anims {
+		frameCount := 1
+		if opts.fullSequence {
+			frameCount = anim.TotalFrames(seqIndex)
+		} else {
+			frameCount = anim.LongestFrameSequence(seqIndex)
+		}
+		if frameCount < 24 {
+			frameCount = 24
+		}
+		imgs = append(imgs, imager.RenderFramesBounds(bounds, anim, seqIndex, frameCount)...)
+	}
+
+	f, err := os.OpenFile(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		return
+	}
+
+	return encoder.EncodeImages(f, imgs)
 }
 
 func saveAnimation(furni imager.Furni, anim imager.Animation, seqIndex, frameIndex int) (name string, err error) {

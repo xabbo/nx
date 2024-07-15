@@ -100,6 +100,18 @@ func (g gifEncoder) EncodeImages(w io.Writer, frames []image.Image) (err error) 
 	return
 }
 
+func (g gifEncoder) EncodeAnimations(w io.Writer, anims []Animation, seqIndex, frameCount int) error {
+	imgs := []image.Image{}
+	bounds := image.Rectangle{}
+	for _, anim := range anims {
+		bounds = bounds.Union(anim.Bounds(seqIndex))
+	}
+	for _, anim := range anims {
+		imgs = append(imgs, RenderFramesBounds(bounds, anim, seqIndex, frameCount)...)
+	}
+	return g.EncodeImages(w, imgs)
+}
+
 func (g gifEncoder) EncodeAnimation(w io.Writer, anim Animation, seqIndex int, frameCount int) error {
 	imgs := RenderFrames(anim, seqIndex, frameCount)
 	return g.EncodeImages(w, imgs)

@@ -32,6 +32,10 @@ type AnimatedEncoder interface {
 	AnimatedImageEncoder
 }
 
+type AnimationSequenceEncoder interface {
+	EncodeAnimations(w io.Writer, anims []Animation, seqIndex, frameCount int) error
+}
+
 type AnimationEncoder interface {
 	EncodeAnimation(w io.Writer, anim Animation, seqIndex, frameCount int) error
 }

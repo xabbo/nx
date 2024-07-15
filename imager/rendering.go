@@ -48,9 +48,8 @@ func (anim Animation) RequiredAssets(seqIndex int) []*res.Asset {
 	return maps.Keys(m)
 }
 
-func RenderFrames(anim Animation, seqIndex, frameCount int) []image.Image {
+func RenderFramesBounds(bounds image.Rectangle, anim Animation, seqIndex, frameCount int) []image.Image {
 	frames := make([]image.Image, frameCount)
-	bounds := anim.Bounds(seqIndex)
 
 	wg := sync.WaitGroup{}
 	wg.Add(frameCount)
@@ -76,6 +75,11 @@ func RenderFrames(anim Animation, seqIndex, frameCount int) []image.Image {
 	}
 	wg.Wait()
 	return frames
+}
+
+func RenderFrames(anim Animation, seqIndex, frameCount int) []image.Image {
+	bounds := anim.Bounds(seqIndex)
+	return RenderFramesBounds(bounds, anim, seqIndex, frameCount)
 }
 
 func RenderQuantizedFrames(anim Animation, seqIndex int, palette color.Palette, count int) []*image.Paletted {
