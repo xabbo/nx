@@ -98,6 +98,7 @@ type AnimationLayer struct {
 	Frames      map[int]Frame
 	FrameRepeat int
 	Sequences   []res.FrameSequence
+	Z           int
 }
 
 // FrameSequenceOrDefault gets the specified frame sequence if it exists, or the first sequence if `i` is out of range.

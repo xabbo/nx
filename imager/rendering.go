@@ -111,7 +111,23 @@ func RenderQuantizedFrames(anim Animation, seqIndex int, palette color.Palette, 
 
 func DrawFrame(anim Animation, canvas draw.Image, drawer draw.Drawer, sequenceIndex int, frameIndex int) {
 	layerIds := maps.Keys(anim.Layers)
-	slices.Sort(layerIds)
+	slices.SortFunc(layerIds, func(a, b int) int {
+		// Shadow layer index should be -1.
+		// Ensure that the shadow is always on the bottom layer.
+		if a < 0 {
+			return -1
+		} else if b < 0 {
+			return 1
+		}
+		la := anim.Layers[a]
+		lb := anim.Layers[b]
+		diff := la.Z - lb.Z
+		// If both layer Z indexes are equal, order by layer ID.
+		if diff == 0 {
+			diff = a - b
+		}
+		return diff
+	})
 	for _, layerId := range layerIds {
 		layer := anim.Layers[layerId]
 		var seq res.FrameSequence
