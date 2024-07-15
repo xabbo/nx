@@ -192,10 +192,10 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	states := []int{}
 	if opts.allStates {
 		states = maps.Keys(vis.Animations)
-		slices.Sort(states)
-		if len(states) == 0 {
+		if !slices.Contains(states, 0) {
 			states = append(states, 0)
 		}
+		slices.Sort(states)
 	} else {
 		states = append(states, opts.state)
 	}
