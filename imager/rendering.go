@@ -61,6 +61,9 @@ func RenderFrames(anim Animation, seqIndex, frameCount int) []image.Image {
 		go func() {
 			for frameIndex := range ch {
 				img := image.NewRGBA(bounds)
+				if anim.Background != nil && anim.Background != color.Transparent {
+					draw.Over.Draw(img, img.Bounds(), image.NewUniform(anim.Background), image.Point{})
+				}
 				DrawFrame(anim, img, nil, seqIndex, frameIndex)
 				frames[frameIndex] = img
 				wg.Done()
@@ -124,6 +127,9 @@ func DrawFrame(anim Animation, canvas draw.Image, drawer draw.Drawer, sequenceIn
 
 func RenderFrame(anim Animation, seqIndex int, frameIndex int) image.Image {
 	canvas := image.NewRGBA(anim.Bounds(seqIndex))
+	if anim.Background != nil && anim.Background != color.Transparent {
+		draw.Over.Draw(canvas, canvas.Bounds(), image.NewUniform(anim.Background), image.Point{})
+	}
 	DrawFrame(anim, canvas, nil, seqIndex, frameIndex)
 	return canvas
 }

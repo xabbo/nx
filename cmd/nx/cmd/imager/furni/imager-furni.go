@@ -3,6 +3,7 @@ package furni
 import (
 	"errors"
 	"fmt"
+	"image/color"
 	"os"
 	"slices"
 	"strconv"
@@ -70,6 +71,7 @@ func init() {
 	f.BoolVarP(&opts.all, "all", "A", false, "Output all directions, states and colors.")
 	f.BoolVar(&opts.shadow, "shadow", false, "Whether to render the shadow. (default true for png, apng, svg; false for gif)")
 	f.StringVarP(&opts.format, "format", "f", "png", "Output image format. (apng, png, gif, svg)")
+	f.StringVarP(&opts.background, "background", "b", "", "The background color to use. (default transparent)")
 
 	_parent.Cmd.AddCommand(Cmd)
 }
@@ -189,6 +191,31 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			opts.shadow = false
 		default:
 			opts.shadow = true
+		}
+	}
+
+	var background color.Color = color.Transparent
+	if opts.background != "" {
+		colorValue, err := strconv.ParseUint(opts.background, 16, 32)
+		if err != nil {
+			return fmt.Errorf("invalid background color: %s", opts.background)
+		}
+		if len(opts.background) == 3 {
+			background = color.RGBA{
+				R: byte((colorValue>>8)&0x0f | (colorValue>>4)&0xf0),
+				G: byte((colorValue & 0xf0) | (colorValue>>8)&0x0f),
+				B: byte((colorValue & 0x0f) | (colorValue<<4)&0xf0),
+				A: 255,
+			}
+		} else if len(opts.background) == 6 {
+			background = color.RGBA{
+				R: byte(colorValue >> 16),
+				G: byte(colorValue >> 8),
+				B: byte(colorValue),
+				A: 255,
+			}
+		} else {
+			return fmt.Errorf("invalid background color: %s", opts.background)
 		}
 	}
 

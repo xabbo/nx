@@ -91,7 +91,8 @@ func (f Frame) Bounds() (bounds image.Rectangle) {
 }
 
 type Animation struct {
-	Layers map[int]AnimationLayer
+	Background color.Color
+	Layers     map[int]AnimationLayer
 }
 
 type AnimationLayer struct {
