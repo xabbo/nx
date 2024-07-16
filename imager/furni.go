@@ -33,7 +33,7 @@ func NewFurniImager(mgr res.LibraryManager) *furniImager {
 	return &furniImager{mgr}
 }
 
-// Compose composes the furni into an Animation.
+// Compose composes a furni into an Animation.
 func (r *furniImager) Compose(furni Furni) (anim Animation, err error) {
 	assetLib := r.mgr.Library(furni.Identifier)
 	if assetLib == nil {

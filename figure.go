@@ -12,7 +12,7 @@ type Figure struct {
 	Items  []FigureItem
 }
 
-// A FigureItem defines a figure part set type and identifier with colors.
+// FigureItem defines a figure part set type and identifier with colors.
 type FigureItem struct {
 	Type   FigurePartType // The type of figure part set.
 	Id     int            // The identifier of the figure part set.

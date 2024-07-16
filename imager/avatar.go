@@ -134,7 +134,7 @@ func NewAvatarImager(mgr gd.Manager) AvatarImager {
 type AvatarPart struct {
 	LibraryName string
 	AssetSpec   FigureAssetSpec
-	Asset       res.Asset
+	Asset       *res.Asset
 	SetType     nx.FigurePartType
 	SetId       int
 	Type        nx.FigurePartType
@@ -167,12 +167,17 @@ func (imgr avatarImager) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 		}
 	}
 
+	// Loop over each item (part set) in the figure.
 	for _, item := range fig.Items {
 		setInfo := figureData.Sets[item.Type][item.Id]
 		palette := figureData.PaletteFor(item.Type)
 
 		assumedLibrary := ""
+		// Loop over each part in the figure item (part set).
+		// Each item is comprised of multiple parts,
+		// e.g. a shirt may have sprites for the body, left and right arms.
 		for _, partInfo := range setInfo.Parts {
+			// Resolve the color for this part.
 			var col color.Color = color.White
 			if partInfo.Colorable && partInfo.ColorIndex > 0 && partInfo.Type != nx.Eyes {
 				if (partInfo.ColorIndex - 1) >= len(item.Colors) {
@@ -206,12 +211,14 @@ func (imgr avatarImager) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 				Hidden:  hiddenLayers[partInfo.Type],
 			}
 
+			// Resolve the figure library for this part.
+			// Parts in the same part set may come from different figure libraries.
 			if lib, ok := figureMap.Parts[nx.FigurePart{Type: partInfo.Type, Id: partInfo.Id}]; ok {
 				part.LibraryName = lib.Name
 				assumedLibrary = lib.Name
 			} else {
 				// Some parts don't have a mapping for some reason,
-				// so we use the library from previous parts in the same set
+				// so we use the library from the previous part in the same set.
 				if assumedLibrary == "" {
 					err = fmt.Errorf("failed to find library for part %s-%d", partInfo.Type, partInfo.Id)
 					return
@@ -266,13 +273,14 @@ func (imgr avatarImager) RequiredLibs(fig nx.Figure) (libs []string, err error) 
 	return
 }
 
-// Renders an avatar to a list of sprites.
+// Compose composes an avatar into an animation.
 func (imgr avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 	parts, err := imgr.Parts(avatar.Figure)
 	if err != nil {
 		return
 	}
 
+	// Choose a layer ordering based on figure direction.
 	var ordering [][]nx.FigurePartType
 	switch avatar.Direction {
 	case 0, 1, 2, 4, 5, 6:
@@ -283,6 +291,7 @@ func (imgr avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 		ordering = layerOrderUp
 	}
 
+	// Map layer order by figure part type.
 	n := 0
 	layerOrder := map[nx.FigurePartType]int{}
 	for _, group := range ordering {
@@ -292,10 +301,9 @@ func (imgr avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 		}
 	}
 
+	// Groups parts by part type.
 	partMap := map[nx.FigurePartType][]AvatarPart{}
-	// Groups parts by part type
 	for _, part := range parts {
-		// part.Order = layerOrder[part.Type]
 		partMap[part.Type] = append(partMap[part.Type], part)
 	}
 
