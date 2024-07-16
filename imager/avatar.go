@@ -407,6 +407,7 @@ func (imgr avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 						Offset: extra.Offset,
 						Color:  part.Color,
 						FlipH:  extra.FlipH,
+						Alpha:  255,
 					},
 				},
 			},
