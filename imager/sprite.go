@@ -10,22 +10,23 @@ import (
 	"xabbo.b7c.io/nx/res"
 )
 
+// Sprite defines parameters for an asset to be drawn on a canvas.
 type Sprite struct {
-	Asset  *res.Asset // A reference to the asset used by this sprite.
-	FlipH  bool
-	FlipV  bool
-	Offset image.Point
-	Color  color.Color
-	Blend  Blend
-	Alpha  uint8
-	Order  int
+	Asset  *res.Asset  // A reference to the asset used by this sprite.
+	FlipH  bool        // FlipH defines whether to flip the asset horizontally.
+	FlipV  bool        // FlipV defines whether to flip the asset vertically.
+	Offset image.Point // Offset defines the offset point from the origin to draw the asset.
+	Color  color.Color // Color defines the color to blend with the asset.
+	Blend  Blend       // Blend defines the blending mode used to draw the asset.
+	Alpha  uint8       // Alpha defines the alpha transparency of the asset.
 }
 
+// Blend represents a color blending mode.
 type Blend int
 
 const (
-	BlendNone Blend = iota
-	BlendAdd
+	BlendNone Blend = iota // No blend mode.
+	BlendAdd               // Additive blending.
 	BlendCopy
 )
 
@@ -38,7 +39,7 @@ func (s *Sprite) Image() image.Image {
 	return asset.Image
 }
 
-// Bounds returns the relative bounds of the sprite.
+// Bounds returns the bounds of the sprite's image translated by the sprite's offset.
 func (s *Sprite) Bounds() image.Rectangle {
 	img := s.Image()
 	if img == nil {
@@ -82,6 +83,7 @@ func (s *Sprite) Draw(canvas draw.Image, drawer draw.Drawer) {
 
 type Frame []Sprite
 
+// Bounds returns the union of the bounds of all sprites in this frame.
 func (f Frame) Bounds() (bounds image.Rectangle) {
 	for _, sprite := range f {
 		bounds = bounds.Union(sprite.Bounds())
@@ -89,22 +91,24 @@ func (f Frame) Bounds() (bounds image.Rectangle) {
 	return
 }
 
+// Animation represents an animated asset.
 type Animation struct {
-	Background color.Color
-	Layers     map[int]AnimationLayer
+	Background color.Color            // Background defines the color to fill the canvas with when rendering.
+	Layers     map[int]AnimationLayer // Layers is a map of animation layers by index.
 }
 
+// AnimationLayer defines a set of frames and frame sequences.
 type AnimationLayer struct {
-	Frames      map[int]Frame
-	FrameRepeat int
-	Sequences   []res.FrameSequence
-	Z           int
+	Frames      map[int]Frame       // Frames is a map of frames by index.
+	FrameRepeat int                 // FrameRepeat defines the duration of each frame for this layer.
+	Sequences   []res.FrameSequence // Sequences contains a list of frame sequences.
+	Z           int                 // Z defines the Z-order of this layer.
 }
 
-// FrameSequenceOrDefault gets the specified frame sequence if it exists, or the first sequence if `i` is out of range.
-// If the animation has no frame sequences, a sequence with a single zero frame is returned.
-func (animationLayer AnimationLayer) FrameSequenceOrDefault(seqIndex int) res.FrameSequence {
-	if seqIndex < len(animationLayer.Sequences) {
+// SequenceOrDefault gets the specified frame sequence if it exists, the first sequence if `i` is out of range,
+// or a sequence with a single zero frame if the animation has no frame sequences.
+func (animationLayer AnimationLayer) SequenceOrDefault(seqIndex int) res.FrameSequence {
+	if seqIndex >= 0 && seqIndex < len(animationLayer.Sequences) {
 		return animationLayer.Sequences[seqIndex]
 	} else if len(animationLayer.Sequences) > 0 {
 		return animationLayer.Sequences[0]
@@ -113,7 +117,7 @@ func (animationLayer AnimationLayer) FrameSequenceOrDefault(seqIndex int) res.Fr
 	}
 }
 
-// Bounds gets the relative bounds in the animation for the specified sequence.
+// Bounds gets the union of the bounds of all frames in this animation for the specified sequence.
 func (animation Animation) Bounds(seqIndex int) (bounds image.Rectangle) {
 	for _, layer := range animation.Layers {
 		for _, frame := range layer.Frames {
@@ -123,20 +127,21 @@ func (animation Animation) Bounds(seqIndex int) (bounds image.Rectangle) {
 	return
 }
 
+// TotalFrames gets the total number of frames in this animation for the specified sequence.
 func (animation *Animation) TotalFrames(seqIndex int) int {
 	n := 1
 	for _, layer := range animation.Layers {
-		seq := layer.FrameSequenceOrDefault(seqIndex)
+		seq := layer.SequenceOrDefault(seqIndex)
 		n = lcm(n, len(seq)*max(1, layer.FrameRepeat))
 	}
 	return n
 }
 
-// LongestFrameSequence gets the longest frame sequence (given the specified sequence index) of all layers in the animation.
-func (animation *Animation) LongestFrameSequence(seqIndex int) int {
+// LongestSequence gets the longest frame sequence of all layers in this animation for the specified sequence.
+func (animation *Animation) LongestSequence(seqIndex int) int {
 	n := 1
 	for _, layer := range animation.Layers {
-		seq := layer.FrameSequenceOrDefault(seqIndex)
+		seq := layer.SequenceOrDefault(seqIndex)
 		n = max(n, len(seq)*max(1, layer.FrameRepeat))
 	}
 	return n

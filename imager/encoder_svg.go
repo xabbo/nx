@@ -28,7 +28,7 @@ func (e svgEncoder) EncodeFrame(w io.Writer, anim Animation, seqIndex, frameInde
 	slices.Sort(layerIds)
 	for layerId := range layerIds {
 		layer := anim.Layers[layerId]
-		seq := layer.FrameSequenceOrDefault(seqIndex)
+		seq := layer.SequenceOrDefault(seqIndex)
 		frameId := seq[(frameIndex/max(1, layer.FrameRepeat))%len(seq)]
 		frame := layer.Frames[frameId]
 		for _, sprite := range frame {

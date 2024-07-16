@@ -13,25 +13,27 @@ import (
 
 const shadowAlpha = 46
 
+// Furni represents a furniture to render.
 type Furni struct {
-	Identifier string
-	Size       int
-	Direction  int
-	State      int
-	Sequence   int // Animation sequence to use.
-	Color      int
-	Shadow     bool // Whether to render the shadow.
+	Identifier string // Identifier is the class name of the furni library.
+	Size       int    // Size selects the visualization size to render.
+	Direction  int    // Direction selects the direction of the furni to render.
+	State      int    // State selects the animation state to render.
+	Sequence   int    // Sequence selects the index of the animation sequence to render.
+	Color      int    // Color selects the index of the color within the visualization to render.
+	Shadow     bool   // Shadow configures whether to render the shadow layer.
 }
 
 type furniImager struct {
 	mgr res.LibraryManager
 }
 
+// NewFurniImager creates a new furni imager using the specified library manager.
 func NewFurniImager(mgr res.LibraryManager) *furniImager {
 	return &furniImager{mgr}
 }
 
-// Compose composes the furni to an Animation.
+// Compose composes the furni into an Animation.
 func (r *furniImager) Compose(furni Furni) (anim Animation, err error) {
 	assetLib := r.mgr.Library(furni.Identifier)
 	if assetLib == nil {

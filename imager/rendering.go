@@ -13,6 +13,8 @@ import (
 	"xabbo.b7c.io/nx/res"
 )
 
+// Draw draws the frame onto the canvas using the provided drawer.
+// If the drawer is nil, one will be selected automatically based on each sprite's blending mode.
 func (frame Frame) Draw(canvas draw.Image, drawer draw.Drawer) {
 	for _, sprite := range frame {
 		sprite.Draw(canvas, drawer)
@@ -25,7 +27,7 @@ func (frame Frame) ToImage() image.Image {
 	return canvas
 }
 
-// Gets all assets used in this animation for the specified frame sequence.
+// RequiredAssets gets all assets used in the specified frame sequence in this animation.
 func (anim Animation) RequiredAssets(seqIndex int) []*res.Asset {
 	m := map[*res.Asset]struct{}{}
 	for _, layer := range anim.Layers {
@@ -48,6 +50,9 @@ func (anim Animation) RequiredAssets(seqIndex int) []*res.Asset {
 	return maps.Keys(m)
 }
 
+// RenderFramesBounds renders each frame of an animation to images of the size specified by bounds.
+// seqIndex selects the animation sequence to render, while frameCount specifies
+// the number of frames to render.
 func RenderFramesBounds(bounds image.Rectangle, anim Animation, seqIndex, frameCount int) []image.Image {
 	frames := make([]image.Image, frameCount)
 
@@ -77,6 +82,9 @@ func RenderFramesBounds(bounds image.Rectangle, anim Animation, seqIndex, frameC
 	return frames
 }
 
+// RenderFramesBounds renders each frame of an animation to images.
+// seqIndex selects the animation sequence to render, while frameCount specifies
+// the number of frames to render.
 func RenderFrames(anim Animation, seqIndex, frameCount int) []image.Image {
 	bounds := anim.Bounds(seqIndex)
 	return RenderFramesBounds(bounds, anim, seqIndex, frameCount)
@@ -109,7 +117,10 @@ func RenderQuantizedFrames(anim Animation, seqIndex int, palette color.Palette, 
 	return frames
 }
 
-func DrawFrame(anim Animation, canvas draw.Image, drawer draw.Drawer, sequenceIndex int, frameIndex int) {
+// DrawFrame draws a single from from an animation onto the canvas using the specified drawer.
+// seqIndex selects the animation sequence to render, while
+// frameIndex selects the index of the frame within the sequence to render.
+func DrawFrame(anim Animation, canvas draw.Image, drawer draw.Drawer, seqIndex int, frameIndex int) {
 	layerIds := maps.Keys(anim.Layers)
 	slices.SortFunc(layerIds, func(a, b int) int {
 		// Shadow layer index should be -1.
@@ -131,8 +142,8 @@ func DrawFrame(anim Animation, canvas draw.Image, drawer draw.Drawer, sequenceIn
 	for _, layerId := range layerIds {
 		layer := anim.Layers[layerId]
 		var seq res.FrameSequence
-		if sequenceIndex < len(layer.Sequences) {
-			seq = layer.Sequences[sequenceIndex]
+		if seqIndex < len(layer.Sequences) {
+			seq = layer.Sequences[seqIndex]
 		} else {
 			if len(layer.Sequences) > 0 {
 				seq = layer.Sequences[0]
@@ -145,6 +156,9 @@ func DrawFrame(anim Animation, canvas draw.Image, drawer draw.Drawer, sequenceIn
 	}
 }
 
+// RenderFrame renders a single from from an animation to an image.
+// seqIndex selects the animation sequence to render, while
+// frameIndex selects the index of the frame within the sequence to render.
 func RenderFrame(anim Animation, seqIndex int, frameIndex int) image.Image {
 	canvas := image.NewRGBA(anim.Bounds(seqIndex))
 	if anim.Background != nil && anim.Background != color.Transparent {

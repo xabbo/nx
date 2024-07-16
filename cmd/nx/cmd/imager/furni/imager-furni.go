@@ -373,7 +373,7 @@ func saveAnimationSequence(fname string, anims []imager.Animation, seqIndex int)
 		if opts.fullSequence {
 			frameCount = anim.TotalFrames(seqIndex)
 		} else {
-			frameCount = anim.LongestFrameSequence(seqIndex)
+			frameCount = anim.LongestSequence(seqIndex)
 		}
 		if frameCount < 24 {
 			frameCount = 24
@@ -395,7 +395,7 @@ func saveAnimation(furni imager.Furni, anim imager.Animation, seqIndex, frameInd
 		if opts.fullSequence {
 			frameCount = anim.TotalFrames(opts.seq)
 		} else {
-			frameCount = anim.LongestFrameSequence(opts.seq)
+			frameCount = anim.LongestSequence(opts.seq)
 		}
 	}
 
