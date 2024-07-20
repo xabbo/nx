@@ -43,7 +43,7 @@ type Avatar struct {
 	nx.Figure
 	Direction     int
 	HeadDirection int
-	Action        nx.AvatarState
+	Actions       []nx.AvatarState
 	Expression    nx.AvatarState
 	HandItem      int
 	Effect        int
@@ -281,7 +281,7 @@ func (imgr avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 	}
 
 	// Choose a layer ordering based on figure direction.
-	var ordering [][]nx.FigurePartType
+	var ordering map[nx.FigurePartType]int
 	switch avatar.Direction {
 	case 0, 1, 2, 4, 5, 6:
 		ordering = layerOrderSide
@@ -289,16 +289,6 @@ func (imgr avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 		ordering = layerOrderDown
 	case 7:
 		ordering = layerOrderUp
-	}
-
-	// Map layer order by figure part type.
-	n := 0
-	layerOrder := map[nx.FigurePartType]int{}
-	for _, group := range ordering {
-		for _, layer := range group {
-			layerOrder[layer] = n
-			n++
-		}
 	}
 
 	// Groups parts by part type.
@@ -379,7 +369,7 @@ func (imgr avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 		partExtraData[nx.FigurePart{Type: part.Type, Id: part.Id}] = partExtra{
 			Asset:  asset,
 			Spec:   *spec,
-			Order:  layerOrder[part.Type],
+			Order:  ordering[part.Type],
 			Offset: offset,
 			FlipH:  flipPart,
 		}
@@ -431,7 +421,7 @@ func (r *avatarImager) ResolveAsset(lib res.AssetLibrary, avatar Avatar, part Av
 	if part.Type.IsHead() {
 		direction = avatar.HeadDirection
 	}
-	action := avatar.Action
+	action := avatar.Actions[0]
 	expression := avatar.Expression
 
 	directions := []int{direction}

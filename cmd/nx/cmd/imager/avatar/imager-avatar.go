@@ -190,7 +190,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 		Figure:        figure,
 		Direction:     opts.dir,
 		HeadDirection: opts.headDir,
-		Action:        nx.AvatarState(opts.action),
+		Actions:       []nx.AvatarState{nx.AvatarState(opts.action)},
 		Expression:    nx.AvatarState(opts.expression),
 		HeadOnly:      opts.headOnly,
 	}
