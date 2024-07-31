@@ -284,11 +284,11 @@ func (imgr avatarImager) Compose(avatar Avatar) (anim Animation, err error) {
 	var ordering map[nx.FigurePartType]int
 	switch avatar.Direction {
 	case 0, 1, 2, 4, 5, 6:
-		ordering = layerOrderSide
+		ordering = mapPrecedence(sliceJoin(layerOrderSide...))
 	case 3:
-		ordering = layerOrderDown
+		ordering = mapPrecedence(sliceJoin(layerOrderDown...))
 	case 7:
-		ordering = layerOrderUp
+		ordering = mapPrecedence(sliceJoin(layerOrderUp...))
 	}
 
 	// Groups parts by part type.
