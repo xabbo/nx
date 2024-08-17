@@ -26,7 +26,7 @@ const (
 	HabboIdKindRoom
 )
 
-var rgxHabboId = regexp.MustCompile(`^(?:([rg])-)?hh([a-z]{2})-([0-9a-f]{32})$`)
+var rgxHabboId = regexp.MustCompile(`^(?:([rg])-)?hh([a-z]{2,3})-([0-9a-f]{32})$`)
 
 func (t HabboIdKind) Prefix() string {
 	switch t {

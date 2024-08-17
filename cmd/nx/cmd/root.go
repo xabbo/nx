@@ -8,16 +8,17 @@ import (
 )
 
 var hotels = map[string]string{
-	"us": "www.habbo.com",
-	"es": "www.habbo.es",
-	"fi": "www.habbo.fi",
-	"it": "www.habbo.it",
-	"nl": "www.habbo.nl",
-	"de": "www.habbo.de",
-	"fr": "www.habbo.fr",
-	"br": "www.habbo.com.br",
-	"tr": "www.habbo.com.tr",
-	"s2": "sandbox.habbo.com",
+	"us":  "www.habbo.com",
+	"ous": "origins.habbo.com",
+	"es":  "www.habbo.es",
+	"fi":  "www.habbo.fi",
+	"it":  "www.habbo.it",
+	"nl":  "www.habbo.nl",
+	"de":  "www.habbo.de",
+	"fr":  "www.habbo.fr",
+	"br":  "www.habbo.com.br",
+	"tr":  "www.habbo.com.tr",
+	"s2":  "sandbox.habbo.com",
 }
 
 var Cmd = &cobra.Command{
