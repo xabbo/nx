@@ -20,15 +20,12 @@ type FigurePartSet struct {
 	Colors []string          `json:"c"`
 }
 
-func (fd *FigureData) UnmarshalJSON(b []byte) (err error) {
+// ParseFigureData parses the origins FigureData from the specified byte array.
+func ParseFigureData(b []byte) (fd *FigureData, err error) {
 	err = fixFigureData(b)
 	if err == nil {
-		type FixedFigureData FigureData
-		var fixedFigureData FixedFigureData
-		err = json.Unmarshal(b, &fixedFigureData)
-		if err == nil {
-			*fd = FigureData(fixedFigureData)
-		}
+		fd = &FigureData{}
+		err = json.Unmarshal(b, fd)
 	}
 	if err != nil {
 		err = fmt.Errorf("weirdness in figure data!!! %w", err)
@@ -62,7 +59,7 @@ func fixFigureData(b []byte) (err error) {
 				b[i] = '}'
 			}
 			sp--
-			if sp < 0 {
+			if sp < -1 {
 				return fmt.Errorf("underflow in fixFigureData")
 			}
 		}
