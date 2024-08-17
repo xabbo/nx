@@ -11,13 +11,24 @@ import (
 type FigureConverter struct {
 	figureData *FigureData
 	colorMap   ColorMap
+	setIds     map[int]FigurePartSet
 }
 
 func NewFigureConverter(figureData *FigureData, colorMap ColorMap) *FigureConverter {
-	return &FigureConverter{
+	fc := &FigureConverter{
 		figureData: figureData,
 		colorMap:   colorMap,
+		setIds:     map[int]FigurePartSet{},
 	}
+	for _, genderSet := range []map[nx.FigurePartType]FigurePartSets{figureData.M, figureData.F} {
+		for setType, items := range genderSet {
+			for _, partSet := range items {
+				partSet.Type = setType
+				fc.setIds[partSet.Id] = partSet
+			}
+		}
+	}
+	return fc
 }
 
 // Hardcoded hair -> hat map
@@ -62,22 +73,11 @@ func (fc *FigureConverter) Convert(originsFigure string) (figure nx.Figure, err 
 		}
 	}
 
-	// map part set id -> part set
-	setIds := map[int]FigurePartSet{}
-	for _, genderSet := range []map[nx.FigurePartType]FigurePartSets{fc.figureData.M, fc.figureData.F} {
-		for setType, items := range genderSet {
-			for _, partSet := range items {
-				partSet.Type = setType
-				setIds[partSet.Id] = partSet
-			}
-		}
-	}
-
 	for i := 0; i < 25; i += 5 {
 		setId, _ := strconv.Atoi(originsFigure[i : i+3])
 		colorIndex, _ := strconv.Atoi(originsFigure[i+3 : i+5])
 
-		set := setIds[setId]
+		set := fc.setIds[setId]
 		figureItem := nx.FigureItem{
 			Type: nx.FigurePartType(set.Type),
 			Id:   setId,
