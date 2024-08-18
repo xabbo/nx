@@ -59,7 +59,7 @@ var hairToHatMap = map[int]int{
 	811: 1013,
 }
 
-// Convert converts an origins figure string to a modern figure string.
+// Convert converts an origins figure string to its modern `nx.Figure` representation.
 func (fc *FigureConverter) Convert(originsFigure string) (figure nx.Figure, err error) {
 	if len(originsFigure) != 25 {
 		err = errors.New("invalid figure string: must be 25 characters in length")
