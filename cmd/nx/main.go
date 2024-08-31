@@ -4,6 +4,7 @@ import (
 	"xabbo.b7c.io/nx/cmd/nx/cmd"
 
 	_ "xabbo.b7c.io/nx/cmd/nx/cmd/figure"
+	_ "xabbo.b7c.io/nx/cmd/nx/cmd/figure/convert"
 	_ "xabbo.b7c.io/nx/cmd/nx/cmd/figure/info"
 
 	_ "xabbo.b7c.io/nx/cmd/nx/cmd/furni"

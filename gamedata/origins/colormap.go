@@ -12,7 +12,7 @@ import (
 type ColorMap = map[nx.FigurePartType]map[string]int
 
 // MakeColorMap creates a ColorMap from the specified figure data.
-func MakeColorMap(fd gamedata.FigureData) ColorMap {
+func MakeColorMap(fd *gamedata.FigureData) ColorMap {
 	colorMap := map[nx.FigurePartType]map[string]int{}
 	for partType, paletteId := range fd.SetPalettes {
 		colorMap[partType] = map[string]int{}
