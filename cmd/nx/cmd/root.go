@@ -80,6 +80,8 @@ func preRun(cmd *cobra.Command, args []string) error {
 }
 
 func Execute() {
+	Cmd.SetOut(os.Stdout)
+	Cmd.SetErr(os.Stderr)
 	err := Cmd.Execute()
 	if err != nil {
 		os.Exit(1)
