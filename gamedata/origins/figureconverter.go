@@ -8,6 +8,9 @@ import (
 	"xabbo.b7c.io/nx"
 )
 
+var ErrInvalidFigureStringLength = errors.New("invalid figure string: length must be a multiple of 5")
+var ErrNonNumericFigureString = errors.New("invalid figure string: must consist only of numbers")
+
 type FigureConverter struct {
 	figureData *FigureData
 	colorMap   ColorMap
@@ -61,19 +64,19 @@ var hairToHatMap = map[int]int{
 
 // Convert converts an origins figure string to its modern `nx.Figure` representation.
 func (fc *FigureConverter) Convert(originsFigure string) (figure nx.Figure, err error) {
-	if len(originsFigure) != 25 {
-		err = errors.New("invalid figure string: must be 25 characters in length")
+	if len(originsFigure) % 5 != 0 {
+		err = ErrInvalidFigureStringLength
 		return
 	}
 
 	for _, c := range originsFigure {
 		if c < '0' || c > '9' {
-			err = errors.New("invalid figure string: must consist only of numbers")
+			err = ErrNonNumericFigureString
 			return
 		}
 	}
 
-	for i := 0; i < 25; i += 5 {
+	for i := 0; i < len(originsFigure); i += 5 {
 		setId, _ := strconv.Atoi(originsFigure[i : i+3])
 		colorIndex, _ := strconv.Atoi(originsFigure[i+3 : i+5])
 

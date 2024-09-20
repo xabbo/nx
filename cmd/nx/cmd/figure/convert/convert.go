@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"xabbo.b7c.io/nx/cmd/nx/spinner"
@@ -29,14 +30,14 @@ func init() {
 func run(cmd *cobra.Command, args []string) (err error) {
 	cmd.SilenceUsage = true
 
-	originsFigure := args[0]
-	if len(originsFigure) != 25 {
-		return errors.New("invalid figure string, must be 25 characters in length")
+	originsFigure := strings.TrimSpace(args[0])
+	if len(originsFigure) % 5 != 0 {
+		return origins.ErrInvalidFigureStringLength
 	}
 
 	for _, c := range originsFigure {
 		if c < '0' || c > '9' {
-			return errors.New("invalid figure string, must consist only of numbers")
+			return origins.ErrNonNumericFigureString
 		}
 	}
 
