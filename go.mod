@@ -15,7 +15,7 @@ require (
 	github.com/xyproto/palgen v1.6.0
 	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc
 	golang.org/x/net v0.25.0
-	golang.org/x/sync v0.5.0
+	golang.org/x/sync v0.7.0
 	golang.org/x/term v0.20.0
 )
 
@@ -29,7 +29,7 @@ require (
 	github.com/peterhellberg/gfx v0.0.0-20230908181254-9885a9f73abe // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/xyproto/burnpal v1.0.0 // indirect
-	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
+	golang.org/x/image v0.18.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 )
