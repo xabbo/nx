@@ -8,7 +8,7 @@ import (
 	"image/color"
 	"os"
 
-	"xabbo.b7c.io/nx/res"
+	"xabbo.io/nx/res"
 )
 
 const shadowAlpha = 46

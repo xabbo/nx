@@ -11,8 +11,8 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
 
-	gd "xabbo.b7c.io/nx/gamedata"
-	"xabbo.b7c.io/nx/web"
+	gd "xabbo.io/nx/gamedata"
+	"xabbo.io/nx/web"
 )
 
 var tableStyle = table.Style{

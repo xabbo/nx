@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"xabbo.b7c.io/nx"
+	"xabbo.io/nx"
 )
 
 var ErrInvalidFigureStringLength = errors.New("invalid figure string: length must be a multiple of 5")

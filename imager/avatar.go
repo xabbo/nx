@@ -8,9 +8,9 @@ import (
 	"strconv"
 
 	"golang.org/x/exp/maps"
-	"xabbo.b7c.io/nx"
-	gd "xabbo.b7c.io/nx/gamedata"
-	"xabbo.b7c.io/nx/res"
+	"xabbo.io/nx"
+	gd "xabbo.io/nx/gamedata"
+	"xabbo.io/nx/res"
 )
 
 /*

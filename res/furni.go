@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"golang.org/x/exp/maps"
-	"xabbo.b7c.io/nx/raw/nitro"
-	x "xabbo.b7c.io/nx/raw/xml"
+	"xabbo.io/nx/raw/nitro"
+	x "xabbo.io/nx/raw/xml"
 )
 
 // FurniAssetSpec represents an asset specifier for a furni library.

@@ -7,7 +7,7 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/phrozen/blend"
-	"xabbo.b7c.io/nx/res"
+	"xabbo.io/nx/res"
 )
 
 // Sprite defines parameters for an asset to be drawn on a canvas.

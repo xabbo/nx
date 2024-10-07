@@ -1,4 +1,4 @@
-module xabbo.b7c.io/nx
+module xabbo.io/nx
 
 go 1.22
 

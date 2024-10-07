@@ -15,14 +15,14 @@ import (
 
 	"b7c.io/swfx"
 
-	gd "xabbo.b7c.io/nx/gamedata"
-	"xabbo.b7c.io/nx/imager"
-	"xabbo.b7c.io/nx/raw/nitro"
-	"xabbo.b7c.io/nx/res"
+	gd "xabbo.io/nx/gamedata"
+	"xabbo.io/nx/imager"
+	"xabbo.io/nx/raw/nitro"
+	"xabbo.io/nx/res"
 
-	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
-	_parent "xabbo.b7c.io/nx/cmd/nx/cmd/imager"
-	"xabbo.b7c.io/nx/cmd/nx/spinner"
+	_root "xabbo.io/nx/cmd/nx/cmd"
+	_parent "xabbo.io/nx/cmd/nx/cmd/imager"
+	"xabbo.io/nx/cmd/nx/spinner"
 )
 
 var Cmd = &cobra.Command{

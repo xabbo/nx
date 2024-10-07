@@ -11,7 +11,7 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"xabbo.b7c.io/nx/raw/nitro"
+	"xabbo.io/nx/raw/nitro"
 )
 
 type nitroFurniLibrary struct {

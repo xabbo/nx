@@ -9,12 +9,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"xabbo.b7c.io/nx"
-	gd "xabbo.b7c.io/nx/gamedata"
+	"xabbo.io/nx"
+	gd "xabbo.io/nx/gamedata"
 
-	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
-	_parent "xabbo.b7c.io/nx/cmd/nx/cmd/furni"
-	"xabbo.b7c.io/nx/cmd/nx/util"
+	_root "xabbo.io/nx/cmd/nx/cmd"
+	_parent "xabbo.io/nx/cmd/nx/cmd/furni"
+	"xabbo.io/nx/cmd/nx/util"
 )
 
 var opts struct {

@@ -4,7 +4,7 @@ import (
 	"image"
 	"io"
 
-	"xabbo.b7c.io/nx"
+	"xabbo.io/nx"
 )
 
 // FurniImager represents an imager that can compose furni into animations.

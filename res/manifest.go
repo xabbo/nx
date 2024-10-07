@@ -3,7 +3,7 @@ package res
 import (
 	"fmt"
 
-	x "xabbo.b7c.io/nx/raw/xml"
+	x "xabbo.io/nx/raw/xml"
 )
 
 // A manifest describing the library and assets contained.

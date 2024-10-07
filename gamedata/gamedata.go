@@ -3,7 +3,7 @@ package gamedata
 import (
 	"reflect"
 
-	"xabbo.b7c.io/nx/res"
+	"xabbo.io/nx/res"
 )
 
 // Represents a type of game data.

@@ -8,11 +8,11 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"xabbo.b7c.io/nx/cmd/nx/spinner"
-	gd "xabbo.b7c.io/nx/gamedata"
-	"xabbo.b7c.io/nx/gamedata/origins"
+	"xabbo.io/nx/cmd/nx/spinner"
+	gd "xabbo.io/nx/gamedata"
+	"xabbo.io/nx/gamedata/origins"
 
-	_parent "xabbo.b7c.io/nx/cmd/nx/cmd/figure"
+	_parent "xabbo.io/nx/cmd/nx/cmd/figure"
 )
 
 var Cmd = &cobra.Command{

@@ -10,7 +10,7 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"xabbo.b7c.io/nx/res"
+	"xabbo.io/nx/res"
 )
 
 // Draw draws the frame onto the canvas using the provided drawer.

@@ -10,12 +10,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	gd "xabbo.b7c.io/nx/gamedata"
+	gd "xabbo.io/nx/gamedata"
 
-	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
-	_parent "xabbo.b7c.io/nx/cmd/nx/cmd/get"
-	"xabbo.b7c.io/nx/cmd/nx/spinner"
-	"xabbo.b7c.io/nx/cmd/nx/util"
+	_root "xabbo.io/nx/cmd/nx/cmd"
+	_parent "xabbo.io/nx/cmd/nx/cmd/get"
+	"xabbo.io/nx/cmd/nx/spinner"
+	"xabbo.io/nx/cmd/nx/util"
 )
 
 var ErrNotFound = errors.New("not found")

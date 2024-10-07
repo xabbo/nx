@@ -1,7 +1,7 @@
 package res
 
 import (
-	x "xabbo.b7c.io/nx/raw/xml"
+	x "xabbo.io/nx/raw/xml"
 )
 
 // An Index describes the furni visualization and logic types.

@@ -6,12 +6,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
-	"xabbo.b7c.io/nx/cmd/nx/spinner"
-	"xabbo.b7c.io/nx/cmd/nx/util"
+	_root "xabbo.io/nx/cmd/nx/cmd"
+	"xabbo.io/nx/cmd/nx/spinner"
+	"xabbo.io/nx/cmd/nx/util"
 
-	"xabbo.b7c.io/nx"
-	"xabbo.b7c.io/nx/web"
+	"xabbo.io/nx"
+	"xabbo.io/nx/web"
 )
 
 var Cmd = &cobra.Command{

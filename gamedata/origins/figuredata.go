@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"xabbo.b7c.io/nx"
+	"xabbo.io/nx"
 )
 
 type FigureData struct {

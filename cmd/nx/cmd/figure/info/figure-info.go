@@ -9,13 +9,13 @@ import (
 	"github.com/jedib0t/go-pretty/v6/list"
 	"github.com/spf13/cobra"
 
-	"xabbo.b7c.io/nx"
-	gd "xabbo.b7c.io/nx/gamedata"
+	"xabbo.io/nx"
+	gd "xabbo.io/nx/gamedata"
 
-	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
-	_parent "xabbo.b7c.io/nx/cmd/nx/cmd/figure"
-	"xabbo.b7c.io/nx/cmd/nx/spinner"
-	"xabbo.b7c.io/nx/cmd/nx/util"
+	_root "xabbo.io/nx/cmd/nx/cmd"
+	_parent "xabbo.io/nx/cmd/nx/cmd/figure"
+	"xabbo.io/nx/cmd/nx/spinner"
+	"xabbo.io/nx/cmd/nx/util"
 )
 
 var Cmd = &cobra.Command{

@@ -5,11 +5,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	gd "xabbo.b7c.io/nx/gamedata"
+	gd "xabbo.io/nx/gamedata"
 
-	_root "xabbo.b7c.io/nx/cmd/nx/cmd"
-	"xabbo.b7c.io/nx/cmd/nx/cmd/furni"
-	"xabbo.b7c.io/nx/cmd/nx/util"
+	_root "xabbo.io/nx/cmd/nx/cmd"
+	"xabbo.io/nx/cmd/nx/cmd/furni"
+	"xabbo.io/nx/cmd/nx/util"
 )
 
 var Cmd = &cobra.Command{

@@ -17,8 +17,8 @@ import (
 
 	"b7c.io/swfx"
 	"golang.org/x/sync/errgroup"
-	j "xabbo.b7c.io/nx/raw/json"
-	"xabbo.b7c.io/nx/res"
+	j "xabbo.io/nx/raw/json"
+	"xabbo.io/nx/res"
 )
 
 type webGameDataManager struct {

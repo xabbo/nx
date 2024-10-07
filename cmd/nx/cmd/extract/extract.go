@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	root "xabbo.b7c.io/nx/cmd/nx/cmd"
-	"xabbo.b7c.io/nx/raw/nitro"
+	root "xabbo.io/nx/cmd/nx/cmd"
+	"xabbo.io/nx/raw/nitro"
 )
 
 var Cmd = &cobra.Command{
