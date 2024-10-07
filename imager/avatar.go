@@ -132,6 +132,8 @@ func NewAvatarImager(mgr gd.Manager) AvatarImager {
 }
 
 type AvatarPart struct {
+	// LibraryName is the name of the library that contains this part.
+	// It may be an empty string if the library failed to resolve.
 	LibraryName string
 	AssetSpec   FigureAssetSpec
 	Asset       *res.Asset
@@ -139,8 +141,9 @@ type AvatarPart struct {
 	SetId       int
 	Type        nx.FigurePartType
 	Id          int
-	Color       color.Color
-	Hidden      bool
+	// Color is the color for this avatar part. It may be nil if the color failed to resolve.
+	Color  color.Color
+	Hidden bool
 }
 
 // Converts the specified figure into individual figure parts.
@@ -161,15 +164,20 @@ func (imgr avatarImager) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 	// e.g. a hat may cause certain hair assets to be hidden.
 	hiddenLayers := map[nx.FigurePartType]bool{}
 	for _, item := range fig.Items {
-		setInfo := figureData.Sets[item.Type][item.Id]
-		for _, layer := range setInfo.HiddenLayers {
-			hiddenLayers[layer] = true
+		setInfo, ok := figureData.Sets[item.Type][item.Id]
+		if ok {
+			for _, layer := range setInfo.HiddenLayers {
+				hiddenLayers[layer] = true
+			}
 		}
 	}
 
 	// Loop over each item (part set) in the figure.
 	for _, item := range fig.Items {
 		setInfo := figureData.Sets[item.Type][item.Id]
+		if setInfo == nil {
+			continue
+		}
 		palette := figureData.PaletteFor(item.Type)
 
 		assumedLibrary := ""
@@ -177,29 +185,27 @@ func (imgr avatarImager) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 		// Each item is comprised of multiple parts,
 		// e.g. a shirt may have sprites for the body, left and right arms.
 		for _, partInfo := range setInfo.Parts {
+			var resolvedColor color.Color
 			// Resolve the color for this part.
-			var col color.Color = color.White
 			if partInfo.Colorable && partInfo.ColorIndex > 0 && partInfo.Type != nx.Eyes {
-				if (partInfo.ColorIndex - 1) >= len(item.Colors) {
-					err = fmt.Errorf("expected at least %d color(s) for part %s-%d", partInfo.ColorIndex, item.Type, item.Id)
-					return
+				if (partInfo.ColorIndex - 1) < len(item.Colors) {
+					colorId := item.Colors[partInfo.ColorIndex-1]
+					partColor, ok := palette[colorId]
+					if ok {
+						colorValue, err := strconv.ParseInt(partColor.Value, 16, 64)
+						if err != nil {
+							return nil, err
+						}
+						resolvedColor = color.RGBA{
+							R: uint8((colorValue >> 16) & 0xff),
+							G: uint8((colorValue >> 8) & 0xff),
+							B: uint8(colorValue & 0xff),
+							A: 0xff,
+						}
+					}
 				}
-				colorId := item.Colors[partInfo.ColorIndex-1]
-				partColor, ok := palette[colorId]
-				if !ok {
-					err = fmt.Errorf("color %d not found for part %s", colorId, item.String())
-					return
-				}
-				colorValue, err := strconv.ParseInt(partColor.Value, 16, 64)
-				if err != nil {
-					return nil, err
-				}
-				col = color.RGBA{
-					R: uint8((colorValue >> 16) & 0xff),
-					G: uint8((colorValue >> 8) & 0xff),
-					B: uint8(colorValue & 0xff),
-					A: 0xff,
-				}
+			} else {
+				resolvedColor = color.White
 			}
 
 			part := AvatarPart{
@@ -207,7 +213,7 @@ func (imgr avatarImager) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 				SetId:   item.Id,
 				Type:    partInfo.Type,
 				Id:      partInfo.Id,
-				Color:   col,
+				Color:   resolvedColor,
 				Hidden:  hiddenLayers[partInfo.Type],
 			}
 
@@ -219,10 +225,6 @@ func (imgr avatarImager) Parts(fig nx.Figure) (parts []AvatarPart, err error) {
 			} else {
 				// Some parts don't have a mapping for some reason,
 				// so we use the library from the previous part in the same set.
-				if assumedLibrary == "" {
-					err = fmt.Errorf("failed to find library for part %s-%d", partInfo.Type, partInfo.Id)
-					return
-				}
 				part.LibraryName = assumedLibrary
 			}
 
@@ -261,11 +263,9 @@ func (imgr avatarImager) RequiredLibs(fig nx.Figure) (libs []string, err error) 
 
 		for _, partInfo := range partSet.Parts {
 			partLib, ok := figureMap.Parts[nx.FigurePart{Type: partInfo.Type, Id: partInfo.Id}]
-			if !ok {
-				err = fmt.Errorf("part library not found for %s:%d", partInfo.Type, partInfo.Id)
-				return
+			if ok {
+				libSet[partLib.Name] = struct{}{}
 			}
-			libSet[partLib.Name] = struct{}{}
 		}
 	}
 
