@@ -1,7 +1,10 @@
 package search
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -22,6 +25,8 @@ var opts struct {
 	searchParam      util.Wildcard
 	searchTypeStr    string
 	searchType       nx.ItemType
+	specialTypes     []int
+	json             bool
 }
 
 var Cmd = &cobra.Command{
@@ -37,6 +42,8 @@ func init() {
 	f.VarP(&opts.searchLine, "line", "l", "The furni line")
 	f.VarP(&opts.searchParam, "param", "p", "The furni parameters")
 	f.StringVarP(&opts.searchTypeStr, "type", "t", "", "The furni type (floor/wall)")
+	f.IntSliceVarP(&opts.specialTypes, "special-types", "s", []int{}, "The furni special types")
+	f.BoolVar(&opts.json, "json", false, "Output furni info in JSON format")
 
 	_parent.Cmd.AddCommand(Cmd)
 }
@@ -64,8 +71,17 @@ func runSearch(cmd *cobra.Command, args []string) (err error) {
 		return
 	}
 
+	matches := []*gd.FurniInfo{}
 	for _, f := range mgr.Furni() {
 		if !filterFurni(f) {
+			matches = append(matches, f)
+		}
+	}
+
+	if opts.json {
+		json.NewEncoder(os.Stdout).Encode(matches)
+	} else {
+		for _, f := range matches {
 			fmt.Printf("%s [%s]\n", f.Name, f.Identifier)
 		}
 	}
@@ -79,5 +95,6 @@ func filterFurni(f *gd.FurniInfo) bool {
 		opts.searchIdentifier.Filter(f.Identifier) ||
 		opts.searchCategory.Filter(f.Category) ||
 		opts.searchLine.Filter(f.Line) ||
-		opts.searchParam.Filter(f.CustomParams)
+		opts.searchParam.Filter(f.CustomParams) ||
+		(len(opts.specialTypes) > 0 && !slices.Contains(opts.specialTypes, int(f.SpecialType)))
 }

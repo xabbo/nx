@@ -17,32 +17,32 @@ type FurniInfo struct {
 	// This identifier may differ between hotels.
 	// Also known as the "Id" in the original document.
 	// It is named "Kind" to differentiate it from a furni's unique instance ID.
-	Kind int
+	Kind int `json:"kind"`
 	// The type of the furni, which may be a floor or wall item.
-	Type nx.ItemType
+	Type nx.ItemType `json:"type"`
 	// A unique string identifier for a kind of furniture.
 	// This identifier is the same across hotels.
 	// Also known as "ClassName" in the original document.
-	Identifier      string
-	Revision        int
-	Name            string
-	Description     string
-	Category        string
-	Environment     string
-	Line            string
-	DefaultDir      int
-	XDim            int
-	YDim            int
-	PartColors      []string
-	OfferId         int
-	Buyout          bool
-	BC              bool
-	ExcludedDynamic bool
-	CustomParams    string
-	SpecialType     nx.FurniType
-	CanStandOn      bool
-	CanSitOn        bool
-	CanLayOn        bool
+	Identifier      string       `json:"identifier"`
+	Revision        int          `json:"revision"`
+	Name            string       `json:"name"`
+	Description     string       `json:"description"`
+	Category        string       `json:"category"`
+	Environment     string       `json:"environment"`
+	Line            string       `json:"line"`
+	DefaultDir      int          `json:"defaultdir"`
+	XDim            int          `json:"xdim"`
+	YDim            int          `json:"ydim"`
+	PartColors      []string     `json:"partcolors"`
+	OfferId         int          `json:"offerid"`
+	Buyout          bool         `json:"buyout"`
+	BC              bool         `json:"bc"`
+	ExcludedDynamic bool         `json:"excludeddynamic"`
+	CustomParams    string       `json:"customparams"`
+	SpecialType     nx.FurniType `json:"specialtype"`
+	CanStandOn      bool         `json:"canstandon"`
+	CanSitOn        bool         `json:"cansiton"`
+	CanLayOn        bool         `json:"canlayon"`
 }
 
 // Unmarshals a JSON document as raw bytes into a FurniData.

@@ -1,5 +1,7 @@
 package nx
 
+import "encoding/json"
+
 // ItemType represents the type of an item.
 // May be floor, wall, badge, effect or bot.
 type ItemType rune
@@ -16,6 +18,10 @@ const (
 	// Represents a bot item type.
 	ItemBot ItemType = 'r'
 )
+
+func (t ItemType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(string(t))
+}
 
 // String returns the name of the item type.
 func (t ItemType) String() string {
