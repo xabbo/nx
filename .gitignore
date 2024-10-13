@@ -3,3 +3,5 @@
 testdata/
 testdata/gamedata/
 bin/
+
+*.png
