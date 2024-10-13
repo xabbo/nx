@@ -2,6 +2,8 @@ package avatar
 
 import (
 	"fmt"
+	"image"
+	"image/png"
 	"os"
 	"slices"
 
@@ -36,6 +38,8 @@ var opts struct {
 	noColor    bool
 	verbose    bool
 	outFormat  string
+	offset     []int
+	size       []int
 }
 
 var validFormats = []string{"png", "svg"}
@@ -52,6 +56,8 @@ func init() {
 	f.BoolVar(&opts.noColor, "no-color", false, "Do not color figure parts")
 	f.BoolVarP(&opts.verbose, "verbose", "v", false, "Verbose output")
 	f.StringVarP(&opts.outFormat, "format", "f", "png", "Output format")
+	f.IntSliceVar(&opts.size, "size", []int{}, "Output image size")
+	f.IntSliceVar(&opts.offset, "offset", []int{}, "Sprite offset")
 
 	_parent.Cmd.AddCommand(Cmd)
 }
@@ -200,6 +206,24 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 		return
 	}
 
+	bounds := anim.Bounds(0)
+
+	offset := image.Pt(bounds.Min.X, bounds.Min.Y)
+	if len(opts.offset) == 2 {
+		offset = image.Point{
+			X: opts.offset[0],
+			Y: opts.offset[1],
+		}
+	}
+
+	size := bounds.Size()
+	if len(opts.size) == 2 {
+		size = image.Point{
+			X: opts.size[0],
+			Y: opts.size[1],
+		}
+	}
+
 	f, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return
@@ -208,15 +232,19 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 
 	switch opts.outFormat {
 	case "png":
-		encoder := imager.NewEncoderPNG()
-		encoder.EncodeFrame(f, anim, 0, 0)
+		canvas := image.NewRGBA(image.Rect(0, 0, size.X, size.Y))
+		imager.DrawFrame(anim, canvas, offset, nil, 0, 0)
+		err = png.Encode(f, canvas)
 	case "svg":
 		encoder := imager.NewEncoderSVG()
-		encoder.EncodeFrame(f, anim, 0, 0)
+		err = encoder.EncodeFrame(f, anim, 0, 0)
 	default:
 		return
 	}
 
-	fmt.Printf("output: %s\n", fileName)
+	if err == nil {
+		fmt.Printf("output: %s\n", fileName)
+	}
+
 	return
 }

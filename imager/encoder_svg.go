@@ -34,7 +34,7 @@ func (e svgEncoder) EncodeFrame(w io.Writer, anim Animation, seqIndex, frameInde
 		for _, sprite := range frame {
 			bounds := sprite.Bounds()
 			img := image.NewRGBA(bounds)
-			sprite.Draw(img, draw.Over)
+			sprite.Draw(img, image.Point{}, draw.Over)
 			svgImgLayer{
 				x:    bounds.Min.X,
 				y:    bounds.Min.Y,

@@ -15,15 +15,15 @@ import (
 
 // Draw draws the frame onto the canvas using the provided drawer.
 // If the drawer is nil, one will be selected automatically based on each sprite's blending mode.
-func (frame Frame) Draw(canvas draw.Image, drawer draw.Drawer) {
+func (frame Frame) Draw(canvas draw.Image, offset image.Point, drawer draw.Drawer) {
 	for _, sprite := range frame {
-		sprite.Draw(canvas, drawer)
+		sprite.Draw(canvas, offset, drawer)
 	}
 }
 
 func (frame Frame) ToImage() image.Image {
 	canvas := image.NewRGBA(frame.Bounds())
-	frame.Draw(canvas, draw.Over)
+	frame.Draw(canvas, image.Point{}, draw.Over)
 	return canvas
 }
 
@@ -68,7 +68,7 @@ func RenderFramesBounds(bounds image.Rectangle, anim Animation, seqIndex, frameC
 				if anim.Background != nil && anim.Background != color.Transparent {
 					draw.Over.Draw(img, img.Bounds(), image.NewUniform(anim.Background), image.Point{})
 				}
-				DrawFrame(anim, img, nil, seqIndex, frameIndex)
+				DrawFrame(anim, img, image.Point{}, nil, seqIndex, frameIndex)
 				frames[frameIndex] = img
 				wg.Done()
 			}
@@ -104,7 +104,7 @@ func RenderQuantizedFrames(anim Animation, seqIndex int, palette color.Palette, 
 			for frameIndex := range ch {
 				img := image.NewPaletted(bounds, palette)
 				draw.Src.Draw(img, bounds, image.Transparent, image.Point{})
-				DrawFrame(anim, img, nil, seqIndex, frameIndex)
+				DrawFrame(anim, img, image.Point{}, nil, seqIndex, frameIndex)
 				frames[frameIndex] = img
 				wg.Done()
 			}
@@ -117,10 +117,10 @@ func RenderQuantizedFrames(anim Animation, seqIndex int, palette color.Palette, 
 	return frames
 }
 
-// DrawFrame draws a single from from an animation onto the canvas using the specified drawer.
-// seqIndex selects the animation sequence to render, while
-// frameIndex selects the index of the frame within the sequence to render.
-func DrawFrame(anim Animation, canvas draw.Image, drawer draw.Drawer, seqIndex int, frameIndex int) {
+// DrawFrame draws a single from from an animation onto the canvas at the specified offset using the
+// specified drawer. seqIndex selects the animation sequence to render, while frameIndex selects the
+// index of the frame within the sequence to render.
+func DrawFrame(anim Animation, canvas draw.Image, offset image.Point, drawer draw.Drawer, seqIndex int, frameIndex int) {
 	layerIds := maps.Keys(anim.Layers)
 	slices.SortFunc(layerIds, func(a, b int) int {
 		// Shadow layer index should be -1.
@@ -152,7 +152,7 @@ func DrawFrame(anim Animation, canvas draw.Image, drawer draw.Drawer, seqIndex i
 			}
 		}
 		frameId := seq[(frameIndex/max(1, layer.FrameRepeat))%len(seq)]
-		layer.Frames[frameId].Draw(canvas, drawer)
+		layer.Frames[frameId].Draw(canvas, offset, drawer)
 	}
 }
 
@@ -164,6 +164,6 @@ func RenderFrame(anim Animation, seqIndex int, frameIndex int) image.Image {
 	if anim.Background != nil && anim.Background != color.Transparent {
 		draw.Over.Draw(canvas, canvas.Bounds(), image.NewUniform(anim.Background), image.Point{})
 	}
-	DrawFrame(anim, canvas, nil, seqIndex, frameIndex)
+	DrawFrame(anim, canvas, image.Point{}, nil, seqIndex, frameIndex)
 	return canvas
 }
