@@ -64,7 +64,7 @@ func (s *Sprite) Draw(canvas draw.Image, offset image.Point, drawer draw.Drawer)
 		srcImg = blend.BlendNewImage(srcImg, image.NewUniform(s.Color), blend.Multiply)
 	}
 	bounds := srcImg.Bounds()
-	offset = offset.Add(s.Offset)
+	offset = s.Offset.Sub(offset)
 	if s.FlipH {
 		srcImg = imaging.FlipH(srcImg)
 	}
