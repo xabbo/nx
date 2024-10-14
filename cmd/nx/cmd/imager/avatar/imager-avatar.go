@@ -208,7 +208,7 @@ func runRenderAvatar(cmd *cobra.Command, args []string) (err error) {
 
 	bounds := anim.Bounds(0)
 
-	offset := image.Pt(bounds.Min.X, bounds.Min.Y)
+	offset := image.Pt(-bounds.Min.X, -bounds.Min.Y)
 	if len(opts.offset) == 2 {
 		offset = image.Point{
 			X: opts.offset[0],
