@@ -188,7 +188,6 @@ $ nx figure info -pci hr-4090-61.hd-180-1.ch-3934-110-110.lg-3596-110-110.ea-397
 ```
 
 ### Imager
-The imager is a work in progress, there are still many bugs to work out.
 
 #### Avatars
 
@@ -200,6 +199,41 @@ nx img avatar -u Strawberry
 You can also render a figure string directly: `nx img avatar hr-3090-42.hd-180-1.ch-3110-64-1408.lg-275-64.ha-1003-64`
 
 #### Furni
+
+#### Static
+
+```sh
+nx img furni club_sofa -d 2
+```
+
+![club_sofa_64_2_0_0_0 1](https://github.com/user-attachments/assets/b4078652-e39d-4a33-872b-45378d4e48aa)
+
+#### All directions
+
+```sh
+nx img duck -D
+```
+
+![Screenshot_2024-11-07_03 06 21](https://github.com/user-attachments/assets/cc02fb7e-d3bc-4460-a68a-9f65e23a4029)
+
+#### All states
+
+```sh
+nx img furni autumn_c20_bench -S
+```
+
+![Screenshot_2024-11-07_03 10 11](https://github.com/user-attachments/assets/7a721b2c-c93a-4fbd-8264-e8acb6dabc3d)
+
+#### All colors
+
+```sh
+nx img furni 'rare_colourable_dragonlamp*1' -C
+```
+
+![Screenshot_2024-11-07_03 12 32](https://github.com/user-attachments/assets/69b84a71-eaf6-4e93-9b1f-b53e3db8beba)
+
+#### Animated
+
 ```sh
 nx img furni stellar_c23_galaxydragon -d 2 -f gif
 ```
