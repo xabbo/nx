@@ -187,6 +187,48 @@ $ nx figure info -pci hr-4090-61.hd-180-1.ch-3934-110-110.lg-3596-110-110.ea-397
    └─  110: #1e1e1e
 ```
 
+### Fetch resources
+
+To fetch a furni asset SWF file:
+
+```sh
+$ nx get furni autumn_c20_bench           
+autumn_c20_bench.swf
+```
+
+You can then extract resources from the SWF file.
+
+### Extract resources
+
+Resources can be extracted from both SWF and Nitro files.
+
+```sh
+$ nx extract --images autumn_c20_bench.swf
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_h_0_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_a_4_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_h_4_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_c_0_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_a_0_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_f_4_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_c_4_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_d_0_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_f_0_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_b_0_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_g_0_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_e_4_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_b_4_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_g_4_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_icon_a.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_i_4_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_e_0_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_sd_4_0.png
+autumn_c20_bench/autumn_c20_bench_autumn_c20_bench_64_i_0_0.png
+```
+
+![Screenshot_2024-11-09_17 46 28](https://github.com/user-attachments/assets/85ff72e8-d304-40f4-9fdd-54023c324272)
+
+These assets can also be [rendered](#all-states) with the imager.
+
 ### Imager
 
 #### Avatars
