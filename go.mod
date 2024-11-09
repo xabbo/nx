@@ -6,6 +6,7 @@ require (
 	b7c.io/swfx v0.0.0-20240604125855-bbc10c486bfc
 	github.com/disintegration/imaging v1.6.2
 	github.com/dustin/go-humanize v1.0.1
+	github.com/gabriel-vasile/mimetype v1.4.4
 	github.com/jedib0t/go-pretty/v6 v6.5.9
 	github.com/kettek/apng v0.0.0-20220823221153-ff692776a607
 	github.com/phrozen/blend v0.0.0-20210220204729-f26b6cf7a28e
